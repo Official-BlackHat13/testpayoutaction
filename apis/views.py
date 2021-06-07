@@ -13,8 +13,18 @@ from drf_yasg.utils import swagger_auto_schema
 from . import api_docs
 
 
-class bankApiView(APIView):
+class bankApiViewtest(APIView):
     @swagger_auto_schema(responses=api_docs.response_schema_dict,request_body=api_docs.val)
     def post(self,req):
         print(req.data)
         return Response({"test":"some"})
+
+
+class bankApiPaymentView(APIView):
+    @swagger_auto_schema()
+    def post(self,req):
+        pass
+class bankApiEnquiryView(APIView):
+    @swagger_auto_schema()
+    def post(self,req):
+        pass
