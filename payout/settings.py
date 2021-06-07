@@ -80,12 +80,33 @@ WSGI_APPLICATION = 'payout.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'payout',
-        'USER': 'payout',
-        'PASSWORD': 'kdkool123ms',
-        'HOST': 'localhost',
+        'NAME': 'u287339841_payout',
+        'USER': 'u287339841_payout',
+        'PASSWORD': 'Payout@123',
+        'HOST': 'papernotes.in',
         'PORT': '3306',
+        # 'socket': '/Applications/XAMPP/xamppfiles/var/mysql/mysql.sock'
     }
+    # kanishk local db
+    # 'default': {
+    #     'ENGINE': 'django.db.backends.mysql',
+    #     'NAME': 'payout',
+    #     'USER': 'root',
+    #     'PASSWORD': 'DXZn*6!"n,YN!c8z',
+    #     'HOST': '127.0.0.1',
+    #     'PORT': '3306',
+    #     # 'socket': '/Applications/XAMPP/xamppfiles/var/mysql/mysql.sock'
+    # }
+    # yash local db
+    # 'default': {
+    #     'ENGINE': 'django.db.backends.mysql',
+    #     'NAME': 'payout',
+    #     'USER': 'root',
+    #     'PASSWORD': 'DXZn*6!"n,YN!c8z',
+    #     'HOST': '127.0.0.1',
+    #     'PORT': '3306',
+    #     # 'socket': '/Applications/XAMPP/xamppfiles/var/mysql/mysql.sock'
+    # }
 }
 
 
