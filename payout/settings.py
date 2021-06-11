@@ -91,8 +91,8 @@ DATABASES = {
     # Localdatabase
      'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'Payout_new',
-        'USER': 'payout_new',
+        'NAME': 'Payout_database',
+        'USER': 'payout_user',
         'PASSWORD': 'payout@123',
         'HOST': 'localhost',
         'PORT': '3306',
