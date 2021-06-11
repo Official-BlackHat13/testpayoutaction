@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import datetime
 class Message_Header:
     def __init__(self,msgId=None,cnvId=None,extRefId=None,bizObjId=None,appId="CLIENT",timestamp=str(datetime.now())):
         self.msgId=msgId
@@ -62,3 +62,5 @@ class Message_Body:
 } 
 
         }
+
+

@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "corsheaders",
     "drf_yasg",
+    "apis"
 ]
 CORS_ALLOW_ALL_ORIGINS=True
 MIDDLEWARE = [
@@ -78,12 +79,22 @@ WSGI_APPLICATION = 'payout.wsgi.application'
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
 DATABASES = {
-    'default': {
+    # 'default': {
+    #     'ENGINE': 'django.db.backends.mysql',
+    #     'NAME': 'u287339841_payout',
+    #     'USER': 'u287339841_payout',
+    #     'PASSWORD': 'Payout@123',
+    #     'HOST': 'papernotes.in',
+    #     'PORT': '3306',
+    #     # 'socket': '/Applications/XAMPP/xamppfiles/var/mysql/mysql.sock'
+    # }
+    # Localdatabase
+     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'u287339841_payout',
-        'USER': 'u287339841_payout',
-        'PASSWORD': 'Payout@123',
-        'HOST': 'papernotes.in',
+        'NAME': 'Payout_new',
+        'USER': 'payout_new',
+        'PASSWORD': 'payout@123',
+        'HOST': 'localhost',
         'PORT': '3306',
         # 'socket': '/Applications/XAMPP/xamppfiles/var/mysql/mysql.sock'
     }
