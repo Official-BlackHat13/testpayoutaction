@@ -22,10 +22,10 @@ class bankApiViewtest(APIView):
 class bankApiPaymentView(APIView):
     @swagger_auto_schema()
     def post(self,req):
-        
         payment_service=IFDC_service.payment.Payment()
         return Response(payment_service.hit())
-
+class addBalanceApi(APIView):
+    pass
 class bankApiEnquiryView(APIView):
     @swagger_auto_schema()
     def post(self,req):

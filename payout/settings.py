@@ -40,7 +40,8 @@ INSTALLED_APPS = [
     "rest_framework",
     "corsheaders",
     "drf_yasg",
-    "apis"
+    "apis",
+    "sabpaisa"
 ]
 CORS_ALLOW_ALL_ORIGINS=True
 MIDDLEWARE = [

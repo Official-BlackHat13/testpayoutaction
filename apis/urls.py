@@ -19,6 +19,7 @@ schema_view = get_schema_view(
 urlpatterns = [
     path("", schema_view.with_ui("redoc",cache_timeout=0)),
     path("test/",views.bankApiViewtest.as_view()),
-    path("payment/",views.bankApiPaymentView.as_view()),
+    path("payout/",views.bankApiPaymentView.as_view()),
+    path("addBalance/",lambda a:a),
     path("enquiry/",views.bankApiEnquiryView.as_view())
 ]
