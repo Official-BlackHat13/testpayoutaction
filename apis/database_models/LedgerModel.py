@@ -10,7 +10,6 @@ class LedgerModel(models.Model):
     bank_ref_no=models.CharField(max_length=1000)
     customer_ref_no=models.CharField(max_length=1000)
     bank=models.IntegerField()
-    trans_time=models.DateTimeField()
     trans_status=models.BooleanField()
     bene_account_name=models.CharField(max_length=300)
     bene_account_number=models.CharField(max_length=300)
@@ -18,5 +17,7 @@ class LedgerModel(models.Model):
     request_header=models.CharField(max_length=400)
     mode=models.IntegerField()
     charge=models.FloatField()
+    trans_time=models.DateTimeField()
+    van=models.CharField(max_length=200)
     def __str__(self):
         return str(self.id)
