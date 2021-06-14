@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 from sabpaisa import auth
 from ..database_service import Client_model_service,Ledger_model_services
 from ..Utils import splitString
@@ -41,6 +41,22 @@ class PayoutService:
              ledgerModelService.trans_time=datetime.now()
              id=ledgerModelService.save()
              message_header=payment_request_model.Message_Header()
+             message_header.cnvId=payoutrequestmodel.clientTransactionId
+             message_header.msgId=str(id)
+             message_body=payment_request_model.Message_Body()
+             message_body.beneAccNo=payoutrequestmodel.creditAccountNumber
+             message_body.beneMail=payoutrequestmodel.payeeEmail
+             message_body.beneMobile=payoutrequestmodel.payeeMob
+             message_body.beneName=payoutrequestmodel.accountHolderName
+             message_body.clientCode=self.client_code
+             message_body.cusTxnRef=payoutrequestmodel.clientTransactionId
+             message_body.paymentType=payoutrequestmodel.clientPaymode
+             message_body.beneAddr1=""
+             message_body.beneAddr2=""
+             message_body.valueDate=date.today()
+             message_body.tranCcy="inr"
+             message_body.tranAmount=payoutrequestmodel.txnAmount
+             message_body.ifsc=payoutrequestmodel.ifscCode
              #end for today
 
 

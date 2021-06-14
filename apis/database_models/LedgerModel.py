@@ -10,7 +10,7 @@ class LedgerModel(models.Model):
     bank_ref_no=models.CharField(max_length=1000)
     customer_ref_no=models.CharField(max_length=1000)
     bank=models.IntegerField()
-    trans_status=models.BooleanField()
+    trans_status=models.CharField(max_length=100)
     bene_account_name=models.CharField(max_length=300)
     bene_account_number=models.CharField(max_length=300)
     bene_ifsc=models.CharField(max_length=300)

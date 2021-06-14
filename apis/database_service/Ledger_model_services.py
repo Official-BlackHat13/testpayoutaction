@@ -51,3 +51,8 @@ class Ledger_Model_Service:
     def fetch_by_van(self,van):
         ledgerModels=LedgerModel.objects.filter(van=van)
         return ledgerModels
+    def update_status(self,id,status):
+        ledgerModel=LedgerModel.objects.get(id=id)
+        ledgerModel.trans_status=status
+        return ledgerModel
+        

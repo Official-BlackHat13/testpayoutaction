@@ -12,9 +12,7 @@ class Message_Header:
         return { 
                 "msgId":str(self.msgId), 
                 "cnvId":str(self.cnvId),
-                "extRefId":str(self.extRefId), 
-                "bizObjId":str(self.bizObjId), 
-                "appId":self.appId, 
+                
                 "timestamp":self.timestamp 
               } 
 class Message_Body:
