@@ -2,7 +2,7 @@ from datetime import date, datetime
 from sabpaisa import auth
 from ..database_service import Client_model_service,Ledger_model_services
 from ..Utils import splitString
-from ..bank_models.IDFC_Request_Model import payment_request_model
+from ..bank_models.IDFC_Model import payment_request_model
 from ..RequestModels.payoutrequestmodel import PayoutRequestModel
 
 class PayoutService:

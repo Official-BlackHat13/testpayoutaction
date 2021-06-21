@@ -43,7 +43,7 @@
 # 		}
 # class 
 
-
+from bank_api import run_java,Icici
 class Header_Request:
     def __init__(self,Username="",Password=""):
         self.Username=Username
@@ -76,8 +76,8 @@ class Body_Request:
             },
             "customerID":self.customerID,
             "customerReferenceNumber":self.customerReferenceNumber,
-            "debitAccountNumber":self.debitAccountNumber,
-            "creditAccountNumber":self.creditAccountNumber,
-            "transactionAmount":self.transactionAmount,
+            "debitAccountNumber":run_java.runJavaCode(self.debitAccountNumber.strip(),Icici.key()),
+            "creditAccountNumber":run_java.runJavaCode(self.creditAccountNumber.strip(),Icici.key()),
+            "transactionAmount":run_java.runJavaCode(self.transactionAmount.strip(),Icici.key())
         }
 

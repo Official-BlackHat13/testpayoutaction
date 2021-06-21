@@ -4,7 +4,6 @@ from rest_framework.response import *
 from django.shortcuts import HttpResponse
 from datetime import datetime
 def IpWhiteListed(get_response):
-
     def middleware(request):
         ip=request.META['REMOTE_ADDR']
         ipWhiteListedModel=models.IpWhiteListedModel.objects.filter(ip_address=ip,status=True)
