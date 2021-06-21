@@ -21,9 +21,9 @@ response_schema_dict = {
         }
     ),
 }
-val=openapi.Schema(
+request=openapi.Schema(
     type=openapi.TYPE_OBJECT, 
     properties={
-        'x': openapi.Schema(type=openapi.TYPE_STRING, description='string'),
-        'y': openapi.Schema(type=openapi.TYPE_STRING, description='string'),
+        'clientCode': openapi.Schema(type=openapi.TYPE_STRING, description='string'),
+        'query': openapi.Schema(type=openapi.TYPE_STRING, description='string'),
     })

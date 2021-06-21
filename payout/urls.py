@@ -21,5 +21,6 @@ admin.site.site_title = "PAYOUT"
 urlpatterns = [
     path('admin/', admin.site.urls),
     path("",views.val,name="root"),
+    # path("som/",views.uiTest,name="ui"),
     path("api/",include("apis.urls"),name="apis")
 ]

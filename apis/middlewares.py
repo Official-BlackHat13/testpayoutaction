@@ -14,12 +14,13 @@ def IpWhiteListed(get_response):
             iprecords.ip_type="Blocked"
             iprecords.hitting_time=datetime.now()
             iprecords.save()
-            return HttpResponse(str({"message":"Ip BLOCKED"}))
-        iprecords=models.IpHittingRecordModel()
-        iprecords.ip_address=ip
-        iprecords.ip_type="Allowed"
-        iprecords.hitting_time=datetime.now()
-        iprecords.save()
+            return HttpResponse(str({"message":"IP Not Authorized"}))
+        # iprecords=models.IpHittingRecordModel()
+        # iprecords.ip_address=ip
+        # iprecords.ip_type="Allowed"
+        # iprecords.hitting_time=datetime.now()
+        # iprecords.save()
+        
         response=get_response(request)
         return response
     return middleware

@@ -169,6 +169,7 @@ class PayoutRequestModel:
         json['van']=payoutrequestmodel.van
         json['clientPaymode']=payoutrequestmodel.clientPaymode
         json['environment']=payoutrequestmodel.environment
+        
         return json
 
 

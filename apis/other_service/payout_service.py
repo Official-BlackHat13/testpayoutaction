@@ -29,7 +29,6 @@ class PayoutService:
              ledgerModelService.amount=payoutrequestmodel.txnAmount
              ledgerModelService.bank_id=clientmodel.bank
              ledgerModelService.bank_ref_no="waiting"
-
              ledgerModelService.customer_ref_no=payoutrequestmodel.clientTransactionId
              ledgerModelService.status="initated"
              ledgerModelService.bene_account_name=payoutrequestmodel.accountHolderName
@@ -57,8 +56,8 @@ class PayoutService:
              message_body.tranCcy="inr"
              message_body.tranAmount=payoutrequestmodel.txnAmount
              message_body.ifsc=payoutrequestmodel.ifscCode
-             #end for today
-
+             message_body.beneAccType="current"
+             
 
         except Exception as e:
             print(e.args)
