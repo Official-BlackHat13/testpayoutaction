@@ -29,6 +29,9 @@ CREATE TABLE `apis_bankmodel` (
   `nodal_account_number` varchar(300) NOT NULL,
   `nodal_ifsc` varchar(300) NOT NULL,
   `nodal_account_name` varchar(300) NOT NULL,
+  `created_at` datetime(6) NOT NULL,
+  `deleted_at` datetime(6) NOT NULL,
+  `updated_at` datetime(6) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -39,7 +42,7 @@ CREATE TABLE `apis_bankmodel` (
 
 LOCK TABLES `apis_bankmodel` WRITE;
 /*!40000 ALTER TABLE `apis_bankmodel` DISABLE KEYS */;
-INSERT INTO `apis_bankmodel` VALUES (1,'HDFC','1010','test','test','test');
+INSERT INTO `apis_bankmodel` VALUES (1,'HDFC','1010','test','test','test','2021-06-22 11:16:55.255150','0000-00-00 00:00:00.000000','0000-00-00 00:00:00.000000');
 /*!40000 ALTER TABLE `apis_bankmodel` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -58,6 +61,9 @@ CREATE TABLE `apis_chargemodel` (
   `max_amount` int(11) NOT NULL,
   `charge_percentage_or_fix` int(11) NOT NULL,
   `charge_amount_percentage` int(11) NOT NULL,
+  `created_at` datetime(6) NOT NULL,
+  `deleted_at` datetime(6) NOT NULL,
+  `updated_at` datetime(6) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -91,6 +97,9 @@ CREATE TABLE `apis_clientmodel` (
   `is_payout` tinyint(1) NOT NULL,
   `role` int(11) NOT NULL,
   `status` tinyint(1) NOT NULL,
+  `created_at` datetime(6) NOT NULL,
+  `deleted_at` datetime(6) NOT NULL,
+  `updated_at` datetime(6) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -101,7 +110,7 @@ CREATE TABLE `apis_clientmodel` (
 
 LOCK TABLES `apis_clientmodel` WRITE;
 /*!40000 ALTER TABLE `apis_clientmodel` DISABLE KEYS */;
-INSERT INTO `apis_clientmodel` VALUES (1,2001,'KUBER','oLA38cwT6IYNGqb3','x0xzPnXsgTq0QqXx',1,'P8c3WQ7eiKub','kub789@sp',0,0,3,1);
+INSERT INTO `apis_clientmodel` VALUES (1,2001,'KUBER','oLA38cwT6IYNGqb3','x0xzPnXsgTq0QqXx',1,'P8c3WQ7eiKub','kub789@sp',0,0,3,1,'2021-06-22 11:16:55.239518','0000-00-00 00:00:00.000000','0000-00-00 00:00:00.000000');
 /*!40000 ALTER TABLE `apis_clientmodel` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -116,6 +125,9 @@ CREATE TABLE `apis_featuremodel` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `feature_name` varchar(300) NOT NULL,
   `slug` varchar(100) NOT NULL,
+  `created_at` datetime(6) NOT NULL,
+  `deleted_at` datetime(6) NOT NULL,
+  `updated_at` datetime(6) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -167,6 +179,9 @@ CREATE TABLE `apis_ipwhitelistedmodel` (
   `client_model` int(11) NOT NULL,
   `ip_address` varchar(300) NOT NULL,
   `status` tinyint(1) NOT NULL,
+  `created_at` datetime(6) NOT NULL,
+  `deleted_at` datetime(6) NOT NULL,
+  `updated_at` datetime(6) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -177,7 +192,7 @@ CREATE TABLE `apis_ipwhitelistedmodel` (
 
 LOCK TABLES `apis_ipwhitelistedmodel` WRITE;
 /*!40000 ALTER TABLE `apis_ipwhitelistedmodel` DISABLE KEYS */;
-INSERT INTO `apis_ipwhitelistedmodel` VALUES (1,1,'127.0.0.1',1);
+INSERT INTO `apis_ipwhitelistedmodel` VALUES (1,1,'127.0.0.1',1,'2021-06-22 11:16:55.318383','0000-00-00 00:00:00.000000','0000-00-00 00:00:00.000000');
 /*!40000 ALTER TABLE `apis_ipwhitelistedmodel` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -207,6 +222,9 @@ CREATE TABLE `apis_ledgermodel` (
   `request_header` varchar(400) NOT NULL,
   `trans_time` datetime(6) NOT NULL,
   `van` varchar(200) NOT NULL,
+  `created_at` datetime(6) NOT NULL,
+  `deleted_at` datetime(6) NOT NULL,
+  `updated_at` datetime(6) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -230,6 +248,9 @@ DROP TABLE IF EXISTS `apis_modemodel`;
 CREATE TABLE `apis_modemodel` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `mode` varchar(300) NOT NULL,
+  `created_at` datetime(6) NOT NULL,
+  `deleted_at` datetime(6) NOT NULL,
+  `updated_at` datetime(6) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -254,6 +275,9 @@ CREATE TABLE `apis_rolefeaturemodel` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `role` int(11) NOT NULL,
   `feature` int(11) NOT NULL,
+  `created_at` datetime(6) NOT NULL,
+  `deleted_at` datetime(6) NOT NULL,
+  `updated_at` datetime(6) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -281,6 +305,9 @@ CREATE TABLE `apis_rolemodel` (
   `delete` tinyint(1) NOT NULL,
   `read` tinyint(1) NOT NULL,
   `update` tinyint(1) NOT NULL,
+  `created_at` datetime(6) NOT NULL,
+  `deleted_at` datetime(6) NOT NULL,
+  `updated_at` datetime(6) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -291,7 +318,7 @@ CREATE TABLE `apis_rolemodel` (
 
 LOCK TABLES `apis_rolemodel` WRITE;
 /*!40000 ALTER TABLE `apis_rolemodel` DISABLE KEYS */;
-INSERT INTO `apis_rolemodel` VALUES (1,'admin',1,1,1,1),(2,'operational',0,0,0,0),(3,'end_user',0,0,0,0);
+INSERT INTO `apis_rolemodel` VALUES (1,'admin',1,1,1,1,'2021-06-22 11:16:55.330380','0000-00-00 00:00:00.000000','0000-00-00 00:00:00.000000'),(2,'operational',0,0,0,0,'2021-06-22 11:16:55.330380','0000-00-00 00:00:00.000000','0000-00-00 00:00:00.000000'),(3,'end_user',0,0,0,0,'2021-06-22 11:16:55.330380','0000-00-00 00:00:00.000000','0000-00-00 00:00:00.000000');
 /*!40000 ALTER TABLE `apis_rolemodel` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -562,7 +589,7 @@ CREATE TABLE `django_migrations` (
   `name` varchar(255) NOT NULL,
   `applied` datetime(6) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=31 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=32 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -571,7 +598,7 @@ CREATE TABLE `django_migrations` (
 
 LOCK TABLES `django_migrations` WRITE;
 /*!40000 ALTER TABLE `django_migrations` DISABLE KEYS */;
-INSERT INTO `django_migrations` VALUES (1,'contenttypes','0001_initial','2021-06-11 06:25:53.350427'),(2,'auth','0001_initial','2021-06-11 06:26:20.366214'),(3,'admin','0001_initial','2021-06-11 06:26:25.639473'),(4,'admin','0002_logentry_remove_auto_add','2021-06-11 06:26:25.712414'),(5,'admin','0003_logentry_add_action_flag_choices','2021-06-11 06:26:25.804546'),(6,'apis','0001_initial','2021-06-11 06:26:26.683929'),(7,'apis','0002_auto_20210611_1004','2021-06-11 06:26:28.175049'),(8,'apis','0003_auto_20210611_1112','2021-06-11 06:26:37.945989'),(9,'contenttypes','0002_remove_content_type_name','2021-06-11 06:33:12.109642'),(10,'auth','0002_alter_permission_name_max_length','2021-06-11 06:33:13.765826'),(11,'auth','0003_alter_user_email_max_length','2021-06-11 06:33:14.621242'),(12,'auth','0004_alter_user_username_opts','2021-06-11 06:33:14.680254'),(13,'auth','0005_alter_user_last_login_null','2021-06-11 06:33:16.551781'),(14,'auth','0006_require_contenttypes_0002','2021-06-11 06:33:16.621072'),(15,'auth','0007_alter_validators_add_error_messages','2021-06-11 06:33:16.694274'),(16,'auth','0008_alter_user_username_max_length','2021-06-11 06:33:18.589925'),(17,'auth','0009_alter_user_last_name_max_length','2021-06-11 06:33:20.745374'),(18,'auth','0010_alter_group_name_max_length','2021-06-11 06:33:21.096738'),(19,'auth','0011_update_proxy_permissions','2021-06-11 06:33:21.169762'),(20,'auth','0012_alter_user_first_name_max_length','2021-06-11 06:33:23.627852'),(21,'sessions','0001_initial','2021-06-11 06:33:24.792886'),(22,'apis','0002_auto_20210612_1115','2021-06-12 05:46:06.151805'),(23,'apis','0003_auto_20210613_1025','2021-06-13 04:55:34.098619'),(24,'apis','0004_auto_20210613_1037','2021-06-13 05:07:30.227974'),(25,'apis','0005_remove_ledgermodel_trans_time','2021-06-13 05:25:18.313768'),(26,'apis','0006_ledgermodel_trans_time','2021-06-13 05:26:18.407943'),(27,'apis','0007_ledgermodel_van','2021-06-13 05:35:12.425313'),(28,'apis','0008_alter_ledgermodel_trans_status','2021-06-14 04:29:26.799352'),(29,'apis','0009_iphittingrecordmodel_ipwhitelistedmodel','2021-06-14 09:14:23.405534'),(30,'apis','0010_auto_20210614_1602','2021-06-14 10:33:06.845014');
+INSERT INTO `django_migrations` VALUES (1,'contenttypes','0001_initial','2021-06-11 06:25:53.350427'),(2,'auth','0001_initial','2021-06-11 06:26:20.366214'),(3,'admin','0001_initial','2021-06-11 06:26:25.639473'),(4,'admin','0002_logentry_remove_auto_add','2021-06-11 06:26:25.712414'),(5,'admin','0003_logentry_add_action_flag_choices','2021-06-11 06:26:25.804546'),(6,'apis','0001_initial','2021-06-11 06:26:26.683929'),(7,'apis','0002_auto_20210611_1004','2021-06-11 06:26:28.175049'),(8,'apis','0003_auto_20210611_1112','2021-06-11 06:26:37.945989'),(9,'contenttypes','0002_remove_content_type_name','2021-06-11 06:33:12.109642'),(10,'auth','0002_alter_permission_name_max_length','2021-06-11 06:33:13.765826'),(11,'auth','0003_alter_user_email_max_length','2021-06-11 06:33:14.621242'),(12,'auth','0004_alter_user_username_opts','2021-06-11 06:33:14.680254'),(13,'auth','0005_alter_user_last_login_null','2021-06-11 06:33:16.551781'),(14,'auth','0006_require_contenttypes_0002','2021-06-11 06:33:16.621072'),(15,'auth','0007_alter_validators_add_error_messages','2021-06-11 06:33:16.694274'),(16,'auth','0008_alter_user_username_max_length','2021-06-11 06:33:18.589925'),(17,'auth','0009_alter_user_last_name_max_length','2021-06-11 06:33:20.745374'),(18,'auth','0010_alter_group_name_max_length','2021-06-11 06:33:21.096738'),(19,'auth','0011_update_proxy_permissions','2021-06-11 06:33:21.169762'),(20,'auth','0012_alter_user_first_name_max_length','2021-06-11 06:33:23.627852'),(21,'sessions','0001_initial','2021-06-11 06:33:24.792886'),(22,'apis','0002_auto_20210612_1115','2021-06-12 05:46:06.151805'),(23,'apis','0003_auto_20210613_1025','2021-06-13 04:55:34.098619'),(24,'apis','0004_auto_20210613_1037','2021-06-13 05:07:30.227974'),(25,'apis','0005_remove_ledgermodel_trans_time','2021-06-13 05:25:18.313768'),(26,'apis','0006_ledgermodel_trans_time','2021-06-13 05:26:18.407943'),(27,'apis','0007_ledgermodel_van','2021-06-13 05:35:12.425313'),(28,'apis','0008_alter_ledgermodel_trans_status','2021-06-14 04:29:26.799352'),(29,'apis','0009_iphittingrecordmodel_ipwhitelistedmodel','2021-06-14 09:14:23.405534'),(30,'apis','0010_auto_20210614_1602','2021-06-14 10:33:06.845014'),(31,'apis','0011_auto_20210622_1116','2021-06-22 05:48:44.339489');
 /*!40000 ALTER TABLE `django_migrations` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -610,4 +637,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2021-06-21 17:14:27
+-- Dump completed on 2021-06-22 11:26:29
