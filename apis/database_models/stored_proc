@@ -1,0 +1,18 @@
+-- DELIMITER &&
+-- create PROCEDURE getAmount(in type varchar(20),in clientCode varchar(60),out value int)
+-- begin
+-- select sum(amount) into value from apis_ledgermodel where trans_type=type and client_code=clientCode;
+-- end 
+-- && DELIMITER ;
+
+-- drop PROCEDURE getAmount;
+
+-- drop PROCEDURE getAmounts;
+-- DELIMITER &&
+-- create PROCEDURE getBalance(in clientCode varchar(60),out balance int)
+-- begin
+-- Call getAmount("credited",clientCode,@cred);
+-- Call getAmount("debited",clientCode,@deb);
+-- select @cred-@deb into balance;
+-- end 
+-- && DELIMITER ;

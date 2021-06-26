@@ -1,5 +1,5 @@
 from ..models import LedgerModel
-
+from django.db import connection
 
 class Ledger_Model_Service:
     def __init__(self,client_id=None,client_code=None,type_status=None,amount=None,van=None,trans_type=None,status=None,bank_ref_no=None,customer_ref_no=None,bank_id=None,trans_time=None,bene_account_name=None,bene_account_number=None,bene_ifsc=None,request_header=None):
@@ -55,4 +55,10 @@ class Ledger_Model_Service:
         ledgerModel=LedgerModel.objects.get(id=id)
         ledgerModel.trans_status=status
         return ledgerModel
-        
+    def getBalance(self,clientCode):
+        cursors = connection.cursor()
+        cursors.execute("getBalance("+clientCode+",@balance)")
+        cursors.execute("select @balance")
+        value = cursors.fetchall()
+        cursors.close()
+        return value
