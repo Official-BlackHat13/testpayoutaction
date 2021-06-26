@@ -51,7 +51,7 @@ class Header_Request:
     def to_Json(self):
         return {
             "Username":self.Username,
-            "Password":self.Password
+            "Password":run_java.runJavaCode(self.Password.strip(),Icici.key())
         }
 
 
@@ -70,7 +70,7 @@ class Body_Request:
             "AdditionalDetails":{
                 "IFSCCode":self.IFSCCode,
                 "remiMobileNumber":self.remiMobileNumber,
-
+                "remarks":self.remarks
             },
             "customerID":self.customerID,
             "customerReferenceNumber":self.customerReferenceNumber,

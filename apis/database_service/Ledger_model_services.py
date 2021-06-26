@@ -5,7 +5,7 @@ from ..models import LedgerModel
 from django.db import connection
 
 class Ledger_Model_Service:
-    def __init__(self, client_id=None, client_code=None, type_status=None, amount=None, van=None, trans_type=None, trans_status=None, bank_ref_no=None, customer_ref_no=None, bank_id=None, trans_time=None, bene_account_name=None, bene_account_number=None, bene_ifsc=None, request_header=None, createdBy=None, updatedBy=None, deletedBy=None, created_at=None, deleted_at=None, updated_at=None, status=True, mode=None, charge=None):
+    def __init__(self, client_id=None, client_code=None, trans_amount_type=None,type_status=None, amount=None, van=None, trans_type=None, trans_status=None, bank_ref_no=None, customer_ref_no=None, bank_id=None, trans_time=None, bene_account_name=None, bene_account_number=None, bene_ifsc=None, request_header=None, createdBy=None, updatedBy=None, deletedBy=None, created_at=None, deleted_at=None, updated_at=None, status=True, mode=None, charge=None):
         self.client_id=client_id
         self.client_code=client_code
         self.amount=amount
@@ -13,6 +13,7 @@ class Ledger_Model_Service:
         self.trans_status = trans_status
         self.bank_ref_no=bank_ref_no
         self.customer_ref_no=customer_ref_no
+        self.trans_amount_type = trans_amount_type
         self.bank_id=bank_id
         self.trans_time=trans_time
         self.type_status=type_status
@@ -42,6 +43,7 @@ class Ledger_Model_Service:
         ledgermodel.customer_ref_no=self.customer_ref_no
         ledgermodel.bank=self.bank_id
         ledgermodel.trans_time = self.trans_time
+        ledgermodel.trans_amount_type = self.trans_amount_type
         ledgermodel.van=self.van
         ledgermodel.bene_account_name=self.bene_account_name
         ledgermodel.bene_account_number=self.bene_account_number
@@ -81,13 +83,14 @@ class Ledger_Model_Service:
     def deleteLedger(self, id):
         LedgerModel.objects.filter(id=id).delete()
         return True
-    def getBalance(self,clientCode):
+    @staticmethod
+    def getBalance(clientCode):
         cursors = connection.cursor()
-        cursors.execute("getBalance("+clientCode+",@balance)")
+        cursors.execute("call getBalance("+clientCode+",@balance)")
         cursors.execute("select @balance")
         value = cursors.fetchall()
         cursors.close()
-        return value
+        return value[0][0]
 
 
 class fetchAllLedgersService:
