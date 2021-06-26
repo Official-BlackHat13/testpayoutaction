@@ -54,11 +54,11 @@ class Message_Body:
 "clientCode":self.clientCode, 
 "paymentType":self.paymentType, 
 "beneAccType":self.beneAccType, 
-"remarks":self.remarks, "beneMail":self.beneMail, 
+"remarks":self.remarks, 
+"beneMail":self.beneMail, 
 "beneMobile":self.beneMobile 
 } 
-} 
-
-        }
+}
+}
 
 

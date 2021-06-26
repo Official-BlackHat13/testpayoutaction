@@ -12,8 +12,7 @@ class Payment:
         self.key=Icici.key()
         self.header.Username=self.details["iciciImpsUserName"]
         self.header.Password=self.details["Password"]
-        
-    
+
 
     def payment_request_live(self):
         

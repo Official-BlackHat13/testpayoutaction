@@ -55,8 +55,6 @@ class Header_Request:
         }
 
 
-
-
 class Body_Request:
     def __init__(self,IFSCCode="",remiMobileNumber="",remarks="",customerID="",customerReferenceNumber="",debitAccountNumber="",creditAccountNumber="",transactionAmount=""):
         self.IFSCCode=IFSCCode

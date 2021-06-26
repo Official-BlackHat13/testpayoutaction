@@ -27,7 +27,5 @@ def prod():
 def uat():
     return "https://apigwuat.icicibank.com:8443/api/Corporate/CAB/v1/InstaIMPSProcess/Test"
 
-
-
 def icic_details():
     return {"iciciImpsUserName":"SRSLIVET","Password":"SRSLIVET","debitAccount":"347505000468"}

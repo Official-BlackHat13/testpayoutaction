@@ -21,5 +21,9 @@ urlpatterns = [
    #  path("test/",views.bankApiViewtest.as_view()),
     path("payout/",views.bankApiPaymentView.as_view()),
     path("addBalance/",lambda a:a),
-    path("enquiry/",views.bankApiEnquiryView.as_view())
+    path("enquiry/",views.bankApiEnquiryView.as_view()),
+    path("fetchAllLedgers/", views.getLedger.as_view()),
+    path("saveLedger/", views.LedgerSaveRequest.as_view()),
+    path("deleteLedger", views.DeleteLedger.as_view()),
+    path("update/", views.UpdateLedger.as_view()),
 ]
