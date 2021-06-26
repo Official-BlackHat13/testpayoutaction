@@ -1,6 +1,3 @@
-
-
-
 class Header_Response:
     def __init__(self,rslt=None,error=None):
         self.rslt=rslt

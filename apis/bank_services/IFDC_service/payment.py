@@ -14,5 +14,3 @@ class Payment:
         res = requests.post(api,json={"paymentTransactionReq":{"msgHdr":self.message_header,"msgBdy":self.message_body}})
         print(res.json())
         return res.json()
-        
-
