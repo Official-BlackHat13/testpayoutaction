@@ -2,7 +2,7 @@ from rest_framework import status
 
 from datetime import datetime
 from ..models import LedgerModel
-
+from django.db import connection
 
 class Ledger_Model_Service:
     def __init__(self, client_id=None, client_code=None, type_status=None, amount=None, van=None, trans_type=None, trans_status=None, bank_ref_no=None, customer_ref_no=None, bank_id=None, trans_time=None, bene_account_name=None, bene_account_number=None, bene_ifsc=None, request_header=None, createdBy=None, updatedBy=None, deletedBy=None, created_at=None, deleted_at=None, updated_at=None, status=True, mode=None, charge=None):
@@ -74,12 +74,21 @@ class Ledger_Model_Service:
         ledgerModel=LedgerModel.objects.get(id=id)
         ledgerModel.trans_status=status
         return ledgerModel
+
     def fetchAll(self):
         ledgerModel = LedgerModel.objects.filter(status=True)
         return ledgerModel
     def deleteLedger(self, id):
         LedgerModel.objects.filter(id=id).delete()
         return True
+    def getBalance(self,clientCode):
+        cursors = connection.cursor()
+        cursors.execute("getBalance("+clientCode+",@balance)")
+        cursors.execute("select @balance")
+        value = cursors.fetchall()
+        cursors.close()
+        return value
+
 
 class fetchAllLedgersService:
     def fetchAll():
@@ -162,3 +171,5 @@ class Ledger_update_Model_Service:
         ledgermodel.charge = self.charge
         ledgermodel.save()
         return ledgermodel.id
+
+   

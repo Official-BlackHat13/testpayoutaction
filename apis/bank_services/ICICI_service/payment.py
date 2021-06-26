@@ -13,6 +13,8 @@ class Payment:
         self.header.Username=self.details["iciciImpsUserName"]
         self.header.Password=self.details["Password"]
 
+
     def payment_request_live(self):
-        requests.post(self.api_live,json=self.body)
+        
+        requests.post(self.api_live,json=self.body,headers=self.header.to_Json())
 
