@@ -24,6 +24,9 @@ urlpatterns = [
     path("enquiry/",views.bankApiEnquiryView.as_view()),
     path("fetchAllLedgers/", views.getLedger.as_view()),
     path("saveLedger/", views.LedgerSaveRequest.as_view()),
-    path("deleteLedger", views.DeleteLedger.as_view()),
+    path("deleteLedger/", views.DeleteLedger.as_view()),
     path("update/", views.UpdateLedger.as_view()),
+    path("findByClientCode/", views.findByClientCode.as_view()),
+    path("findByClientId/",views.findByClientId.as_view()),
+    path("findByTransTime/",views.findByTransTime.as_view())
 ]

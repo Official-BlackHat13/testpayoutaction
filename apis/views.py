@@ -1,5 +1,6 @@
 # from django.shortcuts import render
 # Create your views here.
+from http import client
 from rest_framework.exceptions import server_error
 from apis.bank_services.IFDC_service import payment
 from django.http import *
@@ -86,8 +87,8 @@ class getLedger(APIView):
 
 class DeleteLedger(APIView):
     def delete(self,request):
-        id = request.GET.get("id")
-        deletedBy = request.GET.get("deletedBy")
+        id = request.data.get("id")
+        deletedBy = request.data.get("deletedBy")
         print("id===== ",id)
         resp = deleteById(id,deletedBy)
         if(resp == True):
@@ -100,7 +101,7 @@ class UpdateLedger(APIView):
         id = request.data.get("id")
         ledger = LedgerModel.objects.filter(id=id)
         print("update function")
-        if(len(ledger) > 0):
+        if(len(ledger) > 0 and ledger[0].client_code == request.data.get("client_code")):
             ledgermodel = LedgerModel()
             ledgerModel = ledger[0]
             print("....... ", ledgermodel.created_at)
@@ -134,3 +135,25 @@ class UpdateLedger(APIView):
             res = service.save()
             return JsonResponse({"Message": "updated successfully"}, status=status.HTTP_200_OK)
         return JsonResponse({"Message": "something went wrong!!!!"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class findByClientCode(APIView):
+    def get(self,request):
+        queryset=findByClientCodeService(request.data.get("clientCode"))
+        if(len(queryset)>0):
+            return Response({"data": queryset.values()}, status=status.HTTP_200_OK)
+        return Response({"Message": "No records found for the given client code"}, status=status.HTTP_404_NOT_FOUND)
+
+class findByClientId(APIView):
+    def get(self,request):
+        queryset = findByClientIdService(request.data.get("clientId"))
+        if(len(queryset) > 0):
+            return Response({"data": queryset.values()}, status=status.HTTP_200_OK)
+        return Response({"Message": "No records found for the given client ID"}, status=status.HTTP_404_NOT_FOUND)
+
+class findByTransTime(APIView):
+    def get(self, request):
+        queryset = findByTransTimeService(request.data.get("startTransTime"), request.data.get("endTransTime"))
+        if(len(queryset) > 0):
+            return Response({"data": queryset.values()}, status=status.HTTP_200_OK)
+        return Response({"Message": "No records found for the given time range"}, status=status.HTTP_404_NOT_FOUND)

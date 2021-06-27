@@ -1,6 +1,8 @@
 from rest_framework import status
 
 from datetime import datetime
+
+from rest_framework.permissions import AND
 from ..models import LedgerModel
 from django.db import connection
 
@@ -173,3 +175,32 @@ class Ledger_update_Model_Service:
         return ledgermodel.id
 
    
+def findByClientCodeService(clientCode):
+    ledgerModel = LedgerModel.objects.filter(client_code=clientCode)
+    return ledgerModel
+
+
+def findByClientIdService(clientId):
+    ledgerModel = LedgerModel.objects.filter(client=clientId)
+    return ledgerModel
+
+def findByTransTimeService(startTranstime,endTransTime):
+    startYear = int(startTranstime[0:4])
+    startMonth = int(startTranstime[5:7])
+    startDay = int(startTranstime[8:10])
+    startHours = int(startTranstime[11:13])
+    startMinute = int(startTranstime[14:16])
+
+    endYear = int(endTransTime[0:4])
+    endMonth = int(endTransTime[5:7])
+    endDay = int(endTransTime[8:10])
+    endHours = int(endTransTime[11:13])
+    endMinute = int(endTransTime[14:16])
+
+    dt = datetime.now()
+    start = dt.replace(year=startYear,day=startDay,month=startMonth,hour=startHours, minute=startMinute, second=0, microsecond=0)
+    end = dt.replace(year=endYear,day=endDay,month=endMonth,hour=endHours, minute=endMinute, second=0, microsecond=0)
+    ledger = LedgerModel.objects.filter(trans_time__range=[start,end])
+
+    print("date ======= ", ledger)
+    return ledger
