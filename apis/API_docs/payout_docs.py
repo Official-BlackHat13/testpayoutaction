@@ -6,18 +6,29 @@ response_schema_dict = {
         description="custom 200 description",
         examples={
             "application/json": {
-                "200_key1": "200_value_1",
-                "200_key2": "200_value_2",
-            }
+                "message":"Payout done",
+                "response_code":"1"
+            },
+            
+
         }
     ),
-    "205": openapi.Response(
-        description="custom 205 description",
+    "402": openapi.Response(
+        description="custom 402 description",
         examples={
-            "application/json": {
-                "205_key1": "205_value_1",
-                "205_key2": "205_value_2",
-            }
+            "application/json": {"message":"Not Sufficent Balance","response_code":"0"}
+        }
+    ),
+    "401":openapi.Response(
+        description="custom 401 description",
+        examples={
+            "application/json":{"message":"credential not matched","response_code":"3"}
+        }
+    ),
+    "204":openapi.Response(
+        description="custom 204 description",
+        examples={
+            "application/json":{"message":"error msg","response_code":"2"}
         }
     ),
 }

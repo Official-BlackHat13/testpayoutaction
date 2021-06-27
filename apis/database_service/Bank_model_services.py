@@ -15,9 +15,11 @@ class Bank_model_services:
         bankModel.nodal_account_name=self.nodal_account_name
         bankModel.save()
         return True
-    def fetch_by_bankcode(self):
-        bankModel=BankModel.objects.filter(bank_code=self.bank_code)
+    @staticmethod
+    def fetch_by_bankcode(bank_code)->BankModel:
+        bankModel=BankModel.objects.filter(bank_code=bank_code)
         return bankModel[0]
-    def fetch_by_id(self,id):
+    @staticmethod
+    def fetch_by_id(id)->BankModel:
         bankModel=BankModel.objects.get(id=id)
         return True

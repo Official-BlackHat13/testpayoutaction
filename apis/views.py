@@ -14,12 +14,14 @@ from datetime import datetime
 #from .serializers import *
 # from .models import *
 
-from .bank_services import IFDC_service
+from .other_service import payout_service
 from .database_models import LedgerModel
 from apis.database_service.Ledger_model_services import *
 from apis.serializersFolder.serializers import LedgerSerializer, CreateLedgerSerializer
 from django.http.response import JsonResponse
 from rest_framework.parsers import JSONParser
+from .database_service import Client_model_service,Bank_model_services
+
 # class bankApiViewtest(APIView):
 #     @swagger_auto_schema(responses=api_docs.response_schema_dict,request_body=api_docs.val)
 #     def post(self,req):
@@ -28,10 +30,28 @@ from rest_framework.parsers import JSONParser
 
 
 class bankApiPaymentView(APIView):
-    @swagger_auto_schema(request_body=payout_docs.request)
+    @swagger_auto_schema(request_body=payout_docs.request,responses=payout_docs.response_schema_dict)
     def post(self,req):
-        payment_service=IFDC_service.payment.Payment()
-        return Response(payment_service.hit())
+        # payment_service=IFDC_service.payment.Payment()
+        client_code = req["client_code"]
+        encrypted_code=req["encrypted_code"]
+        client = Client_model_service.Client_Model_Service.fetch_by_clientcode(client_code=client_code)
+        bank = Bank_model_services.Bank_model_services.fetch_by_id(client.bank)
+        payout=payout_service.PayoutService(client_code=client_code,encrypted_code=encrypted_code)
+        if(bank.bank_name=="ICICI"):
+         res = payout.excuteICICI()
+        else:
+            res = payout.excuteIDFC()
+        if(res=="Payout Done"):
+            return Response({"message":res,"response_code":"1"},status=status.HTTP_200_OK)
+        elif (res=="Not Sufficent Balance"):
+            return Response({"message":res,"response_code":"0"},status=status.HTTP_402_PAYMENT_REQUIRED)
+        elif res==False:
+            return Response({"message":"credential not matched","response_code":"3"},status=status.HTTP_401_UNAUTHORIZED)
+        else:
+            return Response({"message":res,"response_code":"2"},status=status.HTTP_204_NO_CONTENT)
+            
+        # return Response(payment_service.hit())
 class addBalanceApi(APIView):
     pass
 class bankApiEnquiryView(APIView):

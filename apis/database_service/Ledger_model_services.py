@@ -75,6 +75,7 @@ class Ledger_Model_Service:
     def update_status(self,id,status):
         ledgerModel=LedgerModel.objects.get(id=id)
         ledgerModel.trans_status=status
+        ledgerModel.save()
         return ledgerModel
 
     def fetchAll(self):
@@ -83,6 +84,7 @@ class Ledger_Model_Service:
     def deleteLedger(self, id):
         LedgerModel.objects.filter(id=id).delete()
         return True
+    
     @staticmethod
     def getBalance(clientCode):
         cursors = connection.cursor()

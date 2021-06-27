@@ -19,9 +19,12 @@ class Client_Model_Service:
         clientmodel.client_password=self.client_password
         clientmodel.save()
         return True
-    def fetch_by_clientid(self,client_id):
+    @staticmethod
+    def fetch_by_clientid(client_id=None):
         clientModels=ClientModel.objects.filter(client=client_id)
         return clientModels[0]
-    def fetch_by_clientcode(self,client_code):
+    @staticmethod
+    def fetch_by_clientcode(client_code=None)->ClientModel:
         clientModel=ClientModel.objects.filter(client_code=client_code)
         return clientModel[0]
+    
