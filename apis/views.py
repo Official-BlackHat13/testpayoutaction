@@ -21,6 +21,8 @@ from apis.serializersFolder.serializers import LedgerSerializer, CreateLedgerSer
 from django.http.response import JsonResponse
 from rest_framework.parsers import JSONParser
 from .database_service import Client_model_service,Bank_model_services
+from django.contrib.auth.models import User
+from rest_framework.permissions import IsAuthenticated
 
 # class bankApiViewtest(APIView):
 #     @swagger_auto_schema(responses=api_docs.response_schema_dict,request_body=api_docs.val)
@@ -28,13 +30,27 @@ from .database_service import Client_model_service,Bank_model_services
 #         print(req.data)
 #         return Response({"test":"some"})
 
+class Auth(APIView):
+    @swagger_auto_schema(request_body=payout_docs.request,responses=payout_docs.response_schema_dict)
+    def post(self,req):
+        user = req.data
+        try:
+            user_client =User.objects.create_user(user["username"], user["email"],user["password"])
+            bank=Bank_model_services.Bank_model_services.fetch_by_bankcode(user["bank_code"])
+            
+            client = Client_model_service.Client_Model_Service(user=user_client.id,client_id=user['client_id'],client_code=user["client_code"],auth_key=user["auth_key"],auth_iv=user["auth_iv"],bank_id=bank.id,client_username=user["username"],client_password=user["password"])
+            client.save()
 
+            return Response({"message":"user created","response_code":"1","token":""})
+        except Exception as e:
+            return Response({"message":"some error","error":e.args})
 class bankApiPaymentView(APIView):
+    permission_classes = (IsAuthenticated, )
     @swagger_auto_schema(request_body=payout_docs.request,responses=payout_docs.response_schema_dict)
     def post(self,req):
         # payment_service=IFDC_service.payment.Payment()
-        client_code = req["client_code"]
-        encrypted_code=req["encrypted_code"]
+        client_code = req.data["client_code"]
+        encrypted_code=req.data["encrypted_code"]
         client = Client_model_service.Client_Model_Service.fetch_by_clientcode(client_code=client_code)
         bank = Bank_model_services.Bank_model_services.fetch_by_id(client.bank)
         payout=payout_service.PayoutService(client_code=client_code,encrypted_code=encrypted_code)

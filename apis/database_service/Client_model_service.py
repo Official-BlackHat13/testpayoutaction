@@ -1,13 +1,15 @@
 from ..models import ClientModel
 class Client_Model_Service:
-    def __init__(self,client_id=None,client_code=None,auth_key=None,auth_iv=None,bank_id=None,client_username=None,client_password=None):
+    def __init__(self,client_id=None,client_code=None,auth_key=None,user=None,auth_iv=None,bank_id=None,client_username=None,client_password=None):
         self.client_id=client_id
         self.client_code=client_code
         self.auth_key=auth_key
+        self.user = user
         self.auth_iv=auth_iv
         self.bank_id=bank_id
         self.client_username=client_username
         self.client_password=client_password
+        
     def save(self):
         clientmodel=ClientModel()
         clientmodel.client=self.client_id
@@ -17,6 +19,7 @@ class Client_Model_Service:
         clientmodel.bank=self.bank_id
         clientmodel.client_username=self.client_username
         clientmodel.client_password=self.client_password
+        clientmodel.user = self.user
         clientmodel.save()
         return True
     @staticmethod
