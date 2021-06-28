@@ -1,7 +1,7 @@
 # from django.shortcuts import render
 # Create your views here.
 from rest_framework.exceptions import server_error
-from apis.bank_services.IFDC_service import payment
+# from apis.bank_services.IFDC_service import payment
 from django.http import *
 from rest_framework import generics
 from django.shortcuts import *
@@ -9,7 +9,7 @@ from rest_framework.views import APIView
 from rest_framework.response import *
 from rest_framework import status
 from drf_yasg.utils import swagger_auto_schema
-from .API_docs import payout_docs
+from .API_docs import payout_docs,auth_docs
 from datetime import datetime
 #from .serializers import *
 # from .models import *
@@ -25,6 +25,7 @@ from django.contrib.auth.models import User
 from .database_service import Client_model_service,Ledger_model_services
 from rest_framework.permissions import IsAuthenticated
 from . import const
+from .Utils import randomstring
 import requests
 
 # class bankApiViewtest(APIView):
@@ -38,19 +39,17 @@ class Auth(APIView):
     def post(self,req):
         user = req.data
         try:
-            
             user_client =User.objects.create_user(user["username"], user["email"],user["password"])
             bank=Bank_model_services.Bank_model_services.fetch_by_bankcode(user["bank_code"])
-            
-            client = Client_model_service.Client_Model_Service(user=user_client.id,client_id=user['client_id'],client_code=user["client_code"],auth_key=user["auth_key"],auth_iv=user["auth_iv"],bank_id=bank.id,client_username=user["username"],client_password=user["password"])
+            client = Client_model_service.Client_Model_Service(user=user_client.id,client_id=user['client_id'],client_code=user["client_code"],auth_key=randomstring.randomString(),auth_iv=randomstring.randomString(),bank_id=bank.id,client_username=user["username"],client_password=user["password"])
             client.save()
             if(len(Client_model_service.Client_Model_Service.fetch_all_by_clientcode(user["client_code"]))>0):
                 raise Exception("Client Code Already Present")
-
             res = requests.post(const.domain+"api/token/",json={"username":user["username"],"password":user["password"]})
-            return Response({"message":"user created","response_code":"1","token":res.json()})
+            print(res.json())
+            return Response({"message":"user created","response_code":"1","CLIENT_AUTH_KEY":client.auth_key,"CLIENT_AUTH_IV":client.auth_iv,"token":res.json()},status=status.HTTP_200_OK)
         except Exception as e:
-            return Response({"message":"some error","error":e.args})
+            return Response({"message":"some error","error":e.args},status=status.HTTP_409_CONFLICT)
 class bankApiPaymentView(APIView):
     permission_classes = (IsAuthenticated, )
     @swagger_auto_schema(request_body=payout_docs.request,responses=payout_docs.response_schema_dict)
