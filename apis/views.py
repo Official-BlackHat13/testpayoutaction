@@ -35,16 +35,18 @@ import requests
 #         return Response({"test":"some"})
 
 class Auth(APIView):
-    @swagger_auto_schema(request_body=payout_docs.request,responses=payout_docs.response_schema_dict)
+    @swagger_auto_schema(request_body=auth_docs.request,responses=auth_docs.response_schema_dict)
     def post(self,req):
         user = req.data
         try:
+            if(len(Client_model_service.Client_Model_Service.fetch_all_by_clientcode(user["client_code"]))>0):
+                raise Exception("Client Code Already Present")
             user_client =User.objects.create_user(user["username"], user["email"],user["password"])
             bank=Bank_model_services.Bank_model_services.fetch_by_bankcode(user["bank_code"])
             client = Client_model_service.Client_Model_Service(user=user_client.id,client_id=user['client_id'],client_code=user["client_code"],auth_key=randomstring.randomString(),auth_iv=randomstring.randomString(),bank_id=bank.id,client_username=user["username"],client_password=user["password"])
             client.save()
-            if(len(Client_model_service.Client_Model_Service.fetch_all_by_clientcode(user["client_code"]))>0):
-                raise Exception("Client Code Already Present")
+            
+           
             res = requests.post(const.domain+"api/token/",json={"username":user["username"],"password":user["password"]})
             print(res.json())
             return Response({"message":"user created","response_code":"1","CLIENT_AUTH_KEY":client.auth_key,"CLIENT_AUTH_IV":client.auth_iv,"token":res.json()},status=status.HTTP_200_OK)
