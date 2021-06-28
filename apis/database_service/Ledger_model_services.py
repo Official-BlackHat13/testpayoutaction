@@ -88,10 +88,11 @@ class Ledger_Model_Service:
     @staticmethod
     def getBalance(clientCode):
         cursors = connection.cursor()
-        cursors.execute("call getBalance("+clientCode+",@balance)")
+        cursors.execute('call getBalance("'+clientCode+'",@balance)')
         cursors.execute("select @balance")
         value = cursors.fetchall()
         cursors.close()
+        print(value)
         return value[0][0]
 
 

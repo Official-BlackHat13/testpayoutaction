@@ -22,7 +22,10 @@ from django.http.response import JsonResponse
 from rest_framework.parsers import JSONParser
 from .database_service import Client_model_service,Bank_model_services
 from django.contrib.auth.models import User
+from .database_service import Client_model_service,Ledger_model_services
 from rest_framework.permissions import IsAuthenticated
+from . import const
+import requests
 
 # class bankApiViewtest(APIView):
 #     @swagger_auto_schema(responses=api_docs.response_schema_dict,request_body=api_docs.val)
@@ -35,13 +38,17 @@ class Auth(APIView):
     def post(self,req):
         user = req.data
         try:
+            
             user_client =User.objects.create_user(user["username"], user["email"],user["password"])
             bank=Bank_model_services.Bank_model_services.fetch_by_bankcode(user["bank_code"])
             
             client = Client_model_service.Client_Model_Service(user=user_client.id,client_id=user['client_id'],client_code=user["client_code"],auth_key=user["auth_key"],auth_iv=user["auth_iv"],bank_id=bank.id,client_username=user["username"],client_password=user["password"])
             client.save()
+            if(len(Client_model_service.Client_Model_Service.fetch_all_by_clientcode(user["client_code"]))>0):
+                raise Exception("Client Code Already Present")
 
-            return Response({"message":"user created","response_code":"1","token":""})
+            res = requests.post(const.domain+"api/token/",json={"username":user["username"],"password":user["password"]})
+            return Response({"message":"user created","response_code":"1","token":res.json()})
         except Exception as e:
             return Response({"message":"some error","error":e.args})
 class bankApiPaymentView(APIView):
@@ -130,7 +137,11 @@ class DeleteLedger(APIView):
             return JsonResponse({"Message": "delete successfully"}, status=status.HTTP_200_OK)
         else:
             return JsonResponse({"Message": "Id not found"}, status=status.HTTP_404_NOT_FOUND)
-
+# class Test(APIView):
+#     def get(self,req):
+#         val=Ledger_model_services.Ledger_Model_Service.getBalance("FDC12")
+#         print(val)
+#         return Response({"message":val})
 class UpdateLedger(APIView):
     def put(self,request):
         id = request.data.get("id")

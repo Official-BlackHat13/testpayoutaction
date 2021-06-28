@@ -30,4 +30,7 @@ class Client_Model_Service:
     def fetch_by_clientcode(client_code=None)->ClientModel:
         clientModel=ClientModel.objects.filter(client_code=client_code)
         return clientModel[0]
+    def fetch_all_by_clientcode(client_code=None)->ClientModel:
+        clientModel=ClientModel.objects.filter(client_code=client_code)
+        return clientModel
     
