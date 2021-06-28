@@ -17,6 +17,7 @@ from datetime import datetime
 from .other_service import payout_service
 from .database_models import LedgerModel
 from apis.database_service.Ledger_model_services import *
+from apis.other_service.ICICI.enquiryService import *
 from apis.serializersFolder.serializers import LedgerSerializer, CreateLedgerSerializer
 from django.http.response import JsonResponse
 from rest_framework.parsers import JSONParser
@@ -90,7 +91,7 @@ class bankApiEnquiryView(APIView):
 class LedgerSaveRequest(APIView):
     def post(self,request):
         print(request.data.get("client"))
-        service = Ledger_Model_Service(
+        service = ICICI_service(
                                        client_id=request.data.get("client"),
                                        client_code=request.data.get("client_code"),
                                        type_status=request.data.get("type_status"),
@@ -121,7 +122,7 @@ class LedgerSaveRequest(APIView):
 
 class getLedger(APIView):
     def get(self,request):
-        queryset = fetchAllLedgersService.fetchAll().values()
+        queryset = ICICI_service.fetchAll().values()
         print("..........",queryset)
         return JsonResponse({"data": list(queryset)},status=status.HTTP_201_CREATED)
 
@@ -131,7 +132,7 @@ class DeleteLedger(APIView):
         id = request.GET.get("id")
         deletedBy = request.GET.get("deletedBy")
         print("id===== ",id)
-        resp = deleteById(id,deletedBy)
+        resp = ICICI_service.deleteById(id,deletedBy)
         if(resp == True):
             return JsonResponse({"Message": "delete successfully"}, status=status.HTTP_200_OK)
         else:
@@ -151,12 +152,12 @@ class UpdateLedger(APIView):
             ledgerModel = ledger[0]
             print("....... ", ledgermodel.created_at)
             print("....... ", ledgermodel.deleted_at)
-            service = Ledger_update_Model_Service(
+            service = ICICI_service(
                 id=request.data.get("id"),
                 client_id=request.data.get("client"),
                 client_code=request.data.get("client_code"),
                 type_status=request.data.get("type_status"),
-                amount=request.data.get("amount"),
+                amount=request.dataICICI_service.get("amount"),
                 van=request.data.get("van"),
                 trans_type=request.data.get("trans_type"),
                 trans_status=request.data.get("trans_status"),
