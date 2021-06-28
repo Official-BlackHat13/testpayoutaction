@@ -3,10 +3,10 @@ from rest_framework import status
 from datetime import datetime
 
 from rest_framework.permissions import AND
-from ..models import LedgerModel
+from ...models import LedgerModel
 from django.db import connection
-from sabpaisa import main
-class Ledger_Model_Service:
+
+class ICICI_service:
     def __init__(self, id = None,client_id=None, client_code=None, type_status=None, amount=None, van=None, trans_type=None, trans_status=None, bank_ref_no=None, customer_ref_no=None, bank_id=None, trans_time=None, bene_account_name=None, bene_account_number=None, bene_ifsc=None, request_header=None, createdBy=None, updatedBy=None, deletedBy=None, created_at=None, deleted_at=None, updated_at=None, status=True, mode=None, charge=None):
         self.id = id
         self.client_id=client_id
@@ -60,6 +60,7 @@ class Ledger_Model_Service:
         ledgermodel.mode=self.mode
         ledgermodel.charge = self.charge
         ledgermodel.save()
+        # resp = 
         return ledgermodel.id
     def fetch_by_clientid(self,client_id):
         ledgerModels=LedgerModel.objects.filter(client=client_id)
@@ -176,3 +177,10 @@ class Ledger_Model_Service:
         ledgermodel.charge = self.charge
         ledgermodel.save()
         return ledgermodel.id
+from sabpaisa import auth
+
+def enc(encStr, authKey, authIV):
+    authobj = auth.AESCipher(authKey, authIV)
+    encStr = authobj.encrypt(encStr)
+    encStr = str(encStr)
+    return encStr

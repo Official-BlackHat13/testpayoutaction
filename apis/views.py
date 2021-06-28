@@ -21,6 +21,7 @@ from apis.database_service.Ledger_model_services import *
 from apis.serializersFolder.serializers import LedgerSerializer, CreateLedgerSerializer
 from django.http.response import JsonResponse
 from rest_framework.parsers import JSONParser
+from apis.bank_services.ICICI_service.enquiryService import *
 # class bankApiViewtest(APIView):
 #     @swagger_auto_schema(responses=api_docs.response_schema_dict,request_body=api_docs.val)
 #     def post(self,req):
@@ -49,7 +50,7 @@ class bankApiEnquiryView(APIView):
 class LedgerSaveRequest(APIView):
     def post(self,request):
         print(request.data.get("client"))
-        service = Ledger_Model_Service(
+        service = ICICI_service(
                                        client_id=request.data.get("client"),
                                        client_code=request.data.get("client_code"),
                                        type_status=request.data.get("type_status"),
@@ -80,7 +81,7 @@ class LedgerSaveRequest(APIView):
 
 class getLedger(APIView):
     def get(self,request):
-        queryset = fetchAllLedgersService.fetchAll().values()
+        queryset = ICICI_service.fetchAll().values()
         print("..........",queryset)
         return JsonResponse({"data": list(queryset)},status=status.HTTP_201_CREATED)
 
@@ -90,7 +91,7 @@ class DeleteLedger(APIView):
         id = request.data.get("id")
         deletedBy = request.data.get("deletedBy")
         print("id===== ",id)
-        resp = deleteById(id,deletedBy)
+        resp = ICICI_service.deleteById(id, deletedBy)
         if(resp == True):
             return JsonResponse({"Message": "delete successfully"}, status=status.HTTP_200_OK)
         else:
@@ -106,7 +107,7 @@ class UpdateLedger(APIView):
             ledgerModel = ledger[0]
             print("....... ", ledgermodel.created_at)
             print("....... ", ledgermodel.deleted_at)
-            service = Ledger_update_Model_Service(
+            service = ICICI_service(
                 id=request.data.get("id"),
                 client_id=request.data.get("client"),
                 client_code=request.data.get("client_code"),
@@ -132,28 +133,30 @@ class UpdateLedger(APIView):
                 # deleted_at = ledgermodel.deleted_at,
                 updated_at=datetime.now()
             )
-            res = service.save()
+            res = service.update()
             return JsonResponse({"Message": "updated successfully"}, status=status.HTTP_200_OK)
         return JsonResponse({"Message": "something went wrong!!!!"}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class findByClientCode(APIView):
     def get(self,request):
-        queryset=findByClientCodeService(request.data.get("clientCode"))
+        queryset = ICICI_service.findByClientCodeService(
+            request.data.get("clientCode"))
         if(len(queryset)>0):
             return Response({"data": queryset.values()}, status=status.HTTP_200_OK)
         return Response({"Message": "No records found for the given client code"}, status=status.HTTP_404_NOT_FOUND)
 
 class findByClientId(APIView):
     def get(self,request):
-        queryset = findByClientIdService(request.data.get("clientId"))
+        queryset = ICICI_service.findByClientIdService(
+            request.data.get("clientId"))
         if(len(queryset) > 0):
             return Response({"data": queryset.values()}, status=status.HTTP_200_OK)
         return Response({"Message": "No records found for the given client ID"}, status=status.HTTP_404_NOT_FOUND)
 
 class findByTransTime(APIView):
     def get(self, request):
-        queryset = findByTransTimeService(request.data.get("startTransTime"), request.data.get("endTransTime"))
+        queryset = ICICI_service.findByTransTimeService(request.data.get("startTransTime"), request.data.get("endTransTime"))
         if(len(queryset) > 0):
             return Response({"data": queryset.values()}, status=status.HTTP_200_OK)
         return Response({"Message": "No records found for the given time range"}, status=status.HTTP_404_NOT_FOUND)
