@@ -29,7 +29,16 @@ class Client_Model_Service:
         log_service.save()
         return clientmodel.id
     @staticmethod
-    def fetch_by_clientid(client_id,client_ip_address,created_by):
+    def fetch_by_id(id,client_ip_address,created_by)->ClientModel:
+        log_service=Log_model_services.Log_Model_Service(log_type="fetch",table_name="apis_clientmodel",remarks="fetching records in apis_clientmodel table by primary key id",client_ip_address=client_ip_address,server_ip_address=const.server_ip,created_by=created_by)
+        
+        clientModel=ClientModel.objects.get(id=id,status=True)
+        model=clientModel
+        log_service.table_id=model.id
+        log_service.save()
+        return model
+    @staticmethod
+    def fetch_by_clientid(client_id,client_ip_address,created_by)->ClientModel:
         log_service=Log_model_services.Log_Model_Service(log_type="fetch",table_name="apis_clientmodel",remarks="fetching records in apis_clientmodel table by client id",client_ip_address=client_ip_address,server_ip_address=const.server_ip,created_by=created_by)
         
         clientModels=ClientModel.objects.filter(client=client_id,status=True)

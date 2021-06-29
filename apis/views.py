@@ -55,7 +55,7 @@ class Auth(APIView):
             res = requests.post(const.domain+"api/token/",json={"username":user["username"],"password":user["password"]})
             print("response from json")
             print(res.json())
-            IpWhitelisting_model_service.IpWhiteListing_Model_Service.saveMultipleIp(merchant_id=user_client.id,ips=user["ip_addresses"],clientip=req.META['REMOTE_ADDR'])
+            IpWhitelisting_model_service.IpWhiteListing_Model_Service.saveMultipleIp(merchant_id=merchant_id,ips=user["ip_addresses"],clientip=req.META['REMOTE_ADDR'])
             Log_model_services.Log_Model_Service.update_response(logid,{"Message":"user created","merchant_id":merchant_id,"response_code":"1","CLIENT_AUTH_KEY":client.auth_key,"CLIENT_AUTH_IV":client.auth_iv,"token":res.json()})
             return Response({"Message":"user created","response_code":"1","merchant_id":merchant_id,"CLIENT_AUTH_KEY":client.auth_key,"CLIENT_AUTH_IV":client.auth_iv,"token":res.json()},status=status.HTTP_200_OK)
         except Exception as e:
