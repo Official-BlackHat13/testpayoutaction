@@ -1,15 +1,67 @@
 from datetime import date, datetime
 from sabpaisa import auth
+
+import bank_api
 from ..database_service import Client_model_service,Ledger_model_services
 from ..Utils import splitString
 from ..bank_models.IDFC_Model import payment_request_model
-from ..RequestModels.payoutrequestmodel import PayoutRequestModel
+from ..bank_models.ICICI_Model import payment_request_model as icic_payment_model
+from ..bank_models.ICICI_Model import payment_response_model as icici_response
 
+from ..RequestModels.payoutrequestmodel import PayoutRequestModel
+import requests
 class PayoutService:
-    def __init__(self,client_code,encrypted_code):
+    def __init__(self,client_code=None,encrypted_code=None):
         self.client_code=client_code
         self.encrypted_code=encrypted_code
-    def excute(self):
+    def excuteICICI(self):
+        try:
+            clientModelService = Client_model_service.Client_Model_Service()
+            clientModel=clientModelService.fetch_by_clientcode(self.client_code)
+            authKey=clientModel.auth_key
+            authIV=clientModel.auth_iv
+            query=auth.AESCipher(authKey,authIV).decrypt(self.encrypted_code)
+            map=splitString.StringToMap(query)
+            if map["usern"]!=clientModel.client_username and map["pass"]!=clientModel.client_password:
+                return False
+            payoutrequestmodel,valid,message=PayoutRequestModel.from_json(map)
+            if(valid):
+             bal = Ledger_model_services.Ledger_Model_Service.getBalance(self.client_code)
+             if bal<payoutrequestmodel.txnAmount:
+                 return "Not Sufficent Balance"
+             ledgerModelService = Ledger_model_services.Ledger_Model_Service() 
+             clientModelService=Client_model_service.Client_Model_Service()
+             clientmodel=clientModelService.fetch_by_clientcode(self.client_code)
+             ledgerModelService.client_id=clientModel.client
+             ledgerModelService.client_code=self.client_code
+             ledgerModelService.amount=payoutrequestmodel.txnAmount
+             ledgerModelService.bank_id=clientmodel.bank
+             ledgerModelService.bank_ref_no="waiting"
+             ledgerModelService.customer_ref_no=payoutrequestmodel.clientTransactionId
+             ledgerModelService.status="initated"
+             ledgerModelService.bene_account_name=payoutrequestmodel.accountHolderName
+             ledgerModelService.bene_account_number=payoutrequestmodel.creditAccountNumber
+             ledgerModelService.bene_ifsc=payoutrequestmodel.ifscCode
+             ledgerModelService.type_status="Generated"
+             ledgerModelService.trans_type=payoutrequestmodel.clientPaymode
+             ledgerModelService.van=payoutrequestmodel.van
+             ledgerModelService.trans_amount_type = "debited"
+             ledgerModelService.trans_time=datetime.now()
+             id=ledgerModelService.save()
+             header = icic_payment_model.Header_Request(Username=bank_api.icici.icic_details()["iciciImpsUserName"],Password=bank_api.icici.icic_details()["Password"])
+             body = icic_payment_model.Body_Request(IFSCCode=payoutrequestmodel.ifscCode,remiMobileNumber=payoutrequestmodel.payeeMob,remarks="payment",customerID=bank_api.icici.icic_details()["iciciImpsUserName"],customerReferenceNumber=payoutrequestmodel.clientTransactionId,debitAccountNumber=bank_api.icici.icic_details()["debitAccount"],creditAccountNumber=payoutrequestmodel.creditAccountNumber,transactionAmount=payoutrequestmodel.txnAmount)
+             response = requests.post(headers=header.to_Json(),json=body.to_json())
+             response_obj = icici_response.Response_Model.from_json(json=response.json())
+             if(response_obj.status=="Success"):
+                 ledgerModelService.update_status(id,'Success')
+             else:
+                  ledgerModelService.update_status(id,'Failed')
+             return "Payout Done"
+            else:
+             return message
+        except Exception as e:
+            return e.args
+    def excuteIDFC(self):
         try:
             clientModelService = Client_model_service.Client_Model_Service()
             clientModel=clientModelService.fetch_by_clientcode(self.client_code)

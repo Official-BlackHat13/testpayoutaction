@@ -2,7 +2,7 @@
 # Create your views here.
 from http import client
 from rest_framework.exceptions import server_error
-from apis.bank_services.IFDC_service import payment
+# from apis.bank_services.IFDC_service import payment
 from django.http import *
 from rest_framework import generics
 from django.shortcuts import *
@@ -10,30 +10,73 @@ from rest_framework.views import APIView
 from rest_framework.response import *
 from rest_framework import status
 from drf_yasg.utils import swagger_auto_schema
-from .API_docs import payout_docs
+from .API_docs import payout_docs,auth_docs
 from datetime import datetime
 #from .serializers import *
 # from .models import *
 
-from .bank_services import IFDC_service
+from .other_service import payout_service
 from .database_models import LedgerModel
 from apis.database_service.Ledger_model_services import *
-from apis.serializersFolder.serializers import LedgerSerializer, CreateLedgerSerializer
 from django.http.response import JsonResponse
-from rest_framework.parsers import JSONParser
-from apis.bank_services.ICICI_service.enquiryService import *
+from apis.other_service.enquiry_service import *
+from .database_service import Client_model_service,Bank_model_services
+from django.contrib.auth.models import User
+from .database_service import Client_model_service,Ledger_model_services
+from rest_framework.permissions import IsAuthenticated
+from . import const
+from .Utils import randomstring
+import requests
+
+
 # class bankApiViewtest(APIView):
 #     @swagger_auto_schema(responses=api_docs.response_schema_dict,request_body=api_docs.val)
 #     def post(self,req):
 #         print(req.data)
 #         return Response({"test":"some"})
 
-
-class bankApiPaymentView(APIView):
-    @swagger_auto_schema(request_body=payout_docs.request)
+class Auth(APIView):
+    @swagger_auto_schema(request_body=auth_docs.request,responses=auth_docs.response_schema_dict)
     def post(self,req):
-        payment_service=IFDC_service.payment.Payment()
-        return Response(payment_service.hit())
+        user = req.data
+        try:
+            if(len(Client_model_service.Client_Model_Service.fetch_all_by_clientcode(user["client_code"]))>0):
+                raise Exception("Client Code Already Present")
+            user_client =User.objects.create_user(user["username"], user["email"],user["password"])
+            bank=Bank_model_services.Bank_model_services.fetch_by_bankcode(user["bank_code"])
+            client = Client_model_service.Client_Model_Service(user=user_client.id,client_id=user['client_id'],client_code=user["client_code"],auth_key=randomstring.randomString(),auth_iv=randomstring.randomString(),bank_id=bank.id,client_username=user["username"],client_password=user["password"])
+            client.save()
+            
+           
+            res = requests.post(const.domain+"api/token/",json={"username":user["username"],"password":user["password"]})
+            print(res.json())
+            return Response({"message":"user created","response_code":"1","CLIENT_AUTH_KEY":client.auth_key,"CLIENT_AUTH_IV":client.auth_iv,"token":res.json()},status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"message":"some error","error":e.args},status=status.HTTP_409_CONFLICT)
+class bankApiPaymentView(APIView):
+    permission_classes = (IsAuthenticated, )
+    @swagger_auto_schema(request_body=payout_docs.request,responses=payout_docs.response_schema_dict)
+    def post(self,req):
+        # payment_service=IFDC_service.payment.Payment()
+        client_code = req.data["client_code"]
+        encrypted_code=req.data["encrypted_code"]
+        client = Client_model_service.Client_Model_Service.fetch_by_clientcode(client_code=client_code)
+        bank = Bank_model_services.Bank_model_services.fetch_by_id(client.bank)
+        payout=payout_service.PayoutService(client_code=client_code,encrypted_code=encrypted_code)
+        if(bank.bank_name=="ICICI"):
+         res = payout.excuteICICI()
+        else:
+            res = payout.excuteIDFC()
+        if(res=="Payout Done"):
+            return Response({"message":res,"response_code":"1"},status=status.HTTP_200_OK)
+        elif (res=="Not Sufficent Balance"):
+            return Response({"message":res,"response_code":"0"},status=status.HTTP_402_PAYMENT_REQUIRED)
+        elif res==False:
+            return Response({"message":"credential not matched","response_code":"3"},status=status.HTTP_401_UNAUTHORIZED)
+        else:
+            return Response({"message":res,"response_code":"2"},status=status.HTTP_204_NO_CONTENT)
+            
+        # return Response(payment_service.hit())
 class addBalanceApi(APIView):
     pass
 class bankApiEnquiryView(APIView):
@@ -48,9 +91,11 @@ class bankApiEnquiryView(APIView):
 #     # serializer_class = serializers.LedgerSerializer
 
 class LedgerSaveRequest(APIView):
+    permission_classes = (IsAuthenticated, )
     def post(self,request):
         print(request.data.get("client"))
-        service = ICICI_service(
+        service = Ledger_Model_Service(
+            trans_amount_type=request.data.get("trans_amount_type"),
                                        client_id=request.data.get("client"),
                                        client_code=request.data.get("client_code"),
                                        type_status=request.data.get("type_status"),
@@ -73,31 +118,42 @@ class LedgerSaveRequest(APIView):
             deletedBy=request.data.get("deletedBy"),
             created_at=datetime.now()
                                        )
-        res = service.save()
-        if(res>0):
-            return Response({"message": "success","id":res}, status=status.HTTP_201_CREATED)
-        return Response({"message": "something went wrong"}, status = status.HTTP_400_BAD_REQUEST)
+        resp = service.save()
+        if(resp == "0"):
+            return Response({"message": "nothing to show", "data": None, "response_code": "0"}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"message": "data found", "data": resp, "response_code": "1"}, status=status.HTTP_200_OK)
 
 
-class getLedger(APIView):
+
+class getLedgers(APIView):
+    permission_classes = (IsAuthenticated, )
     def get(self,request):
-        queryset = ICICI_service.fetchAll().values()
-        print("..........",queryset)
-        return JsonResponse({"data": list(queryset)},status=status.HTTP_201_CREATED)
+        clientCode = request.data.get("client_code")
+        resp = ICICI_service.fetchAll(clientCode)
+        if(resp == "0"):
+            return Response({"message": "nothing to show", "data":None,"response_code": "0"}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"message": "data found","data":resp, "response_code": "1"}, status=status.HTTP_200_OK)
 
 
 class DeleteLedger(APIView):
+    permission_classes = (IsAuthenticated, )
     def delete(self,request):
         id = request.data.get("id")
         deletedBy = request.data.get("deletedBy")
         print("id===== ",id)
-        resp = ICICI_service.deleteById(id, deletedBy)
+        resp = Ledger_Model_Service.deleteById(id, deletedBy)
+
         if(resp == True):
             return JsonResponse({"Message": "delete successfully"}, status=status.HTTP_200_OK)
         else:
             return JsonResponse({"Message": "Id not found"}, status=status.HTTP_404_NOT_FOUND)
-
+# class Test(APIView):
+#     def get(self,req):
+#         val=Ledger_model_services.Ledger_Model_Service.getBalance("FDC12")
+#         print(val)
+#         return Response({"message":val})
 class UpdateLedger(APIView):
+    permission_classes = (IsAuthenticated, )
     def put(self,request):
         id = request.data.get("id")
         ledger = LedgerModel.objects.filter(id=id)
@@ -107,8 +163,9 @@ class UpdateLedger(APIView):
             ledgerModel = ledger[0]
             print("....... ", ledgermodel.created_at)
             print("....... ", ledgermodel.deleted_at)
-            service = ICICI_service(
+            service = Ledger_Model_Service(
                 id=request.data.get("id"),
+                trans_amount_type = request.data.get("trans_amount_type"),
                 client_id=request.data.get("client"),
                 client_code=request.data.get("client_code"),
                 type_status=request.data.get("type_status"),
@@ -139,24 +196,26 @@ class UpdateLedger(APIView):
 
 
 class findByClientCode(APIView):
+    permission_classes = (IsAuthenticated, )
     def get(self,request):
-        queryset = ICICI_service.findByClientCodeService(
-            request.data.get("clientCode"))
-        if(len(queryset)>0):
-            return Response({"data": queryset.values()}, status=status.HTTP_200_OK)
-        return Response({"Message": "No records found for the given client code"}, status=status.HTTP_404_NOT_FOUND)
+        resp = ICICI_service.findByClientCodeService(request.data.get("client_code"))
+        if(resp != "0"):
+            return Response({"message": "data found","data":resp, "response_code": "1"}, status=status.HTTP_200_OK)
+        return Response({"message": "credential not matched", "data":None,"response_code": "3"}, status=status.HTTP_404_NOT_FOUND)
 
 class findByClientId(APIView):
+    permission_classes = (IsAuthenticated, )
     def get(self,request):
-        queryset = ICICI_service.findByClientIdService(
-            request.data.get("clientId"))
-        if(len(queryset) > 0):
-            return Response({"data": queryset.values()}, status=status.HTTP_200_OK)
-        return Response({"Message": "No records found for the given client ID"}, status=status.HTTP_404_NOT_FOUND)
+        resp = ICICI_service.findByClientIdService(request.data.get("client_id"), request.data.get("client_code"))
+        if(resp != "0"):
+            return Response({"message": "data found", "data": resp, "response_code": "1"}, status=status.HTTP_200_OK)
+        return Response({"message": "credential not matched", "data": None, "response_code": "3"}, status=status.HTTP_404_NOT_FOUND)
 
 class findByTransTime(APIView):
+    permission_classes = (IsAuthenticated, )
     def get(self, request):
-        queryset = ICICI_service.findByTransTimeService(request.data.get("startTransTime"), request.data.get("endTransTime"))
-        if(len(queryset) > 0):
-            return Response({"data": queryset.values()}, status=status.HTTP_200_OK)
-        return Response({"Message": "No records found for the given time range"}, status=status.HTTP_404_NOT_FOUND)
+        resp = ICICI_service.findByTransTimeService(request.data.get(
+            "startTransTime"), request.data.get("endTransTime"), request.data.get("client_code"))
+        if(resp != "0"):
+            return Response({"message": "data found", "data": resp, "response_code": "1"}, status=status.HTTP_200_OK)
+        return Response({"message": "No data found", "data": None, "response_code": "3"}, status=status.HTTP_404_NOT_FOUND)

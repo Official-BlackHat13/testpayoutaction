@@ -1,13 +1,11 @@
 -- DELIMITER &&
 -- create PROCEDURE getAmount(in type varchar(20),in clientCode varchar(60),out value int)
 -- begin
--- select sum(amount) into value from apis_ledgermodel where trans_type=type and client_code=clientCode;
+-- select sum(amount) into value from apis_ledgermodel where trans_amount_type=type and client_code=clientCode and status="Success";
 -- end 
 -- && DELIMITER ;
 
--- drop PROCEDURE getAmount;
 
--- drop PROCEDURE getAmounts;
 -- DELIMITER &&
 -- create PROCEDURE getBalance(in clientCode varchar(60),out balance int)
 -- begin

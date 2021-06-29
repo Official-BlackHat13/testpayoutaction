@@ -3,11 +3,13 @@ from . import models
 from rest_framework.response import *
 from django.shortcuts import HttpResponse
 from datetime import datetime
+from . import const
 def IpWhiteListed(get_response):
     def middleware(request):
         ip=request.META['REMOTE_ADDR']
+
         ipWhiteListedModel=models.IpWhiteListedModel.objects.filter(ip_address=ip,status=True)
-        if len(ipWhiteListedModel)==0:
+        if len(ipWhiteListedModel)==0 and const.ipwhitelisting:
             iprecords=models.IpHittingRecordModel()
             iprecords.ip_address=ip
             iprecords.ip_type="Blocked"
