@@ -1,7 +1,9 @@
+from apis import const
 from rest_framework import status
 
 from datetime import datetime
 from ..models import LedgerModel
+from . import Log_model_services
 from django.db import connection
 
 class Ledger_Model_Service:
@@ -31,7 +33,8 @@ class Ledger_Model_Service:
         self.status = status
         self.mode = mode
         self.charge = charge
-    def save(self):
+    def save(self,client_ip_address=None):
+        log_service = Log_model_services.Log_Model_Service(log_type="create",table_name="apis_ledgermodel",client_ip_address=client_ip_address,server_ip_address=const.server_ip,created_by=self.client_code)
         ledgermodel = LedgerModel()
         ledgermodel.client=self.client_id
         ledgermodel.client_code=self.client_code
@@ -59,23 +62,41 @@ class Ledger_Model_Service:
         ledgermodel.mode=self.mode
         ledgermodel.charge = self.charge
         ledgermodel.save()
+        log_service.table_id=ledgermodel.id
+        log_service.save()
+        # Log_model_services.Log_Model_Service()
         return ledgermodel.id
-    def fetch_by_clientid(self,client_id):
+    def fetch_by_clientid(self,client_id,client_ip_address,created_by):
+        log_service = Log_model_services.Log_Model_Service(log_type="fetch",table_name="apis_ledgermodel",remarks="fetching all records from ledger table by client id",client_ip_address=client_ip_address,server_ip_address=const.server_ip,created_by=created_by)
         ledgerModels=LedgerModel.objects.filter(client=client_id)
+        log_service.save()
         return ledgerModels
-    def fetch_by_clientcode(self,client_code):
+    def fetch_by_clientcode(self,client_code,client_ip_address,created_by):
+        log_service = Log_model_services.Log_Model_Service(log_type="fetch",table_name="apis_ledgermodel",remarks="fetching all records from ledger table by client code ",client_ip_address=client_ip_address,server_ip_address=const.server_ip,created_by=created_by)
+        
         ledgerModels=LedgerModel.objects.filter(client_code=client_code)
+        log_service.save()
         return ledgerModels
-    def fetch_by_id(self,id):
+    def fetch_by_id(self,id,client_ip_address,created_by):
+        log_service=Log_model_services.Log_Model_Service(log_type="fetch",table_name="apis_ledgermodel",remarks="fetching record from ledger table by primary key ",client_ip_address=client_ip_address,server_ip_address=const.server_ip,created_by=created_by)
+        
         ledgerModels=LedgerModel.objects.get(id=id)
+        log_service.table_id=ledgerModels.id
+        log_service.save()
         return ledgerModels
-    def fetch_by_van(self,van):
+    def fetch_by_van(self,van,client_ip_address,created_by):
+        log_service=Log_model_services.Log_Model_Service(log_type="fetch",table_name="apis_ledgermodel",remarks="fetching all records from ledger table by van ",client_ip_address=client_ip_address,server_ip_address=const.server_ip,created_by=created_by)
+        
         ledgerModels=LedgerModel.objects.filter(van=van)
+        log_service.save()
         return ledgerModels
-    def update_status(self,id,status):
+    def update_status(self,id,status,client_ip_address,created_by):
+        log_service=Log_model_services.Log_Model_Service(log_type="update",table_name="apis_ledgermodel",remarks="updating status from ledger table for the record fetched by id ",client_ip_address=client_ip_address,server_ip_address=const.server_ip,created_by=created_by)
         ledgerModel=LedgerModel.objects.get(id=id)
         ledgerModel.trans_status=status
         ledgerModel.save()
+        log_service.table_id=ledgerModel.id
+        log_service.save()
         return ledgerModel
 
     def fetchAll(self):
@@ -86,13 +107,16 @@ class Ledger_Model_Service:
         return True
     
     @staticmethod
-    def getBalance(clientCode):
+    def getBalance(clientCode,client_ip_address,created_by):
+        log_service=Log_model_services.Log_Model_Service(log_type="get balance",table_name="apis_ledgermodel",remarks="getting balance from apis_ledgermodel table via getBalance stored procedure",client_ip_address=client_ip_address,server_ip_address=const.server_ip,created_by=created_by)
+        
         cursors = connection.cursor()
         cursors.execute('call getBalance("'+clientCode+'",@balance)')
         cursors.execute("select @balance")
         value = cursors.fetchall()
         cursors.close()
         print(value)
+        log_service.save()
         return value[0][0]
 
 

@@ -11,6 +11,7 @@ from rest_framework import status
 from drf_yasg.utils import swagger_auto_schema
 from .API_docs import payout_docs,auth_docs
 from datetime import datetime
+from .serializersFolder.serializers import LogsSerializer
 #from .serializers import *
 # from .models import *
 
@@ -20,12 +21,14 @@ from apis.database_service.Ledger_model_services import *
 from apis.serializersFolder.serializers import LedgerSerializer, CreateLedgerSerializer
 from django.http.response import JsonResponse
 from rest_framework.parsers import JSONParser
-from .database_service import Client_model_service,Bank_model_services
+from .database_service import Client_model_service,Bank_model_services,IpWhitelisting_model_service
 from django.contrib.auth.models import User
-from .database_service import Client_model_service,Ledger_model_services
+# from .database_service import Client_model_service,Ledger_model_services
 from rest_framework.permissions import IsAuthenticated
 from . import const
 from .Utils import randomstring
+
+from . import const
 import requests
 
 # class bankApiViewtest(APIView):
@@ -37,43 +40,57 @@ import requests
 class Auth(APIView):
     @swagger_auto_schema(request_body=auth_docs.request,responses=auth_docs.response_schema_dict)
     def post(self,req):
+        request_obj = "path:: "+req.path+" :: headers::"+str(req.headers)+" :: meta_data:: "+str(req.META)+"data::"+str(req.data)
         user = req.data
+        log = Log_model_services.Log_Model_Service(log_type="Post request at "+req.path+" slug",client_ip_address=req.META['REMOTE_ADDR'],server_ip_address=const.server_ip,full_request=request_obj)
+        logid=log.save()
         try:
-            if(len(Client_model_service.Client_Model_Service.fetch_all_by_clientcode(user["client_code"]))>0):
+            if(len(Client_model_service.Client_Model_Service.fetch_all_by_clientcode(user["client_code"],client_ip_address=req.META['REMOTE_ADDR'],created_by="client added"))>0):
                 raise Exception("Client Code Already Present")
             user_client =User.objects.create_user(user["username"], user["email"],user["password"])
-            bank=Bank_model_services.Bank_model_services.fetch_by_bankcode(user["bank_code"])
+            bank=Bank_model_services.Bank_model_services.fetch_by_bankcode(user["bank_code"],client_ip_address=req.META['REMOTE_ADDR'],created_by="client added")
             client = Client_model_service.Client_Model_Service(user=user_client.id,client_id=user['client_id'],client_code=user["client_code"],auth_key=randomstring.randomString(),auth_iv=randomstring.randomString(),bank_id=bank.id,client_username=user["username"],client_password=user["password"])
-            client.save()
-            
-           
+            merchant_id=client.save(client_ip_address=req.META['REMOTE_ADDR'],created_by="client added")
+            print("requesting api "+const.domain+"api/token/")
             res = requests.post(const.domain+"api/token/",json={"username":user["username"],"password":user["password"]})
+            print("response from json")
             print(res.json())
-            return Response({"message":"user created","response_code":"1","CLIENT_AUTH_KEY":client.auth_key,"CLIENT_AUTH_IV":client.auth_iv,"token":res.json()},status=status.HTTP_200_OK)
+            IpWhitelisting_model_service.IpWhiteListing_Model_Service.saveMultipleIp(merchant_id=user_client.id,ips=user["ip_addresses"],clientip=req.META['REMOTE_ADDR'])
+            Log_model_services.Log_Model_Service.update_response(logid,{"Message":"user created","merchant_id":merchant_id,"response_code":"1","CLIENT_AUTH_KEY":client.auth_key,"CLIENT_AUTH_IV":client.auth_iv,"token":res.json()})
+            return Response({"Message":"user created","response_code":"1","merchant_id":merchant_id,"CLIENT_AUTH_KEY":client.auth_key,"CLIENT_AUTH_IV":client.auth_iv,"token":res.json()},status=status.HTTP_200_OK)
         except Exception as e:
-            return Response({"message":"some error","error":e.args},status=status.HTTP_409_CONFLICT)
+            Log_model_services.Log_Model_Service.update_response(logid,{"Message":"some error","error":e.args,"trace_back":e.with_traceback(e.__traceback__)})
+            
+            return Response({"Message":"some error","error":e.args},status=status.HTTP_409_CONFLICT)
 class bankApiPaymentView(APIView):
     permission_classes = (IsAuthenticated, )
     @swagger_auto_schema(request_body=payout_docs.request,responses=payout_docs.response_schema_dict)
     def post(self,req):
+        request_obj = "path::"+req.path+"headers::"+req.headers+"meta_data::"+str(req.META)+"data::"+req.data
         # payment_service=IFDC_service.payment.Payment()
         client_code = req.data["client_code"]
         encrypted_code=req.data["encrypted_code"]
+        log = Log_model_services.Log_Model_Service(log_type="Post request at "+req.path+" slug",client_ip_address=req.META['REMOTE_ADDR'],server_ip_address=const.server_ip,full_request=request_obj)
+        logid=log.save()
         client = Client_model_service.Client_Model_Service.fetch_by_clientcode(client_code=client_code)
         bank = Bank_model_services.Bank_model_services.fetch_by_id(client.bank)
-        payout=payout_service.PayoutService(client_code=client_code,encrypted_code=encrypted_code)
+        payout=payout_service.PayoutService(client_code=client_code,encrypted_code=encrypted_code,client_ip_address=req.META['REMOTE_ADDR'])
         if(bank.bank_name=="ICICI"):
          res = payout.excuteICICI()
         else:
             res = payout.excuteIDFC()
         if(res=="Payout Done"):
-            return Response({"message":res,"response_code":"1"},status=status.HTTP_200_OK)
+            Log_model_services.Log_Model_Service.update_response(logid,{"Message":res,"response_code":"1"})
+            return Response({"Message":res,"response_code":"1"},status=status.HTTP_200_OK)
         elif (res=="Not Sufficent Balance"):
-            return Response({"message":res,"response_code":"0"},status=status.HTTP_402_PAYMENT_REQUIRED)
+            Log_model_services.Log_Model_Service.update_response(logid,{"Message":res,"response_code":"1"})
+            return Response({"Message":res,"response_code":"0"},status=status.HTTP_402_PAYMENT_REQUIRED)
         elif res==False:
-            return Response({"message":"credential not matched","response_code":"3"},status=status.HTTP_401_UNAUTHORIZED)
+            Log_model_services.Log_Model_Service.update_response(logid,{"Message":res,"response_code":"1"})
+            return Response({"Message":"credential not matched","response_code":"3"},status=status.HTTP_401_UNAUTHORIZED)
         else:
-            return Response({"message":res,"response_code":"2"},status=status.HTTP_204_NO_CONTENT)
+            Log_model_services.Log_Model_Service.update_response(logid,{"Message":res,"response_code":"1"})
+            return Response({"Message":res,"response_code":"2"},status=status.HTTP_204_NO_CONTENT)
             
         # return Response(payment_service.hit())
 class addBalanceApi(APIView):
@@ -117,8 +134,8 @@ class LedgerSaveRequest(APIView):
                                        )
         res = service.save()
         if(res>0):
-            return Response({"message": "success","id":res}, status=status.HTTP_201_CREATED)
-        return Response({"message": "something went wrong"}, status = status.HTTP_400_BAD_REQUEST)
+            return Response({"Message": "success","id":res}, status=status.HTTP_201_CREATED)
+        return Response({"Message": "something went wrong"}, status = status.HTTP_400_BAD_REQUEST)
 
 
 class getLedger(APIView):
@@ -142,7 +159,7 @@ class DeleteLedger(APIView):
 #     def get(self,req):
 #         val=Ledger_model_services.Ledger_Model_Service.getBalance("FDC12")
 #         print(val)
-#         return Response({"message":val})
+#         return Response({"Message":val})
 class UpdateLedger(APIView):
     def put(self,request):
         id = request.data.get("id")
@@ -182,3 +199,30 @@ class UpdateLedger(APIView):
             res = service.save()
             return JsonResponse({"Message": "updated successfully"}, status=status.HTTP_200_OK)
         return JsonResponse({"Message": "something went wrong!!!!"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class GetLogs(APIView):
+    def get(self,req,page,length):
+        request_obj = "path:: "+req.path+" :: headers::"+str(req.headers)+" :: meta_data:: "+str(req.META)+"data::"+str(req.data)
+        logs = Log_model_services.Log_Model_Service(log_type="get request on "+req.path,client_ip_address=req.META['REMOTE_ADDR'],server_ip_address=const.server_ip,full_request=request_obj,remarks="get request on "+req.path+" for fetching the log records")
+        logid=logs.save()
+        try:
+            if page=="all" and length != "all":
+                return JsonResponse({"Message":"page and length format does not match"},status=status.HTTP_406_NOT_ACCEPTABLE)
+            logs = Log_model_services.Log_Model_Service.fetch_all_logs_in_parts(length)
+            print(logs)
+            if page == "all":
+                logsser=LogsSerializer(logs,many=True)
+                return Response({"data_length":len(logs),"data":logsser.data})
+            page=int(page)
+            if page>logs[1]:
+             page=logs[1]-1
+            logsser=LogsSerializer(logs[0][page],many=True)
+            print(logs[0][page])
+            Log_model_services.Log_Model_Service.update_response(logid,str({"data_length":len(logs[0][page]),"data":logsser.data}))
+            return Response({"data_length":len(logs[0][page]),"data":logsser.data})
+        except Exception as e:
+            Log_model_services.Log_Model_Service.update_response(logid,str({"data_length":len(logs[0][page]),"data":logsser.data}))
+            return Response({"Message":"some error","Error":e.args})
+        
+        
