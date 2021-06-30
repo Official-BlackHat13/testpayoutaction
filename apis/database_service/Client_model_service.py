@@ -49,14 +49,14 @@ class Client_Model_Service:
     @staticmethod
     def fetch_by_clientcode(client_code,client_ip_address,created_by)->ClientModel:
         log_service=Log_model_services.Log_Model_Service(log_type="fetch",table_name="apis_clientmodel",remarks="fetching records in apis_clientmodel table by client code",client_ip_address=client_ip_address,server_ip_address=const.server_ip,created_by=created_by)
-        
+        log_service.save()
         clientModel=ClientModel.objects.filter(client_code=client_code,status=True)
         model=clientModel[0]
         
         return model
     def fetch_all_by_clientcode(client_code,client_ip_address,created_by)->ClientModel:
         log_service=Log_model_services.Log_Model_Service(log_type="fetch",table_name="apis_clientmodel",remarks="fetching all records in apis_clientmodel table by client code",client_ip_address=client_ip_address,server_ip_address=const.server_ip,created_by=created_by)
-        
+        log_service.save()
         clientModel=ClientModel.objects.filter(client_code=client_code,status=True)
         return clientModel
     
