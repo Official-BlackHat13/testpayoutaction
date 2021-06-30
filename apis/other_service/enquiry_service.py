@@ -106,3 +106,10 @@ class ICICI_service:
         resp = str(list(Ledger.values()))
         encResp = auth.AESCipher(authKey, authIV).encrypt(resp)
         return encResp
+
+
+def enc(encStr, authKey, authIV):
+    authobj = auth.AESCipher(authKey, authIV)
+    encStr = authobj.encrypt(encStr)
+    encStr = str(encStr)
+    return encStr

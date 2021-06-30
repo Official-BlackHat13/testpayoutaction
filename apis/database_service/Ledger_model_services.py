@@ -206,3 +206,9 @@ class Ledger_Model_Service:
 #         print("date ======= ", ledger)
 #         return ledger
 
+
+def enc(encStr, authKey, authIV):
+    authobj = auth.AESCipher(authKey, authIV)
+    encStr = authobj.encrypt(encStr)
+    encStr = str(encStr)
+    return encStr
