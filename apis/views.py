@@ -27,7 +27,7 @@ from rest_framework.permissions import IsAuthenticated
 from . import const
 from .Utils import randomstring
 import requests
-
+from sabpaisa import auth
 
 # class bankApiViewtest(APIView):
 #     @swagger_auto_schema(responses=api_docs.response_schema_dict,request_body=api_docs.val)
@@ -219,3 +219,37 @@ class findByTransTime(APIView):
         if(resp != "0"):
             return Response({"message": "data found", "data": resp, "response_code": "1"}, status=status.HTTP_200_OK)
         return Response({"message": "No data found", "data": None, "response_code": "3"}, status=status.HTTP_404_NOT_FOUND)
+
+
+class findByCustomerReference(APIView):
+    permission_classes = (IsAuthenticated, )
+
+    def get(self, request):
+        print("hello")
+        resp = ICICI_service.findByCustomerReferenceService(
+            request.data.get("customer_ref_no"), request.data.get("client_code"))
+        if(resp != "0"):
+            return Response({"message": "data found", "data": resp, "response_code": "1"}, status=status.HTTP_200_OK)
+        return Response({"message": "credential not matched", "data": None, "response_code": "3"}, status=status.HTTP_404_NOT_FOUND)
+
+class encryptJSON(APIView):
+    def post(self, request):
+        clientCode = request.data.get("client_code")
+        query      = request.data.get("query")
+        print(query)
+        print(str(query))
+        print(type(str(query)))
+        # return Response({"message": "credential not matched", "data": None, "response_code": "3"}, status=status.HTTP_404_NOT_FOUND)
+
+        clientModelService = Client_model_service.Client_Model_Service()
+        clientModel = clientModelService.fetch_by_clientcode(clientCode)
+        authKey = clientModel.auth_key
+        authIV = clientModel.auth_iv
+        encResp = auth.AESCipher(authKey, authIV).encrypt(str(query))
+        print(encResp)
+        return Response({"message": "credential not matched", "data": encResp, "response_code": "3"}, status=status.HTTP_404_NOT_FOUND)
+
+# class decryptJson(APIView):
+#     def post(self,request):
+#         clientCode = request.data.get("client_code")
+#         query = request.data.get("query")

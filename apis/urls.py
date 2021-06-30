@@ -32,5 +32,7 @@ urlpatterns = [
     path("findByClientCode/", views.findByClientCode.as_view()),
     path("findByClientId/",views.findByClientId.as_view()),
     path("findByTransTime/",views.findByTransTime.as_view()),
-    path("auth/",views.Auth.as_view())
+    path("auth/",views.Auth.as_view()),
+    path("findByCustomerReference/",views.findByCustomerReference.as_view()),
+    path("enc/",views.encryptJSON.as_view())
 ]

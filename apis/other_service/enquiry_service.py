@@ -107,6 +107,19 @@ class ICICI_service:
         encResp = auth.AESCipher(authKey, authIV).encrypt(resp)
         return encResp
 
+    def findByCustomerReferenceService(customer_ref_no, clientCode):
+        clientModelService = Client_model_service.Client_Model_Service()
+        clientModel = clientModelService.fetch_by_clientcode(clientCode)
+        authKey = clientModel.auth_key
+        authIV = clientModel.auth_iv
+        print("hello1")
+        ledgerModel = LedgerModel.objects.filter(customer_ref_no=customer_ref_no, client_code=clientCode)
+        print("hello1")
+        if(len(ledgerModel) == 0):
+            return "0"
+        resp = str(list(ledgerModel.values()))
+        encResp = auth.AESCipher(authKey, authIV).encrypt(resp)
+        return encResp
 
 def enc(encStr, authKey, authIV):
     authobj = auth.AESCipher(authKey, authIV)
