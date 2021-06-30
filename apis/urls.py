@@ -34,5 +34,6 @@ urlpatterns = [
     path("findByTransTime/",views.findByTransTime.as_view()),
     path("auth/",views.Auth.as_view()),
     path("findByCustomerReference/",views.findByCustomerReference.as_view()),
-    path("enc/",views.encryptJSON.as_view())
+    path("enc/",views.encryptJSON.as_view()),
+    path("decrypt", views.decryptJson.as_view())
 ]

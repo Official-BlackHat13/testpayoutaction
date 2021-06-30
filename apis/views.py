@@ -249,7 +249,9 @@ class encryptJSON(APIView):
         print(encResp)
         return Response({"message": "credential not matched", "data": encResp, "response_code": "3"}, status=status.HTTP_404_NOT_FOUND)
 
-# class decryptJson(APIView):
-#     def post(self,request):
-#         clientCode = request.data.get("client_code")
-#         query = request.data.get("query")
+class decryptJson(APIView):
+    def post(self,request):
+        clientCode = request.data.get("client_code")
+        query = request.data.get("query")
+        print(query)
+        
