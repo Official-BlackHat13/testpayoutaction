@@ -7,14 +7,19 @@ from ..Utils import splitString
 from ..bank_models.IDFC_Model import payment_request_model
 from ..bank_models.ICICI_Model import payment_request_model as icic_payment_model
 from ..bank_models.ICICI_Model import payment_response_model as icici_response
-
+from ..database_service.Log_model_services import Log_Model_Service
+from .. import const
 from ..RequestModels.payoutrequestmodel import PayoutRequestModel
 import requests
 class PayoutService:
-    def __init__(self,client_code=None,encrypted_code=None):
+    def __init__(self,client_code=None,encrypted_code=None,client_ip_address=None):
         self.client_code=client_code
+        self.client_ip_address = client_ip_address
         self.encrypted_code=encrypted_code
+        
     def excuteICICI(self):
+        log = Log_Model_Service(log_type="excuting ICICI service",client_ip_address=self.client_ip_address,server_ip_address=const.server_ip,created_by=self.client_code)
+        log.save()
         try:
             clientModelService = Client_model_service.Client_Model_Service()
             clientModel=clientModelService.fetch_by_clientcode(self.client_code)
@@ -47,7 +52,7 @@ class PayoutService:
              ledgerModelService.van=payoutrequestmodel.van
              ledgerModelService.trans_amount_type = "debited"
              ledgerModelService.trans_time=datetime.now()
-             id=ledgerModelService.save()
+             id=ledgerModelService.save(client_ip_address=self.client_ip_address)
              header = icic_payment_model.Header_Request(Username=bank_api.icici.icic_details()["iciciImpsUserName"],Password=bank_api.icici.icic_details()["Password"])
              body = icic_payment_model.Body_Request(IFSCCode=payoutrequestmodel.ifscCode,remiMobileNumber=payoutrequestmodel.payeeMob,remarks="payment",customerID=bank_api.icici.icic_details()["iciciImpsUserName"],customerReferenceNumber=payoutrequestmodel.clientTransactionId,debitAccountNumber=bank_api.icici.icic_details()["debitAccount"],creditAccountNumber=payoutrequestmodel.creditAccountNumber,transactionAmount=payoutrequestmodel.txnAmount)
              response = requests.post(headers=header.to_Json(),json=body.to_json())
@@ -62,6 +67,8 @@ class PayoutService:
         except Exception as e:
             return e.args
     def excuteIDFC(self):
+        log = Log_Model_Service(log_type="excuting IDFC service",client_ip_address=self.client_ip_address,server_ip_address=const.server_ip,created_by=self.client_code)
+        log.save()
         try:
             clientModelService = Client_model_service.Client_Model_Service()
             clientModel=clientModelService.fetch_by_clientcode(self.client_code)

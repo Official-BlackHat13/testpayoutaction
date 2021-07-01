@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-r0qb-hl8+la(qma%+fb2&)hd3ty9)0!l(gdtd_1l_y(sad-m6=
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["192.168.34.42","127.0.0.1","localhost"]
 
 
 # Application definition
@@ -41,7 +41,8 @@ INSTALLED_APPS = [
     "corsheaders",
     "drf_yasg",
     "apis",
-    "sabpaisa"
+    "sabpaisa",
+    "ifaddr"
 ]
 CORS_ALLOW_ALL_ORIGINS=True
 MIDDLEWARE = [

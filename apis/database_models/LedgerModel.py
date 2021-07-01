@@ -2,7 +2,7 @@ from django.db import models
 from datetime import datetime
 class LedgerModel(models.Model):
     id=models.AutoField
-    client=models.IntegerField()
+    merchant=models.IntegerField()
     client_code=models.CharField(max_length=60)
     amount=models.FloatField()
     trans_type=models.CharField(max_length=20)

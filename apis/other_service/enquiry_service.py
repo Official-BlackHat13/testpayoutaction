@@ -1,3 +1,4 @@
+from http import client
 from rest_framework import status
 from sabpaisa import auth
 from datetime import datetime
@@ -22,9 +23,8 @@ class ICICI_service:
         cursors.close()
         return value
 
-    def fetchAll(clientCode):
-        clientModelService = Client_model_service.Client_Model_Service()
-        clientModel = clientModelService.fetch_by_clientcode(clientCode)
+    def fetchAll(clientCode,createdBy,ip):
+        clientModel = Client_model_service.Client_Model_Service.fetch_by_clientcode(client_ip_address=ip, client_code=clientCode, created_by=createdBy)
         authKey=clientModel.auth_key
         authIV=clientModel.auth_iv
         ledgerModel = LedgerModel.objects.filter(status=True)
@@ -47,39 +47,8 @@ class ICICI_service:
             ledgerModel.save()
             return True
         return False
-    
-    def findById(id):
-        ledger = LedgerModel.objects.filter(id=id)
-        if(len(ledger) > 0):
-            return True
-        else:
-            return False
-    
-    def findByClientCodeService(clientCode):
-        clientModelService = Client_model_service.Client_Model_Service()
-        clientModel = clientModelService.fetch_by_clientcode(clientCode)
-        authKey = clientModel.auth_key
-        authIV = clientModel.auth_iv
-        ledgerModel = LedgerModel.objects.filter(client_code = clientCode)
-        if(len(ledgerModel)==0):
-            return "0"
-        resp = str(list(ledgerModel.values()))
-        encResp = auth.AESCipher(authKey, authIV).encrypt(resp)
-        return encResp
-    
-    def findByClientIdService(clientId, clientCode):
-        clientModelService = Client_model_service.Client_Model_Service()
-        clientModel = clientModelService.fetch_by_clientcode(clientCode)
-        authKey = clientModel.auth_key
-        authIV = clientModel.auth_iv
-        ledgerModel = LedgerModel.objects.filter(client=clientId)
-        if(len(ledgerModel) == 0):
-            return "0"
-        resp = str(list(ledgerModel.values()))
-        encResp = auth.AESCipher(authKey, authIV).encrypt(resp)
-        return encResp
-    
-    def findByTransTimeService(startTranstime, endTransTime,clientCode):
+     
+    def findByTransTimeService(startTranstime, endTransTime, merchant, created_by, client_ip_address):
         startYear = int(startTranstime[0:4])
         startMonth = int(startTranstime[5:7])
         startDay = int(startTranstime[8:10])
@@ -97,8 +66,8 @@ class ICICI_service:
         end = dt.replace(year=endYear, day=endDay, month=endMonth,hour=endHours, minute=endMinute, second=0, microsecond=0)
         Ledger = LedgerModel.objects.filter(trans_time__range=[start, end])
 
-        clientModelService = Client_model_service.Client_Model_Service()
-        clientModel = clientModelService.fetch_by_clientcode(clientCode)
+        clientModel = Client_model_service.Client_Model_Service.fetch_by_id(
+            id=merchant, created_by=created_by, client_ip_address=client_ip_address)
         authKey = clientModel.auth_key
         authIV = clientModel.auth_iv
         if(len(Ledger) == 0):
@@ -107,22 +76,91 @@ class ICICI_service:
         encResp = auth.AESCipher(authKey, authIV).encrypt(resp)
         return encResp
 
-    def findByCustomerReferenceService(customer_ref_no, clientCode):
-        clientModelService = Client_model_service.Client_Model_Service()
-        clientModel = clientModelService.fetch_by_clientcode(clientCode)
+    
+    def fetchLedgerByParams(merchant, created_by, client_ip_address, client_code=None, customer_ref_no=None, startTime=None, endTime=None, trans_type=None):
+        resp = list()
+        query = str()
+        if(merchant==None):
+            return "-1"
+        if(client_code != None and merchant != None):
+            query = "call fet(\""+client_code+"\","+merchant+");"
+        elif(customer_ref_no != None and merchant != None):
+            query = "call fet(\""+customer_ref_no+"\","+merchant+");"
+        elif(trans_type != None and merchant != None):
+            query = "call fet(\""+trans_type+"\","+merchant+");"
+        elif(merchant!=None):
+            query = LedgerModel.objects.filter(merchant=merchant).values()
+            clientModel = Client_model_service.Client_Model_Service.fetch_by_id(
+            id=merchant, created_by=created_by, client_ip_address=client_ip_address)
+            authKey = clientModel.auth_key
+            authIV = clientModel.auth_iv
+            string = str(list(query))
+            encResp = auth.AESCipher(authKey, authIV).encrypt(string)
+            return encResp
+        elif(startTime!=None and endTime!=None  and merchant!=None):
+            startYear = int(startTime[0:4])
+            startMonth = int(startTime[5:7])
+            startDay = int(startTime[8:10])
+            startHours = int(startTime[11:13])
+            startMinute = int(startTime[14:16])
+
+            endYear = int(endTime[0:4])
+            endMonth = int(endTime[5:7])
+            endDay = int(endTime[8:10])
+            endHours = int(endTime[11:13])
+            endMinute = int(endTime[14:16])
+
+            dt = datetime.now()
+            start = dt.replace(year=startYear, day=startDay, month=startMonth,
+                            hour=startHours, minute=startMinute, second=0, microsecond=0)
+            end = dt.replace(year=endYear, day=endDay, month=endMonth,
+                            hour=endHours, minute=endMinute, second=0, microsecond=0)
+            Ledger = LedgerModel.objects.filter(trans_time__range=[start, end])
+
+            clientModel = Client_model_service.Client_Model_Service.fetch_by_id(
+                id=merchant, created_by=created_by, client_ip_address=client_ip_address)
+            authKey = clientModel.auth_key
+            authIV = clientModel.auth_iv
+            if(len(Ledger) == 0):
+                return "0"
+            resp = str(list(Ledger.values()))
+            encResp = auth.AESCipher(authKey, authIV).encrypt(resp)
+            return encResp
+        for l in LedgerModel.objects.raw(query):
+                d = {
+                    "id": l.id,
+                    "merchant": l.merchant,
+                    "client_code": l.client_code,
+                    "amount": l.amount,
+                    "trans_type": l.trans_type,
+                    "type_status": l.type_status,
+                    "bank_ref_no": l.bank_ref_no,
+                    "customer_ref_no": l.customer_ref_no,
+                    "bank": l.bank,
+                    "bene_account_name": l.bene_account_name,
+                    "bene_account_number": l.bene_account_number,
+                    "bene_ifsc": l.bene_ifsc,
+                    "trans_status": l.trans_status,
+                    "charge": l.charge,
+                    "mode": l.mode,
+                    "request_header": l.request_header,
+                    "trans_time": l.trans_time,
+                    "van": l.van,
+                    "created_at": l.created_at,
+                    "deleted_at": l.deleted_at,
+                    "updated_at": l.updated_at,
+                    "createdBy": l.createdBy,
+                    "updatedBy": l.updatedBy,
+                    "status": l.status,
+                    "trans_amount_type": l.trans_amount_type
+                }
+                resp.append(d)
+        clientModel = Client_model_service.Client_Model_Service.fetch_by_id(
+            id=merchant, created_by=created_by,client_ip_address=client_ip_address)
         authKey = clientModel.auth_key
         authIV = clientModel.auth_iv
-        print("hello1")
-        ledgerModel = LedgerModel.objects.filter(customer_ref_no=customer_ref_no, client_code=clientCode)
-        print("hello1")
-        if(len(ledgerModel) == 0):
+        string = str(resp)
+        encResp = auth.AESCipher(authKey, authIV).encrypt(string)
+        if(len(resp)==0):
             return "0"
-        resp = str(list(ledgerModel.values()))
-        encResp = auth.AESCipher(authKey, authIV).encrypt(resp)
         return encResp
-
-def enc(encStr, authKey, authIV):
-    authobj = auth.AESCipher(authKey, authIV)
-    encStr = authobj.encrypt(encStr)
-    encStr = str(encStr)
-    return encStr

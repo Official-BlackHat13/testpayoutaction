@@ -1,6 +1,6 @@
 from django.db import models
 from datetime import datetime
-class ClientModel(models.Model):
+class MerchantModel(models.Model):
     id=models.AutoField
     role=models.IntegerField(null=True)
     client=models.IntegerField()
@@ -17,5 +17,9 @@ class ClientModel(models.Model):
     deleted_at=models.DateTimeField(default=None,null=True)
     updated_at=models.DateTimeField(default=None,null=True)
     user = models.IntegerField()
+    created_by=models.CharField(max_length=300)
+    updated_by = models.CharField(max_length=300)
+    deleted_by = models.CharField(max_length=300)
+    is_ip_checking = models.BooleanField(default=True)
     def __str__(self):
         return str(self.id)

@@ -14,3 +14,10 @@
 -- select @cred-@deb into balance;
 -- end 
 -- && DELIMITER ;
+
+--DELIMITER $$
+--CREATE DEFINER=`root`@`localhost` PROCEDURE `fet`(IN n varchar(1000), m int(11))
+--BEGIN
+--select * from apis_ledgermodel where (customer_ref_no = n OR trans_amount_type = n OR client_code = n) AND (merchant = m) ;
+--END$$
+--DELIMITER ;

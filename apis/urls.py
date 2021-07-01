@@ -29,11 +29,10 @@ urlpatterns = [
     path("saveLedger/", views.LedgerSaveRequest.as_view()),
     path("deleteLedger/", views.DeleteLedger.as_view()),
     path("update/", views.UpdateLedger.as_view()),
-    path("findByClientCode/", views.findByClientCode.as_view()),
-    path("findByClientId/",views.findByClientId.as_view()),
-    path("findByTransTime/",views.findByTransTime.as_view()),
     path("auth/",views.Auth.as_view()),
-    path("findByCustomerReference/",views.findByCustomerReference.as_view()),
     path("enc/",views.encryptJSON.as_view()),
-    path("decrypt", views.decryptJson.as_view())
+    path("decrypt/", views.decryptJson.as_view()),
+    path("getLogs/<slug:page>/<slug:length>",views.GetLogs.as_view()),
+    path("fetch/",views.fetch.as_view())
+   #  path("test/",views.Test.as_view())
 ]
