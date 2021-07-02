@@ -2,6 +2,7 @@
 # Create your views here.
 from http import client
 from django.db.models import query
+from requests.sessions import merge_hooks
 from rest_framework.exceptions import server_error
 # from apis.bank_services.IFDC_service import payment
 from django.http import *
@@ -36,7 +37,7 @@ from .Utils import randomstring
 from . import const
 import requests
 from sabpaisa import auth
-
+from datetime import datetime
 # class bankApiViewtest(APIView):
 #     @swagger_auto_schema(responses=api_docs.response_schema_dict,request_body=api_docs.val)
 #     def post(self,req):
@@ -108,7 +109,7 @@ class bankApiEnquiryView(APIView):
 
 
 class LedgerSaveRequest(APIView):
-    permission_classes = (IsAuthenticated, )
+    #permission_classes = (IsAuthenticated, )
     def post(self,request):
         # print(request.data.get("client"))
         merchant= request.data.get("merchant")
@@ -167,7 +168,7 @@ class getLedgers(APIView):
 
 
 class DeleteLedger(APIView):
-    permission_classes = (IsAuthenticated, )
+    #permission_classes = (IsAuthenticated, )
     def delete(self,request):
         id = request.data.get("id")
         deletedBy = request.data.get("deletedBy")
@@ -181,7 +182,7 @@ class DeleteLedger(APIView):
             return JsonResponse({"Message": "Id not found"}, status=status.HTTP_404_NOT_FOUND)
 
 class UpdateLedger(APIView):
-    permission_classes = (IsAuthenticated, )
+    #permission_classes = (IsAuthenticated, )
     def put(self,request):
         merchant = request.data.get("merchant")
         query = request.data.get("query")
@@ -194,12 +195,25 @@ class UpdateLedger(APIView):
         encResp = auth.AESCipher(authKey, authIV).decrypt(query)
         res = ast.literal_eval(encResp)
         id = res.get("id")
-        ledger = LedgerModel.objects.filter(id=id,merchant=merchant)
+        ledger = LedgerModel.objects.filter(id=id,merchant=merchant,status=True)
+        if(len(ledger) ==  0):
+            return JsonResponse({"Message": "id or merchantcode or status miss matched"}, status=status.HTTP_404_NOT_FOUND)
         if(len(ledger) > 0):
-            ledgermodel = LedgerModel()
-            ledgerModel = ledger[0]
+            ledgermodel = ledger[0]
+            # ledgerModel = ledger[0]
             print("....... ", ledgermodel.created_at)
             print("....... ", ledgermodel.deleted_at)
+            created = str(ledgermodel.created_at)
+            created_at_Year = int(created[0:4])
+            created_at_startMonth = int(created[5:7])
+            created_at_startDay = int(created[8:10])
+            created_at_startHours = int(created[11:13])
+            created_at_startMinute = int(created[14:16])
+            # dt = datetime.now()
+            # created_at = dt.replace(year=created_at_Year, day=created_at_startDay, month=created_at_startMonth,
+            #                         hour=created_at_startHours, minute=created_at_startMinute, second=0, microsecond=0)
+            d = ledger[0].created_at
+            print("....... ", d)
             service = Ledger_Model_Service(
                 id=request.data.get("id"),
                 trans_amount_type=res.get("trans_amount_type"),
@@ -212,7 +226,6 @@ class UpdateLedger(APIView):
                 trans_status=res.get("trans_status"),
                 bank_ref_no=res.get("bank_ref_no"),
                 customer_ref_no=res.get("customer_ref_no"),
-                
                 bank_id=res.get("bank"),
                 trans_time=datetime.now(),
                 bene_account_name=res.get("bene_account_name"),
@@ -221,12 +234,15 @@ class UpdateLedger(APIView):
                 request_header=res.get("request_header"),
                 mode=res.get("mode"),
                 charge=res.get("charge"),
+                created_at=d,
+                # deleted_at=ledgermodel.deleted_at,
                 createdBy=res.get("createdBy"),
                 updatedBy=res.get("updatedBy"),
                 deletedBy=res.get("deletedBy"),
                 updated_at=datetime.now()
             )
-            res = service.update()
+            res = service.update(id = id,merchant=merchant)
+            print("d ....... ", d)
             return JsonResponse({"Message": "updated successfully"}, status=status.HTTP_200_OK)
         return JsonResponse({"Message": "something went wrong!!!!"}, status=status.HTTP_400_BAD_REQUEST)
 

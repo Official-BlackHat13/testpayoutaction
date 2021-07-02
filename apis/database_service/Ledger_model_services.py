@@ -149,32 +149,39 @@ class Ledger_Model_Service:
         log_service.save()
         return value[0][0]
 
-    def update(self):
-        ledgermodel = LedgerModel()
-        ledgermodel.id = self.id
-        ledgermodel.merchant = self.merchant
-        ledgermodel.client_code = self.client_code
-        ledgermodel.amount = self.amount
-        ledgermodel.trans_type = self.trans_type
-        ledgermodel.type_status = self.type_status
-        ledgermodel.trans_status = self.trans_status
-        ledgermodel.bank_ref_no = self.bank_ref_no
-        ledgermodel.customer_ref_no = self.customer_ref_no
-        ledgermodel.bank = self.bank_id
-        ledgermodel.trans_time = self.trans_time
-        ledgermodel.van = self.van
-        ledgermodel.bene_account_name = self.bene_account_name
-        ledgermodel.bene_account_number = self.bene_account_number
-        ledgermodel.bene_ifsc = self.bene_ifsc
-        ledgermodel.request_header = self.request_header
-        ledgermodel.createdBy = self.createdBy
-        ledgermodel.updatedBy = self.updatedBy
-        ledgermodel.deletedBy = self.deletedBy
-        ledgermodel.updated_at = self.updated_at
-        ledgermodel.status = self.status
-        ledgermodel.mode = self.mode
-        ledgermodel.charge = self.charge
-        ledgermodel.save()
+    def update(self,id,merchant):
+        ledger = LedgerModel.objects.filter(id=id, merchant=merchant)
+        if(len(ledger) > 0):
+            ledgermodel = LedgerModel()
+            ledgerModel = ledger[0]
+            ledgermodel.id = id
+            ledgermodel.merchant = self.merchant
+            ledgermodel.client_code = self.client_code
+            ledgermodel.amount = self.amount
+            ledgermodel.trans_type = self.trans_type
+            ledgermodel.type_status = self.type_status
+            ledgermodel.trans_status = self.trans_status
+            ledgermodel.bank_ref_no = self.bank_ref_no
+            ledgermodel.customer_ref_no = self.customer_ref_no
+            ledgermodel.bank = self.bank_id
+            ledgermodel.trans_time = self.trans_time
+            ledgermodel.van = self.van
+            ledgermodel.bene_account_name = self.bene_account_name
+            ledgermodel.bene_account_number = self.bene_account_number
+            ledgermodel.bene_ifsc = self.bene_ifsc
+            ledgermodel.request_header = self.request_header
+            ledgermodel.createdBy = self.createdBy
+            ledgermodel.updatedBy = self.updatedBy
+            ledgermodel.deletedBy = self.deletedBy
+            ledgermodel.updated_at = self.updated_at
+            # ledgermodel.deleted_at = ledgermodel.deleted_at
+            # ledgermodel.created_at = ledgermodel.created_at
+            ledgermodel.created_at = self.created_at
+            ledgermodel.status = self.status
+            ledgermodel.mode = self.mode
+            ledgermodel.charge = self.charge
+            ledgermodel.save()
+        print("..... ",ledgermodel)
         return ledgermodel.id
 
         
