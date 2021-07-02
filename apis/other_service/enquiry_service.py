@@ -1,4 +1,7 @@
 from http import client
+import json
+import math
+import re
 from rest_framework import status
 from sabpaisa import auth
 from datetime import datetime
@@ -77,7 +80,7 @@ class ICICI_service:
         return encResp
 
     
-    def fetchLedgerByParams(merchant, created_by, client_ip_address, client_code=None, customer_ref_no=None, startTime=None, endTime=None, trans_type=None):
+    def fetchLedgerByParams(merchant, created_by, page,length,client_ip_address, client_code=None, customer_ref_no=None, startTime=None, endTime=None, trans_type=None):
         resp = list()
         query = str()
         if(merchant==None):
@@ -155,12 +158,32 @@ class ICICI_service:
                     "trans_amount_type": l.trans_amount_type
                 }
                 resp.append(d)
+        print("length = ", int(length), " and ", len(resp))
+        if(length == "all"):
+            return str(resp)
+        if(int(length) > len(resp)):
+            return "-2"
+
+        if(int(length)>=len(resp) and int(page)>1):
+            return "-2"
+        length = int(length)
+        splitlen = math.ceil(len(resp)/length)
+        split_list = []
+        for i in range(splitlen):
+            split_list.append(resp[length*i:length*(i+1)])
+        json = {
+            "data": str(split_list[int(page)-1]),
+            "splitlen": str(splitlen)
+        }
+        respJson = str(json)
+        print("response..... ", respJson)
+        #return split_list[int(page)-1]
         clientModel = Client_model_service.Client_Model_Service.fetch_by_id(
             id=merchant, created_by=created_by,client_ip_address=client_ip_address)
         authKey = clientModel.auth_key
         authIV = clientModel.auth_iv
         string = str(resp)
-        encResp = auth.AESCipher(authKey, authIV).encrypt(string)
+        encResp = auth.AESCipher(authKey, authIV).encrypt(respJson)
         if(len(resp)==0):
             return "0"
         return encResp

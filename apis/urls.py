@@ -33,6 +33,8 @@ urlpatterns = [
     path("enc/",views.encryptJSON.as_view()),
     path("decrypt/", views.decryptJson.as_view()),
     path("getLogs/<slug:page>/<slug:length>",views.GetLogs.as_view()),
-    path("fetch/",views.fetch.as_view())
+    path("fetch/<slug:page>/<slug:length>", views.fetch.as_view()),
+    path("head/",views.tester.as_view()),
+    path("encHeader/",views.encHeader.as_view())
    #  path("test/",views.Test.as_view())
 ]

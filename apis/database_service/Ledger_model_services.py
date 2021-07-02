@@ -181,7 +181,6 @@ class Ledger_Model_Service:
             ledgermodel.mode = self.mode
             ledgermodel.charge = self.charge
             ledgermodel.save()
-        print("..... ",ledgermodel)
         return ledgermodel.id
 
         

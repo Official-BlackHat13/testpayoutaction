@@ -34,7 +34,6 @@ from rest_framework.permissions import IsAuthenticated
 from . import const
 from .Utils import randomstring
 
-from . import const
 import requests
 from sabpaisa import auth
 from datetime import datetime
@@ -184,12 +183,18 @@ class DeleteLedger(APIView):
 class UpdateLedger(APIView):
     #permission_classes = (IsAuthenticated, )
     def put(self,request):
-        merchant = request.data.get("merchant")
+        
+        m = request.headers["merchant"]
+        if(m == ""):
+            return Response({"message": "merchant code missing", "data": None, "response_code": "3"}, status=status.HTTP_400_BAD_REQUEST)
+        aKey = const.AuthKey
+        aIV = const.AuthIV
+        merchant = auth.AESCipher(aKey, aIV).decrypt(m)
         query = request.data.get("query")
         ip = request.data.get("client_ip_address")
         createdBy = request.data.get("created_by")
         clientModel = Client_model_service.Client_Model_Service.fetch_by_id(
-            id=merchant, created_by=createdBy, client_ip_address=ip)
+            id=merchant, created_by=createdBy, client_ip_address=request.META['REMOTE_ADDR'])
         authKey = clientModel.auth_key
         authIV = clientModel.auth_iv
         encResp = auth.AESCipher(authKey, authIV).decrypt(query)
@@ -200,20 +205,7 @@ class UpdateLedger(APIView):
             return JsonResponse({"Message": "id or merchantcode or status miss matched"}, status=status.HTTP_404_NOT_FOUND)
         if(len(ledger) > 0):
             ledgermodel = ledger[0]
-            # ledgerModel = ledger[0]
-            print("....... ", ledgermodel.created_at)
-            print("....... ", ledgermodel.deleted_at)
-            created = str(ledgermodel.created_at)
-            created_at_Year = int(created[0:4])
-            created_at_startMonth = int(created[5:7])
-            created_at_startDay = int(created[8:10])
-            created_at_startHours = int(created[11:13])
-            created_at_startMinute = int(created[14:16])
-            # dt = datetime.now()
-            # created_at = dt.replace(year=created_at_Year, day=created_at_startDay, month=created_at_startMonth,
-            #                         hour=created_at_startHours, minute=created_at_startMinute, second=0, microsecond=0)
             d = ledger[0].created_at
-            print("....... ", d)
             service = Ledger_Model_Service(
                 id=request.data.get("id"),
                 trans_amount_type=res.get("trans_amount_type"),
@@ -242,7 +234,6 @@ class UpdateLedger(APIView):
                 updated_at=datetime.now()
             )
             res = service.update(id = id,merchant=merchant)
-            print("d ....... ", d)
             return JsonResponse({"Message": "updated successfully"}, status=status.HTTP_200_OK)
         return JsonResponse({"Message": "something went wrong!!!!"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -267,17 +258,19 @@ class encryptJSON(APIView):
 
 class decryptJson(APIView):
     def post(self,request):
-        clientCode = request.data.get("client_code")
+        id = request.data.get("id")
         query = request.data.get("query")
         createdBy = request.data.get("createdBy")
-        print(query)
-        clientModel = Client_model_service.Client_Model_Service.fetchAuth(client_code=clientCode, created_by=createdBy)
+        ip = request.data.get("ip")
+        clientModel = Client_model_service.Client_Model_Service.fetch_by_id(
+            client_ip_address=ip, id=id, created_by=createdBy)
+
         authKey = clientModel.auth_key
         authIV = clientModel.auth_iv
         encResp = auth.AESCipher(authKey, authIV).decrypt(query)
         res = ast.literal_eval(encResp)
         print("...... ",res)
-        return Response({"message": "data", "data":encResp,"response_code": "3"}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"message": "data", "data":str(encResp),"response_code": "3"}, status=status.HTTP_404_NOT_FOUND)
 
 class GetLogs(APIView):
     def get(self,req,page,length):
@@ -304,23 +297,53 @@ class GetLogs(APIView):
             return Response({"Message":"some error","Error":e.args})
         
 class fetch(APIView):
-    permission_classes = (IsAuthenticated, )
-    def get(self,request):
+    #permission_classes = (IsAuthenticated, )
+    def get(self,request,page,length):
+        print(page," ",length)
+        authKey = const.AuthKey
+        authIV = const.AuthIV
+        resp = request.headers["merchant"]
+        if page == "all" and length != "all":
+            return JsonResponse({"Message": "page and length format does not match"}, status=status.HTTP_406_NOT_ACCEPTABLE)
+        if(int(page)!= 1 and length == "all"):
+            return JsonResponse({"Message": "page and length format not compatible"}, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+        if(resp == ""):
+            return Response({"message": "merchant code missing", "data": None, "response_code": "3"}, status=status.HTTP_400_BAD_REQUEST)
+        decMerchant = auth.AESCipher(authKey, authIV).decrypt(resp)
         clientCode = request.data.get("clientCode")
-        merchant = request.data.get("merchant")
+        merchant = decMerchant
         customer_ref_no = request.data.get("customer_ref_no")
         startTime = request.data.get("startTime")
         endTime = request.data.get("endTime")
         trans_type = request.data.get("trans_type")
-        created_by = request.data.get("created_by"),
-        client_ip_address = request.data.get("client_ip_address")
-        print(clientCode," ",merchant)
+        created_by = request.data.get("created_by")
         resp = ICICI_service.fetchLedgerByParams(client_code = clientCode,
-        startTime=startTime,endTime=endTime,
-        merchant = merchant,customer_ref_no=customer_ref_no,trans_type=trans_type,created_by=created_by,client_ip_address=client_ip_address)
-        print("resp..... ",type(resp))
+        startTime=startTime,endTime=endTime,page=page,length=length,
+        merchant = merchant,customer_ref_no=customer_ref_no,trans_type=trans_type,created_by=created_by,client_ip_address=request.META['REMOTE_ADDR'])
+        if(resp=="-2"):
+            return Response({"message": "length of page is greater then the result length", "data": None, "response_code": "2"}, status=status.HTTP_404_NOT_FOUND)
+
         if(resp=="0"):
-            return Response({"message": "data not found", "data": None, "response_code": "1"}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"message": "no data", "data": None, "response_code": "2"}, status=status.HTTP_404_NOT_FOUND)
         if(resp=="-1"):
-            return Response({"message": "missing mandatory parameters", "data": None, "response_code": "1"}, status=status.HTTP_400_BAD_REQUEST)
-        return Response({"message": "data found", "data": resp, "response_code": "1"}, status=status.HTTP_200_OK)
+            return Response({"message": "missing mandatory parameters", "data": None, "response_code": "3"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"message": "data found", "data": str(resp), "response_code": "1"}, status=status.HTTP_200_OK)
+
+class encHeader(APIView):
+    def get(self,request):
+        authKey = const.AuthKey
+        authIV = const.AuthIV
+        resp = request.data.get("header")
+        encResp = auth.AESCipher(authKey, authIV).encrypt(resp)
+        return Response({"header": encResp, "authkey": authKey, "authIV": authIV})
+
+class tester(APIView):
+    def get(self,request):
+        authKey = const.AuthKey
+        authIV = const.AuthIV
+        resp = request.headers["merchant"]
+        if(resp == ""):
+            print("yo..............")
+        decMerchant = auth.AESCipher(authKey, authIV).decrypt(resp)
+        return Response({"header": decMerchant, "authkey": authKey, "authIV": authIV})
