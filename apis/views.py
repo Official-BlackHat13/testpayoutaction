@@ -28,10 +28,11 @@ from django.contrib.auth.models import User
 from rest_framework.permissions import IsAuthenticated
 from . import const
 from .Utils import randomstring
-
+from .other_service import login_service
 from . import const
+from sabpaisa import auth
 import requests
-from .models import TestModel
+# from .models import TestModel
 # class getTest(APIView):
 #     # @swagger_auto_schema(responses=api_docs.response_schema_dict,request_body=api_docs.val)
 #     def get(self,req):
@@ -238,5 +239,42 @@ class GetLogs(APIView):
         except Exception as e:
             Log_model_services.Log_Model_Service.update_response(logid,str({"data_length":len(logs[0][page]),"data":logsser.data}))
             return Response({"Message":"some error","Error":e.args})
-        
+
+
+class LoginRequestAPI(APIView):
+    def post(self,req):
+        try:
+            print(req.data)
+            login=login_service.Login_service(username=req.data["username"],password=req.data["password"],client_ip_address=req.META['REMOTE_ADDR'])
+            res = login.login_request()
+            if(res==False):
+                return Response({"message":"User Not Found"})
+            else:
+                return Response({"verification_token":res})
+        except Exception as e:
+            return Response({"Error_Code":e.args})
+class LoginVerificationAPI(APIView):
+    def post(self,req):
+        try:
+            print(req.data)
+            login=login_service.Login_service.login_verification(req.data['verification_code'],req.data["otp"])
+            print('done')
+            if(login=="OTP Expired"):
+                return Response({"message":"OTP Expired"})
+            elif login==False:
+                return Response({"message":"OTP or Verification token is not valid"})
+            else:
+                api_key=auth.AESCipher(const.AuthKey,const.AuthIV).encrypt(str(login))
+                return Response({"api_key":str(api_key)[2:].replace("'","")})
+        except Exception as e:
+            return Response({"Error_Code":e.args})
+class ResendLoginOTP(APIView):
+    def post(self,req):
+        try:
+         login=login_service.Login_service.resend_otp(req.data["verification_code"])
+         api_key=auth.AESCipher(const.AuthKey,const.AuthIV).encrypt(login)
+         return Response({"api_key":api_key})
+         
+        except Exception as e:
+            return Response({"Error":e.args})
         

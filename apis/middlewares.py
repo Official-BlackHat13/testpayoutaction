@@ -5,6 +5,7 @@ from . import models
 from rest_framework.response import *
 from django.shortcuts import HttpResponse
 from datetime import datetime
+from sabpaisa import auth
 
 # from .database_service.Log_model_services import Log_Model_Service
 from . import const
@@ -13,14 +14,16 @@ def IpWhiteListed(get_response):
         print(request.headers)
         ip=request.META['REMOTE_ADDR']
         try:
-            if(request.path!="/api/" and request.path!="/" and "/admin/" not in request.path and request.path!="/api/auth/" and request.path not in "/api/token/" and const.merchant_check):
-                if "merchant_id" not in request.headers:
+            if(request.path!="/api/" and request.path!="/" and "/admin/" not in request.path and request.path!="/api/auth/" and request.path not in "/api/token/" and request.path!="/api/loginrequest/" and request.path!="/api/loginverified/"  and const.merchant_check):
+                if "api_key" not in request.headers:
                     print("not condition")
-                    error_res=HttpResponse(str({"message":"merchant id not provided"}))
+                    error_res=HttpResponse(str({"message":"APIKEY not provided"}))
                     error_res['Content-Type'] = 'application/json'
                     return error_res
                 
-                merchant_id = request.headers["merchant_id"]
+                merchant_id = request.headers["api_key"]
+                merchant_id=auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(merchant_id)
+                print(merchant_id)
                 clientmodel=Client_Model_Service.fetch_by_id(int(merchant_id),request.META['REMOTE_ADDR'],merchant_id)
                 # if not clientmodel:
                 #     raise Exception("Merchant id not valid")
