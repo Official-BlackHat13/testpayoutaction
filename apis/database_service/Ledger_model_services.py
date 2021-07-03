@@ -1,10 +1,14 @@
+from requests.api import request
 from apis import const
+import string
+import random
+import uuid
 from rest_framework import status
 from sabpaisa import auth
 from datetime import datetime
 from ..database_service import Client_model_service
 from rest_framework.permissions import AND
-from ..models import LedgerModel
+from ..models import LedgerModel,ModeModel
 from . import Log_model_services
 from django.db import connection
 from sabpaisa import main
@@ -207,3 +211,42 @@ class Ledger_Model_Service:
             ledgerModel.save()
             return True
         return False
+
+    def addBal(decResp):
+        ledgermodel = LedgerModel()
+        ledgermodel.amount = decResp.get("amount")
+        modeOfTrans = decResp.get("mode")
+        m = ModeModel.objects.filter(mode = modeOfTrans)
+        ledgermodel.mode = m[0].id
+        ledgermodel.bank_ref_no = decResp.get("bank_ref_no")
+        ledgermodel.trans_amount_type = "credit"
+        ledgermodel.trans_type = "payin"
+        ledgermodel.type_status = decResp.get("type_status")
+        ledgermodel.request_header = decResp.get("request_header")
+        bankResp = "NULL"
+        ledgermodel.remarks = decResp.get("remarks")
+        ledgermodel.merchant = decResp.get("merchant")
+        ledgermodel.client_code = decResp.get("client_code")
+        #CR06e65070-dbd6-11eb-9816-507b9d006cb8
+        ledgermodel.customer_ref_no = generate_unique_code()
+        ledgermodel.bank = decResp.get("bank")
+        ledgermodel.trans_time = datetime.now()
+        ledgermodel.van = decResp.get("van")
+        ledgermodel.bene_account_name = const.bene_account_name
+        ledgermodel.bene_account_number = const.bene_account_number
+        ledgermodel.bene_ifsc = const.bene_ifsc
+        ledgermodel.createdBy = decResp.get("created_by")
+        ledgermodel.created_at = datetime.now()
+        ledgermodel.status = decResp.get("status")
+        ledgermodel.charge = decResp.get("charge")
+        ledgermodel.save()
+        return str(ledgermodel.id)
+        
+def generate_unique_code():
+    resp = str()
+    while True:
+        resp = "CR"+str(uuid.uuid1())
+        if(LedgerModel.objects.filter(customer_ref_no=resp).count() == 0):
+            break
+    return resp
+

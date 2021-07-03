@@ -19,7 +19,7 @@ from .serializersFolder.serializers import LogsSerializer
 # from .models import *
 import ast
 from .other_service import payout_service
-from .database_models import LedgerModel
+from .database_models import LedgerModel,ModeModel
 from apis.database_service.Ledger_model_services import *
 from django.http.response import JsonResponse
 from apis.other_service.enquiry_service import *
@@ -99,8 +99,7 @@ class bankApiPaymentView(APIView):
             return Response({"Message":res,"response_code":"2"},status=status.HTTP_204_NO_CONTENT)
             
         # return Response(payment_service.hit())
-class addBalanceApi(APIView):
-    pass
+
 class bankApiEnquiryView(APIView):
     @swagger_auto_schema()
     def post(self,req):
@@ -191,7 +190,6 @@ class UpdateLedger(APIView):
         aIV = const.AuthIV
         merchant = auth.AESCipher(aKey, aIV).decrypt(m)
         query = request.data.get("query")
-        ip = request.data.get("client_ip_address")
         createdBy = request.data.get("created_by")
         clientModel = Client_model_service.Client_Model_Service.fetch_by_id(
             id=merchant, created_by=createdBy, client_ip_address=request.META['REMOTE_ADDR'])
@@ -303,6 +301,8 @@ class fetch(APIView):
         authKey = const.AuthKey
         authIV = const.AuthIV
         resp = request.headers["merchant"]
+        if(resp == ""):
+            return Response({"message": "merchant code missing", "data": None, "response_code": "3"}, status=status.HTTP_400_BAD_REQUEST)
         if page == "all" and length != "all":
             return JsonResponse({"Message": "page and length format does not match"}, status=status.HTTP_406_NOT_ACCEPTABLE)
         if(int(page)!= 1 and length == "all"):
@@ -325,7 +325,7 @@ class fetch(APIView):
             return Response({"message": "length of page is greater then the result length", "data": None, "response_code": "2"}, status=status.HTTP_404_NOT_FOUND)
 
         if(resp=="0"):
-            return Response({"message": "no data", "data": None, "response_code": "2"}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"message": "no data for the given credentials", "data": None, "response_code": "2"}, status=status.HTTP_404_NOT_FOUND)
         if(resp=="-1"):
             return Response({"message": "missing mandatory parameters", "data": None, "response_code": "3"}, status=status.HTTP_400_BAD_REQUEST)
         return Response({"message": "data found", "data": str(resp), "response_code": "1"}, status=status.HTTP_200_OK)
@@ -347,3 +347,30 @@ class tester(APIView):
             print("yo..............")
         decMerchant = auth.AESCipher(authKey, authIV).decrypt(resp)
         return Response({"header": decMerchant, "authkey": authKey, "authIV": authIV})
+
+
+class addMode(APIView):
+    def post(self,request):
+        m = ModeModel()
+        m.mode = "credit"
+        m.created_at = datetime.now()
+        m.save()
+
+class addBalanceApi(APIView):
+    def post(self,request):
+        authKey = const.AuthKey
+        authIV = const.AuthIV
+        merchant = request.headers["merchant"]
+        if(merchant == ""):
+            return Response({"message": "merchant code missing", "data": None, "response_code": "3"}, status=status.HTTP_400_BAD_REQUEST)
+        decMerchant = auth.AESCipher(authKey, authIV).decrypt(merchant)
+        created_by = request.data.get("created_by")
+        query = request.data.get("query")
+        clientModel = Client_model_service.Client_Model_Service.fetch_by_id(
+            id=decMerchant, created_by=created_by, client_ip_address=request.META['REMOTE_ADDR'])
+        authKey = clientModel.auth_key
+        authIV = clientModel.auth_iv
+        decResp = auth.AESCipher(authKey, authIV).decrypt(query)
+        res = ast.literal_eval(decResp)
+        yo = Ledger_Model_Service.addBal(res)
+        return Response({"header": decMerchant, "query":str(res),"id":yo})

@@ -159,6 +159,8 @@ class ICICI_service:
                 }
                 resp.append(d)
         print("length = ", int(length), " and ", len(resp))
+        if(len(resp) == 0):
+            return "0"
         if(length == "all"):
             return str(resp)
         if(int(length) > len(resp)):
@@ -184,6 +186,5 @@ class ICICI_service:
         authIV = clientModel.auth_iv
         string = str(resp)
         encResp = auth.AESCipher(authKey, authIV).encrypt(respJson)
-        if(len(resp)==0):
-            return "0"
+        
         return encResp

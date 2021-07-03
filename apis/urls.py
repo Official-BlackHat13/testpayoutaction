@@ -23,7 +23,7 @@ urlpatterns = [
     path('token/',jwt_views.TokenObtainPairView.as_view(),name ='token_obtain_pair'),
     path('token/refresh/',jwt_views.TokenRefreshView.as_view(), name ='token_refresh'),
     path("payout/",views.bankApiPaymentView.as_view()),
-    path("addBalance/",lambda a:a),
+    #path("addBalance/",lambda a:a),
     path("enquiry/",views.bankApiEnquiryView.as_view()),
     path("fetchAllLedgers/", views.getLedgers.as_view()),
     path("saveLedger/", views.LedgerSaveRequest.as_view()),
@@ -35,6 +35,7 @@ urlpatterns = [
     path("getLogs/<slug:page>/<slug:length>",views.GetLogs.as_view()),
     path("fetch/<slug:page>/<slug:length>", views.fetch.as_view()),
     path("head/",views.tester.as_view()),
-    path("encHeader/",views.encHeader.as_view())
+    path("encHeader/",views.encHeader.as_view()),
+    path("addBalance/",views.addBalanceApi.as_view()),
    #  path("test/",views.Test.as_view())
 ]
