@@ -24,12 +24,16 @@ def IpWhiteListed(get_response):
                 clientmodel=Client_Model_Service.fetch_by_id(int(merchant_id),request.META['REMOTE_ADDR'],merchant_id)
                 # if not clientmodel:
                 #     raise Exception("Merchant id not valid")
+                if "/api/getLogs/" in  request.path:
+                    pass
                 if not clientmodel.is_ip_checking:
                     response=get_response(request)
                     return response
                 ipWhiteListedModel=models.IpWhiteListedModel.objects.filter(ip_address=ip,status=True,merchant=merchant_id)
             else:
              ipWhiteListedModel=models.IpWhiteListedModel.objects.filter(ip_address=ip,status=True)
+            
+                
         except Exception as e:
             error_res=HttpResponse(str({"message":e.args}))
             error_res['Content-Type'] = 'application/json'

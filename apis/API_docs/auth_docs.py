@@ -36,8 +36,9 @@ request=openapi.Schema(
         'username': openapi.Schema(type=openapi.TYPE_STRING, description='string'),
         'password': openapi.Schema(type=openapi.TYPE_STRING, description='string'),
         "email":openapi.Schema(type=openapi.TYPE_STRING, description='string'),
-        "client_id":openapi.Schema(type=openapi.TYPE_INTEGER, description='string'),
-        "client_code":openapi.Schema(type=openapi.TYPE_STRING, description='string'),
+        "client_id":openapi.Schema(type=openapi.TYPE_INTEGER, description='client id'),
+        "client_code":openapi.Schema(type=openapi.TYPE_STRING, description='client code'),
         "bank_code":openapi.Schema(type=openapi.TYPE_INTEGER, description='string'),
+        "role_id":openapi.Schema(type=openapi.TYPE_INTEGER, description='integer'),
     
     })

@@ -1,8 +1,12 @@
 # from django.shortcuts import render
 # Create your views here.
+<<<<<<< HEAD
 from http import client
 from django.db.models import query
 from requests.sessions import merge_hooks
+=======
+from apis.database_models.Test import TestModel
+>>>>>>> working
 from rest_framework.exceptions import server_error
 # from apis.bank_services.IFDC_service import payment
 from django.http import *
@@ -35,14 +39,34 @@ from . import const
 from .Utils import randomstring
 
 import requests
+
 from sabpaisa import auth
 from datetime import datetime
 # class bankApiViewtest(APIView):
 #     @swagger_auto_schema(responses=api_docs.response_schema_dict,request_body=api_docs.val)
 #     def post(self,req):
-#         print(req.data)
-#         return Response({"test":"some"})
 
+from .models import TestModel
+# class getTest(APIView):
+#     # @swagger_auto_schema(responses=api_docs.response_schema_dict,request_body=api_docs.val)
+#     def get(self,req):
+#         print(req.data)
+#         t = TestModel()
+#         t.save()
+        
+#         return JsonResponse({"obj":"save"})
+# class updateTest(APIView):
+#     def get(self,req,id):
+
+#         print(req.data)
+
+#         t = TestModel.objects.get(id=id)
+#         t.updated_at=datetime.now()
+#         t.save()
+#         return JsonResponse({"obj":"save"})
+# class GetRoles(APIView):
+#     def get(self,req):
+#         pass
 class Auth(APIView):
     @swagger_auto_schema(request_body=auth_docs.request,responses=auth_docs.response_schema_dict)
     def post(self,req):
@@ -55,7 +79,7 @@ class Auth(APIView):
                 raise Exception("Client Code Already Present")
             user_client =User.objects.create_user(user["username"], user["email"],user["password"])
             bank=Bank_model_services.Bank_model_services.fetch_by_bankcode(user["bank_code"],client_ip_address=req.META['REMOTE_ADDR'],created_by="client added")
-            client = Client_model_service.Client_Model_Service(user=user_client.id,client_id=user['client_id'],client_code=user["client_code"],auth_key=randomstring.randomString(),auth_iv=randomstring.randomString(),bank_id=bank.id,client_username=user["username"],client_password=user["password"])
+            client = Client_model_service.Client_Model_Service(role_id=user['role_id'],user=user_client.id,client_id=user['client_id'],client_code=user["client_code"],auth_key=randomstring.randomString(),auth_iv=randomstring.randomString(),bank_id=bank.id,client_username=user["username"],client_password=user["password"])
             merchant_id=client.save(client_ip_address=req.META['REMOTE_ADDR'],created_by="client added")
             print("requesting api "+const.domain+"api/token/")
             res = requests.post(const.domain+"api/token/",json={"username":user["username"],"password":user["password"]})
