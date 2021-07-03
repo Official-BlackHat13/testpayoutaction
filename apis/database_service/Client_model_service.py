@@ -2,7 +2,7 @@ from ..models import MerchantModel as ClientModel
 from . import Log_model_services
 from .. import const
 class Client_Model_Service:
-    def __init__(self,client_id=None,client_code=None,auth_key=None,user=None,auth_iv=None,bank_id=None,client_username=None,client_password=None):
+    def __init__(self,client_id=None,client_code=None,role_id=None,auth_key=None,user=None,auth_iv=None,bank_id=None,client_username=None,client_password=None):
         self.client_id=client_id
         self.client_code=client_code
         self.auth_key=auth_key
@@ -10,6 +10,7 @@ class Client_Model_Service:
         self.auth_iv=auth_iv
         self.bank_id=bank_id
         self.client_username=client_username
+        self.role_id=role_id
         self.client_password=client_password
         
     def save(self,client_ip_address,created_by)->int:
@@ -19,6 +20,7 @@ class Client_Model_Service:
         clientmodel.client=self.client_id
         clientmodel.client_code=self.client_code
         clientmodel.auth_key=self.auth_key
+        clientmodel.role=self.role_id
         clientmodel.auth_iv=self.auth_iv
         clientmodel.bank=self.bank_id
         clientmodel.client_username=self.client_username
@@ -52,8 +54,8 @@ class Client_Model_Service:
         log_service.save()
         clientModel=ClientModel.objects.filter(client_code=client_code,status=True)
         model=clientModel[0]
-        
         return model
+    @staticmethod
     def fetch_all_by_clientcode(client_code,client_ip_address,created_by)->ClientModel:
         log_service=Log_model_services.Log_Model_Service(log_type="fetch",table_name="apis_clientmodel",remarks="fetching all records in apis_clientmodel table by client code",client_ip_address=client_ip_address,server_ip_address=const.server_ip,created_by=created_by)
         log_service.save()
