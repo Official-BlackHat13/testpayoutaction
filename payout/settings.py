@@ -42,7 +42,7 @@ INSTALLED_APPS = [
     "drf_yasg",
     "apis",
     "sabpaisa",
-    "paytmchecksum"
+    "paytmchecksum",
     "ifaddr"
 ]
 CORS_ALLOW_ALL_ORIGINS=True

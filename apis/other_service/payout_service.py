@@ -160,7 +160,7 @@ class PayoutService:
              ledgerModelService.trans_amount_type = "debited"
              ledgerModelService.trans_time=datetime.now()
              id=ledgerModelService.save(client_ip_address=self.client_ip_address)
-             
+             response_obj={}
              if(response_obj.status=="Success"):
                  ledgerModelService.update_status(id,'Success')
              else:

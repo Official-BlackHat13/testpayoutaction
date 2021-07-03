@@ -141,11 +141,11 @@ class Ledger_Model_Service:
         return True
     
     @staticmethod
-    def getBalance(clientCode,client_ip_address,created_by):
+    def getBalance(merchant_id,client_ip_address,created_by):
         log_service=Log_model_services.Log_Model_Service(log_type="get balance",table_name="apis_ledgermodel",remarks="getting balance from apis_ledgermodel table via getBalance stored procedure",client_ip_address=client_ip_address,server_ip_address=const.server_ip,created_by=created_by)
         
         cursors = connection.cursor()
-        cursors.execute('call getBalance("'+clientCode+'",@balance)')
+        cursors.execute('call getBalance("'+merchant_id+'",@balance)')
         cursors.execute("select @balance")
         value = cursors.fetchall()
         cursors.close()

@@ -1,19 +1,20 @@
 -- DELIMITER &&
--- create PROCEDURE getAmount(in type varchar(20),in clientCode varchar(60),out value int)
+-- create PROCEDURE getAmount(in type varchar(20),in merchant_id int,out value int)
 -- begin
--- select sum(amount) into value from apis_ledgermodel where trans_amount_type=type and client_code=clientCode and status="Success";
+-- select sum(amount) into value from apis_ledgermodel where trans_amount_type=type and id=merchant_id and status="Success";
 -- end 
 -- && DELIMITER ;
 
 
 -- DELIMITER &&
--- create PROCEDURE getBalance(in clientCode varchar(60),out balance int)
+-- create PROCEDURE getBalance(in merchant_id int,out balance int)
 -- begin
--- Call getAmount("credited",clientCode,@cred);
--- Call getAmount("debited",clientCode,@deb);
+-- Call getAmount("credited",merchant_id,@cred);
+-- Call getAmount("debited",merchant_id,@deb);
 -- select @cred-@deb into balance;
 -- end 
 -- && DELIMITER ;
+
 
 --DELIMITER $$
 --CREATE DEFINER=`root`@`localhost` PROCEDURE `fet`(IN n varchar(1000), m int(11))
@@ -21,3 +22,11 @@
 --select * from apis_ledgermodel where (customer_ref_no = n OR trans_amount_type = n OR client_code = n) AND (merchant = m) ;
 --END$$
 --DELIMITER ;
+
+-- DELIMITER &&
+-- create PROCEDURE getRoleType(in merchant_id int)
+-- begin
+-- select apis_rolemodel.role_name from apis_merchantmodel  inner join apis_rolemodel on apis_merchantmodel.role=apis_rolemodel.id where apis_merchantmodel.id=merchant_id;
+-- end 
+-- && DELIMITER ;
+
