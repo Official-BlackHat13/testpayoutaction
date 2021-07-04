@@ -28,7 +28,7 @@ from django.contrib.auth.models import User
 from rest_framework.permissions import IsAuthenticated
 from . import const
 from .Utils import randomstring
-from .other_service import login_service
+from .other_service import login_service,signup_service
 from . import const
 from sabpaisa import auth
 import requests
@@ -60,19 +60,9 @@ class Auth(APIView):
         log = Log_model_services.Log_Model_Service(log_type="Post request at "+req.path+" slug",client_ip_address=req.META['REMOTE_ADDR'],server_ip_address=const.server_ip,full_request=request_obj)
         logid=log.save()
         try:
-            if(len(Client_model_service.Client_Model_Service.fetch_all_by_clientcode(user["client_code"],client_ip_address=req.META['REMOTE_ADDR'],created_by="client added"))>0):
-                raise Exception("Client Code Already Present")
-            user_client =User.objects.create_user(user["username"], user["email"],user["password"])
-            bank=Bank_model_services.Bank_model_services.fetch_by_bankcode(user["bank_code"],client_ip_address=req.META['REMOTE_ADDR'],created_by="client added")
-            client = Client_model_service.Client_Model_Service(role_id=user['role_id'],user=user_client.id,client_id=user['client_id'],client_code=user["client_code"],auth_key=randomstring.randomString(),auth_iv=randomstring.randomString(),bank_id=bank.id,client_username=user["username"],client_password=user["password"])
-            merchant_id=client.save(client_ip_address=req.META['REMOTE_ADDR'],created_by="client added")
-            print("requesting api "+const.domain+"api/token/")
-            res = requests.post(const.domain+"api/token/",json={"username":user["username"],"password":user["password"]})
-            print("response from json")
-            print(res.json())
-            IpWhitelisting_model_service.IpWhiteListing_Model_Service.saveMultipleIp(merchant_id=merchant_id,ips=user["ip_addresses"],clientip=req.META['REMOTE_ADDR'])
-            Log_model_services.Log_Model_Service.update_response(logid,{"Message":"user created","merchant_id":merchant_id,"response_code":"1","CLIENT_AUTH_KEY":client.auth_key,"CLIENT_AUTH_IV":client.auth_iv,"token":res.json()})
-            return Response({"Message":"user created","response_code":"1","merchant_id":merchant_id,"CLIENT_AUTH_KEY":client.auth_key,"CLIENT_AUTH_IV":client.auth_iv,"token":res.json()},status=status.HTTP_200_OK)
+            val=signup_service.Signup_Service(user=user,client_ip_address=req.META['REMOTE_ADDR']).SignUp()
+            Log_model_services.Log_Model_Service.update_response(logid,{"Message":"user created","merchant_id":val['merchant_id'],"response_code":"1","CLIENT_AUTH_KEY":val['client'].auth_key,"CLIENT_AUTH_IV":val['client'].auth_iv,"token":val['token'].json()})
+            return Response({"Message":"user created","response_code":"1","merchant_id":val['merchant_id'],"CLIENT_AUTH_KEY":val['client'].auth_key,"CLIENT_AUTH_IV":val['client'].auth_iv,"token":val['token'].json()},status=status.HTTP_200_OK)
         except Exception as e:
             Log_model_services.Log_Model_Service.update_response(logid,{"Message":"some error","error":e.args,"trace_back":e.with_traceback(e.__traceback__)})
             
