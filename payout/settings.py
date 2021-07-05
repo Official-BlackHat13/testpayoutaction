@@ -56,6 +56,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     "apis.middlewares.IpWhiteListed",
+    "apis.middlewares.MultiTabsRestriction",
 ]
 
 ROOT_URLCONF = 'payout.urls'

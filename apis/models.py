@@ -12,4 +12,5 @@ from .database_models.IpWhiteListedModel import IpWhiteListedModel
 from .database_models.IpHittingRecordModel import IpHittingRecordModel
 from .database_models.LogModel import LogModel
 from .database_models.OtpModel import OtpModel
+from .database_models.UserActiveModel import UserActiveModel
 # from .database_models.Test import TestModel

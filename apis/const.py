@@ -24,6 +24,10 @@ paytm_merchant_key = "@B0h97BGQ#YC_lIE"
 
 merchant_check=False
 
+
+
+multitabs=False
+
 AuthKey = "pMoG4Nsp54LGYV7a"
 AuthIV = "4OqmI5rR7KOm6RmY"
 paytm_subwalletGuid = "4957c207-dafa-11eb-bbc6-fa163e429e83"
