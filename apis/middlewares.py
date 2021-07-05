@@ -1,10 +1,11 @@
 import requests
 from apis.database_models.IpWhiteListedModel import IpWhiteListedModel
 from apis.database_service.Client_model_service import Client_Model_Service
+from apis.database_service.UserActive_model_service import UserActive_Model_Service
 from . import models
 from rest_framework.response import *
 from django.shortcuts import HttpResponse
-from datetime import datetime
+from datetime import datetime,timedelta,timezone
 from sabpaisa import auth
 
 # from .database_service.Log_model_services import Log_Model_Service
@@ -14,7 +15,7 @@ def IpWhiteListed(get_response):
         print(request.headers)
         ip=request.META['REMOTE_ADDR']
         try:
-            if(request.path!="/api/" and request.path!="/" and "/admin/" not in request.path and request.path!="/api/auth/" and request.path not in "/api/token/" and request.path!="/api/loginrequest/" and request.path!="/api/loginverified/"  and const.merchant_check):
+            if(request.path!="/api/" and request.path!="/" and "/admin/" not in request.path and request.path!="/api/auth/" and request.path not in "/api/token/" and request.path!="/api/loginrequest/" and request.path!="/api/loginverified/" and request.path!="/api/resendotp/" and const.merchant_check):
                 if "api_key" not in request.headers:
                     print("not condition")
                     error_res=HttpResponse(str({"message":"APIKEY not provided"}))
@@ -69,3 +70,62 @@ def IpWhiteListed(get_response):
 #         response = get_response(req)
 #         return response
 #     return middleware
+
+def MultiTabsRestriction(get_response):
+    def middleware(req):
+        if req.path!="/api/" and req.path!="/" and "/admin/" not in req.path and req.path!="/api/auth/" and req.path not in "/api/token/" and req.path!="/api/loginrequest/" and req.path!="/api/loginverified/" and req.path!="/api/resendotp/" and const.multitabs:
+            merchant_id = req.headers["api_key"]
+            tab_token=req.headers["tab_token"]
+            ip=req.META['REMOTE_ADDR']
+            merchant_id=auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(merchant_id)
+            user_active=UserActive_Model_Service.fetch_by_merchant_id(merchant_id)
+            last_login_time=user_active.last_server_call_time
+            login_expire = user_active.login_expire_time
+            now = datetime.now()
+            now.replace(tzinfo=timezone.utc)
+            if user_active.client_ip_address!=ip and user_active.login_status=="active":
+                res=HttpResponse(str({"message":"ip does not matched"}))
+                res['Content-Type'] = 'application/json'
+                return res
+            elif user_active.active_status=="active" and tab_token!=user_active.tab_token and user_active.login_status=="active" and user_active.tab_token_expire_time>now and user_active.login_expire_time>now:
+                res=HttpResponse(str({"message":"Already active on some other tab"}))
+                res['Content-Type'] = 'application/json'
+                return res
+            elif user_active.active_status=="active" and user_active.login_status=="active" and user_active.login_expire_time<=now:
+                UserActive_Model_Service.update_active_status(user_active.id,"Not_active")
+                res=HttpResponse(str({"message":"Please Login to payout first"}))
+                res['Content-Type'] = 'application/json'
+                return res
+            elif user_active.active_status!="active" and user_active.login_status=="active" or user_active.login_expire_time>now:
+                UserActive_Model_Service.recreate_tab_token(user_active.id)
+                UserActive_Model_Service.update_login_exipre(user_active.id,datetime.now()+timedelta(days=3))
+                res=get_response(req)
+                return res
+            elif user_active.active_status=="active" and user_active.tab_token_expire_time<=now and user_active.login_status=="active" or user_active.login_expire_time>now:
+                UserActive_Model_Service.recreate_tab_token(user_active.id)
+                UserActive_Model_Service.update_login_exipre(user_active.id,datetime.now()+timedelta(days=3))
+                res=get_response(req)
+                return res
+            elif user_active.login_status!="active" or user_active.login_expire_time<=now:
+                res=HttpResponse(str({"message":"Please Login to payout first"}))
+                res['Content-Type'] = 'application/json'
+                return res
+            
+            if user_active.active_status=="active" and tab_token==user_active.tab_token and user_active.tab_token_expire_time<=now and user_active.login_expire_time>now:
+                UserActive_Model_Service.update_login_exipre(user_active.id,datetime.now()+timedelta(days=3))
+                UserActive_Model_Service.update_tab_exipre(user_active.id,datetime.now()+timedelta(hours=1))
+                res=get_response(req)
+                return res
+            
+            
+            
+            UserActive_Model_Service.update_tab_exipre(user_active.id,datetime.now()+timedelta(hours=1))
+            res=get_response(req)
+            return res
+        res=get_response(req)
+        return res
+        
+           
+
+
+    return middleware
