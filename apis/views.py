@@ -10,7 +10,7 @@ from rest_framework.views import APIView
 from rest_framework.response import *
 from rest_framework import status
 from drf_yasg.utils import swagger_auto_schema
-from .API_docs import payout_docs,auth_docs
+from .API_docs import payout_docs,auth_docs,login_docs
 from datetime import datetime
 from .serializersFolder.serializers import LogsSerializer
 #from .serializers import *
@@ -66,7 +66,7 @@ class Auth(APIView):
         except Exception as e:
             Log_model_services.Log_Model_Service.update_response(logid,{"Message":"some error","error":e.args,"trace_back":e.with_traceback(e.__traceback__)})
             
-            return Response({"Message":"some error","error":e.args},status=status.HTTP_409_CONFLICT)
+            return Response({"Message":"some error","error":e.args},status=status.HTTP_400_BAD_REQUEST)
 class bankApiPaymentView(APIView):
     permission_classes = (IsAuthenticated, )
     @swagger_auto_schema(request_body=payout_docs.request,responses=payout_docs.response_schema_dict)
@@ -88,13 +88,13 @@ class bankApiPaymentView(APIView):
             Log_model_services.Log_Model_Service.update_response(logid,{"Message":res,"response_code":"1"})
             return Response({"Message":res,"response_code":"1"},status=status.HTTP_200_OK)
         elif (res=="Not Sufficent Balance"):
-            Log_model_services.Log_Model_Service.update_response(logid,{"Message":res,"response_code":"1"})
+            Log_model_services.Log_Model_Service.update_response(logid,{"Message":res,"response_code":"0"})
             return Response({"Message":res,"response_code":"0"},status=status.HTTP_402_PAYMENT_REQUIRED)
         elif res==False:
-            Log_model_services.Log_Model_Service.update_response(logid,{"Message":res,"response_code":"1"})
+            Log_model_services.Log_Model_Service.update_response(logid,{"Message":"credential not matched","response_code":"3"})
             return Response({"Message":"credential not matched","response_code":"3"},status=status.HTTP_401_UNAUTHORIZED)
         else:
-            Log_model_services.Log_Model_Service.update_response(logid,{"Message":res,"response_code":"1"})
+            Log_model_services.Log_Model_Service.update_response(logid,{"Message":res,"response_code":"2"})
             return Response({"Message":res,"response_code":"2"},status=status.HTTP_204_NO_CONTENT)
             
         # return Response(payment_service.hit())
@@ -232,39 +232,63 @@ class GetLogs(APIView):
 
 
 class LoginRequestAPI(APIView):
+    @swagger_auto_schema(request_body=auth_docs.request,responses=auth_docs.response_schema_dict)
     def post(self,req):
+        request_obj = "path:: "+req.path+" :: headers::"+str(req.headers)+" :: meta_data:: "+str(req.META)+"data::"+str(req.data)
+        logs = Log_model_services.Log_Model_Service(log_type="post request on "+req.path,client_ip_address=req.META['REMOTE_ADDR'],server_ip_address=const.server_ip,full_request=request_obj,remarks="get request on "+req.path+" for fetching the log records")
+        logid=logs.save()
         try:
             print(req.data)
             login=login_service.Login_service(username=req.data["username"],password=req.data["password"],client_ip_address=req.META['REMOTE_ADDR'])
             res = login.login_request()
             if(res==False):
-                return Response({"message":"User Not Found"})
+                Log_model_services.Log_Model_Service.update_response(logid,{"message":"User Not Found","response_code":"0"})
+                return Response({"message":"User Not Found","response_code":"0"},status=status.HTTP_400_BAD_REQUEST)
             else:
-                return Response({"verification_token":res})
+                Log_model_services.Log_Model_Service.update_response(logid,{"message":"OTP sent to mail","verification_token":res,"response_code":"1"})
+                return Response({"message":"OTP sent to mail","verification_token":res,"response_code":"1"},status=status.HTTP_200_OK)
         except Exception as e:
-            return Response({"Error_Code":e.args})
+            Log_model_services.Log_Model_Service.update_response(logid,{"message":"Some error occured","Error_Code":e.args,"response_code":"2"})
+            return Response({"message":"Some error occured","Error_Code":e.args,"response_code":"2"},status=status.HTTP_409_CONFLICT)
 class LoginVerificationAPI(APIView):
     def post(self,req):
+        request_obj = "path:: "+req.path+" :: headers::"+str(req.headers)+" :: meta_data:: "+str(req.META)+"data::"+str(req.data)
+        logs = Log_model_services.Log_Model_Service(log_type="post request on "+req.path,client_ip_address=req.META['REMOTE_ADDR'],server_ip_address=const.server_ip,full_request=request_obj,remarks="get request on "+req.path+" for fetching the log records")
+        logid=logs.save()
         try:
             print(req.data)
-            login=login_service.Login_service.login_verification(req.data['verification_code'],req.data["otp"])
+            login=login_service.Login_service.login_verification(req.data['verification_code'],req.data["otp"],req.META['REMOTE_ADDR'])
             print('done')
             if(login=="OTP Expired"):
-                return Response({"message":"OTP Expired"})
+                Log_model_services.Log_Model_Service.update_response(logid,{"message":"OTP Expired","response_code":"0"})
+                return Response({"message":"OTP Expired","response_code":"0"},status=status.HTTP_400_BAD_REQUEST)
             elif login==False:
-                return Response({"message":"OTP or Verification token is not valid"})
+                Log_model_services.Log_Model_Service.update_response(logid,{"message":"OTP or Verification token is not valid","response_code":"0"})
+                return Response({"message":"OTP or Verification token is not valid","response_code":"0"},status=status.HTTP_400_BAD_REQUEST)
             else:
-                api_key=auth.AESCipher(const.AuthKey,const.AuthIV).encrypt(str(login))
-                return Response({"api_key":str(api_key)[2:].replace("'","")})
+                # print(str(login[0]))
+                api_key=auth.AESCipher(const.AuthKey,const.AuthIV).encrypt(str(login["user_id"]))
+                Log_model_services.Log_Model_Service.update_response(logid,{"api_key":str(api_key)[2:].replace("'",""),"response_code":"1"})
+                return Response({"api_key":str(api_key)[2:].replace("'",""),"token":login["token"],"response_code":"1"},status=status.HTTP_200_OK)
         except Exception as e:
-            return Response({"Error_Code":e.args})
+            import traceback
+            print(traceback.format_exc())
+            Log_model_services.Log_Model_Service.update_response(logid,{"Error_Code":e.args,"response_code":"2"})
+            return Response({"Error_Code":e.args,"response_code":"2"},status=status.HTTP_400_BAD_REQUEST)
 class ResendLoginOTP(APIView):
     def post(self,req):
+        request_obj = "path:: "+req.path+" :: headers::"+str(req.headers)+" :: meta_data:: "+str(req.META)+"data::"+str(req.data)
+        logs = Log_model_services.Log_Model_Service(log_type="post request on "+req.path,client_ip_address=req.META['REMOTE_ADDR'],server_ip_address=const.server_ip,full_request=request_obj,remarks="get request on "+req.path+" for fetching the log records")
+        logid=logs.save()
         try:
-         login=login_service.Login_service.resend_otp(req.data["verification_code"])
-         api_key=auth.AESCipher(const.AuthKey,const.AuthIV).encrypt(login)
-         return Response({"api_key":api_key})
+         login=login_service.Login_service.resend_otp(req.data["verification_code"],req.META['REMOTE_ADDR'])
+        #  api_key=auth.AESCipher(const.AuthKey,const.AuthIV).encrypt(login)
+         Log_model_services.Log_Model_Service.update_response(logid,{"verification_token":login,"response_code":"1"})
+         return Response({"verification_token":login,"response_code":"1"},status=status.HTTP_200_OK)
          
         except Exception as e:
-            return Response({"Error":e.args})
+            import traceback
+            print(traceback.format_exc())
+            Log_model_services.Log_Model_Service.update_response(logid,{"Error":e.args,"response_code":'2'})
+            return Response({"Error":e.args,"response_code":'2'},status=status.HTTP_400_BAD_REQUEST)
         

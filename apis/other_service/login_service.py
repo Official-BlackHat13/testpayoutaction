@@ -40,23 +40,31 @@ class Login_service:
             ExpireOTP().start()
             return otp_service.verification_token
     @staticmethod
-    def login_verification(verification_token,otp):
+    def login_verification(verification_token,otp,client_ip_address):
         record = Otp_Model_Services.fetch_by_verification_token_with_otp(verification_token,otp)
-        print(record)
-        if record=="OTP Expired":
-            return record
-        elif len(record)==0:
+        # print("record--> :: "+str(record[0].user))
+        print(record[0]=="OTP Expired",len(record))
+        if record[0]=="OTP Expired" :
+            return record[0]
+        elif len(record)==0 :
             return False
         else:
+            client=Client_Model_Service.fetch_by_id(record[0].user,client_ip_address,created_by="merchant_id::"+str(record[0].user))
+            print("record--> :: "+str(record[0].user))
+            res = requests.post(const.domain+"api/token/",json={"username":client.client_username,"password":client.client_password})
+            
             Otp_Model_Services.update_status(record[0].id,"Verified")
-            return record[0].user
+            return {"user_id":record[0].user,"token":res.json()}
     @staticmethod
-    def resend_otp(verification_token):
+    def resend_otp(verification_token,client_ip_address):
         record = Otp_Model_Services.fetch_by_verification_only(verification_token)
-        user = Client_Model_Service.fetch_by_id(record[0].user,"cs","cs0")
+        if(record==None):
+            raise Exception("Verfication token not valid")
+        print(record.user)
+        user = Client_Model_Service.fetch_by_id(record.user,client_ip_address,"merchant_id :: "+str(record.user))
         
         # print(record[0].user)
-        token=Login_service(username=user.client_username,password=user.client_password,client_ip_address="ds").login_request()
+        token=Login_service(username=user.client_username,password=user.client_password,client_ip_address=client_ip_address).login_request()
         return token
         
         

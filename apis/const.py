@@ -1,9 +1,9 @@
 import socket
 import ifaddr
-ipwhitelisting=True
+ipwhitelisting=False
 domain = "http://localhost:8000/"
 server_ip = socket.gethostbyname(socket.gethostname())
-merchant_check=True
+merchant_check=False
 AuthKey = "pMoG4Nsp54LGYV7a"
 AuthIV = "4OqmI5rR7KOm6RmY"
 paytm_subwalletGuid = "4957c207-dafa-11eb-bbc6-fa163e429e83"
