@@ -1,8 +1,12 @@
 # from django.shortcuts import render
 # Create your views here.
+
 from http import client
 from django.db.models import query
 from requests.sessions import merge_hooks
+
+# from apis.database_models.Test import TestModel
+
 from rest_framework.exceptions import server_error
 # from apis.bank_services.IFDC_service import payment
 from django.http import *
@@ -12,7 +16,7 @@ from rest_framework.views import APIView
 from rest_framework.response import *
 from rest_framework import status
 from drf_yasg.utils import swagger_auto_schema
-from .API_docs import payout_docs,auth_docs
+from .API_docs import payout_docs,auth_docs,login_docs
 from datetime import datetime
 from .serializersFolder.serializers import LogsSerializer
 #from .serializers import *
@@ -34,15 +38,47 @@ from rest_framework.permissions import IsAuthenticated
 from . import const
 from .Utils import randomstring
 
-import requests
+
+
+
+
 from sabpaisa import auth
 from datetime import datetime
 # class bankApiViewtest(APIView):
 #     @swagger_auto_schema(responses=api_docs.response_schema_dict,request_body=api_docs.val)
 #     def post(self,req):
-#         print(req.data)
-#         return Response({"test":"some"})
 
+# from .models import TestModel
+
+
+
+from .other_service import login_service,signup_service
+
+from . import const
+from sabpaisa import auth
+import requests
+# from .models import TestModel
+
+# class getTest(APIView):
+#     # @swagger_auto_schema(responses=api_docs.response_schema_dict,request_body=api_docs.val)
+#     def get(self,req):
+#         print(req.data)
+#         t = TestModel()
+#         t.save()
+        
+#         return JsonResponse({"obj":"save"})
+# class updateTest(APIView):
+#     def get(self,req,id):
+
+#         print(req.data)
+
+#         t = TestModel.objects.get(id=id)
+#         t.updated_at=datetime.now()
+#         t.save()
+#         return JsonResponse({"obj":"save"})
+# class GetRoles(APIView):
+#     def get(self,req):
+#         pass
 class Auth(APIView):
     @swagger_auto_schema(request_body=auth_docs.request,responses=auth_docs.response_schema_dict)
     def post(self,req):
@@ -51,23 +87,13 @@ class Auth(APIView):
         log = Log_model_services.Log_Model_Service(log_type="Post request at "+req.path+" slug",client_ip_address=req.META['REMOTE_ADDR'],server_ip_address=const.server_ip,full_request=request_obj)
         logid=log.save()
         try:
-            if(len(Client_model_service.Client_Model_Service.fetch_all_by_clientcode(user["client_code"],client_ip_address=req.META['REMOTE_ADDR'],created_by="client added"))>0):
-                raise Exception("Client Code Already Present")
-            user_client =User.objects.create_user(user["username"], user["email"],user["password"])
-            bank=Bank_model_services.Bank_model_services.fetch_by_bankcode(user["bank_code"],client_ip_address=req.META['REMOTE_ADDR'],created_by="client added")
-            client = Client_model_service.Client_Model_Service(user=user_client.id,client_id=user['client_id'],client_code=user["client_code"],auth_key=randomstring.randomString(),auth_iv=randomstring.randomString(),bank_id=bank.id,client_username=user["username"],client_password=user["password"])
-            merchant_id=client.save(client_ip_address=req.META['REMOTE_ADDR'],created_by="client added")
-            print("requesting api "+const.domain+"api/token/")
-            res = requests.post(const.domain+"api/token/",json={"username":user["username"],"password":user["password"]})
-            print("response from json")
-            print(res.json())
-            IpWhitelisting_model_service.IpWhiteListing_Model_Service.saveMultipleIp(merchant_id=merchant_id,ips=user["ip_addresses"],clientip=req.META['REMOTE_ADDR'])
-            Log_model_services.Log_Model_Service.update_response(logid,{"Message":"user created","merchant_id":merchant_id,"response_code":"1","CLIENT_AUTH_KEY":client.auth_key,"CLIENT_AUTH_IV":client.auth_iv,"token":res.json()})
-            return Response({"Message":"user created","response_code":"1","merchant_id":merchant_id,"CLIENT_AUTH_KEY":client.auth_key,"CLIENT_AUTH_IV":client.auth_iv,"token":res.json()},status=status.HTTP_200_OK)
+            val=signup_service.Signup_Service(user=user,client_ip_address=req.META['REMOTE_ADDR']).SignUp()
+            Log_model_services.Log_Model_Service.update_response(logid,{"Message":"user created","merchant_id":val['merchant_id'],"response_code":"1","CLIENT_AUTH_KEY":val['client'].auth_key,"CLIENT_AUTH_IV":val['client'].auth_iv,"token":val['token'].json()})
+            return Response({"Message":"user created","response_code":"1","merchant_id":val['merchant_id'],"CLIENT_AUTH_KEY":val['client'].auth_key,"CLIENT_AUTH_IV":val['client'].auth_iv,"token":val['token'].json()},status=status.HTTP_200_OK)
         except Exception as e:
             Log_model_services.Log_Model_Service.update_response(logid,{"Message":"some error","error":e.args,"trace_back":e.with_traceback(e.__traceback__)})
             
-            return Response({"Message":"some error","error":e.args},status=status.HTTP_409_CONFLICT)
+            return Response({"Message":"some error","error":e.args},status=status.HTTP_400_BAD_REQUEST)
 class bankApiPaymentView(APIView):
     permission_classes = (IsAuthenticated, )
     @swagger_auto_schema(request_body=payout_docs.request,responses=payout_docs.response_schema_dict)
@@ -89,13 +115,13 @@ class bankApiPaymentView(APIView):
             Log_model_services.Log_Model_Service.update_response(logid,{"Message":res,"response_code":"1"})
             return Response({"Message":res,"response_code":"1"},status=status.HTTP_200_OK)
         elif (res=="Not Sufficent Balance"):
-            Log_model_services.Log_Model_Service.update_response(logid,{"Message":res,"response_code":"1"})
+            Log_model_services.Log_Model_Service.update_response(logid,{"Message":res,"response_code":"0"})
             return Response({"Message":res,"response_code":"0"},status=status.HTTP_402_PAYMENT_REQUIRED)
         elif res==False:
-            Log_model_services.Log_Model_Service.update_response(logid,{"Message":res,"response_code":"1"})
+            Log_model_services.Log_Model_Service.update_response(logid,{"Message":"credential not matched","response_code":"3"})
             return Response({"Message":"credential not matched","response_code":"3"},status=status.HTTP_401_UNAUTHORIZED)
         else:
-            Log_model_services.Log_Model_Service.update_response(logid,{"Message":res,"response_code":"1"})
+            Log_model_services.Log_Model_Service.update_response(logid,{"Message":res,"response_code":"2"})
             return Response({"Message":res,"response_code":"2"},status=status.HTTP_204_NO_CONTENT)
             
         # return Response(payment_service.hit())
@@ -250,13 +276,12 @@ class UpdateLedger(APIView):
                 # deleted_at=ledgermodel.deleted_at,
                 createdBy=res.get("createdBy"),
                 updatedBy=res.get("updatedBy"),
-                deletedBy=res.get("deletedBy"),
                 updated_at=datetime.now()
             )
             Log_model_services.Log_Model_Service.update_response(
                 logid, {"Message": "updated successfully", "response_code": "1"})
             res = service.update(id=id, merchant=merchant,
-                                 client_ip_address=request.META['REMOTE_ADDR'], createdBy=createdBy)
+                                 client_ip_address=request.META['REMOTE_ADDR'], created_by=createdBy)
             return JsonResponse({"Message": "updated successfully", "response_code": "1"}, status=status.HTTP_200_OK)
         Log_model_services.Log_Model_Service.update_response(
             logid, {"Message": "something went wrong!!!!", "response_code": "0"})
@@ -331,6 +356,7 @@ class GetLogs(APIView):
             Log_model_services.Log_Model_Service.update_response(logid, str({"data_length": len(
                 logs[0][page]), "data": logsser.data}))
             return Response({"Message":"some error","Error":e.args})
+
         
 class fetch(APIView):
     #permission_classes = (IsAuthenticated, )
@@ -389,7 +415,6 @@ class fetch(APIView):
         Log_model_services.Log_Model_Service.update_response(
             logid, {"Message": str(resp), "response_code": "1"})
         return Response({"message": "data found", "data": str(resp), "response_code": "1"}, status=status.HTTP_200_OK)
-
 class encHeader(APIView):
     def get(self,request):
         authKey = const.AuthKey
@@ -446,3 +471,64 @@ class addBalanceApi(APIView):
         Log_model_services.Log_Model_Service.update_response(
             logid, {"Message": str(encResponse), "response_code": "1"})
         return Response({"message": "data saved succefully", "data": str(encResponse), "response_code": "1"}, status=status.HTTP_200_OK)
+
+class LoginRequestAPI(APIView):
+    @swagger_auto_schema(request_body=auth_docs.request,responses=auth_docs.response_schema_dict)
+    def post(self,req):
+        request_obj = "path:: "+req.path+" :: headers::"+str(req.headers)+" :: meta_data:: "+str(req.META)+"data::"+str(req.data)
+        logs = Log_model_services.Log_Model_Service(log_type="post request on "+req.path,client_ip_address=req.META['REMOTE_ADDR'],server_ip_address=const.server_ip,full_request=request_obj,remarks="get request on "+req.path+" for fetching the log records")
+        logid=logs.save()
+        try:
+            print(req.data)
+            login=login_service.Login_service(username=req.data["username"],password=req.data["password"],client_ip_address=req.META['REMOTE_ADDR'])
+            res = login.login_request()
+            if(res==False):
+                Log_model_services.Log_Model_Service.update_response(logid,{"message":"User Not Found","response_code":"0"})
+                return Response({"message":"User Not Found","response_code":"0"},status=status.HTTP_400_BAD_REQUEST)
+            else:
+                Log_model_services.Log_Model_Service.update_response(logid,{"message":"OTP sent to mail","verification_token":res,"response_code":"1"})
+                return Response({"message":"OTP sent to mail","verification_token":res,"response_code":"1"},status=status.HTTP_200_OK)
+        except Exception as e:
+            Log_model_services.Log_Model_Service.update_response(logid,{"message":"Some error occured","Error_Code":e.args,"response_code":"2"})
+            return Response({"message":"Some error occured","Error_Code":e.args,"response_code":"2"},status=status.HTTP_409_CONFLICT)
+class LoginVerificationAPI(APIView):
+    def post(self,req):
+        request_obj = "path:: "+req.path+" :: headers::"+str(req.headers)+" :: meta_data:: "+str(req.META)+"data::"+str(req.data)
+        logs = Log_model_services.Log_Model_Service(log_type="post request on "+req.path,client_ip_address=req.META['REMOTE_ADDR'],server_ip_address=const.server_ip,full_request=request_obj,remarks="get request on "+req.path+" for fetching the log records")
+        logid=logs.save()
+        try:
+            print(req.data)
+            login=login_service.Login_service.login_verification(req.data['verification_code'],req.data["otp"],req.META['REMOTE_ADDR'])
+            print('done')
+            if(login=="OTP Expired"):
+                Log_model_services.Log_Model_Service.update_response(logid,{"message":"OTP Expired","response_code":"0"})
+                return Response({"message":"OTP Expired","response_code":"0"},status=status.HTTP_400_BAD_REQUEST)
+            elif login==False:
+                Log_model_services.Log_Model_Service.update_response(logid,{"message":"OTP or Verification token is not valid","response_code":"0"})
+                return Response({"message":"OTP or Verification token is not valid","response_code":"0"},status=status.HTTP_400_BAD_REQUEST)
+            else:
+                # print(str(login[0]))
+                api_key=auth.AESCipher(const.AuthKey,const.AuthIV).encrypt(str(login["user_id"]))
+                Log_model_services.Log_Model_Service.update_response(logid,{"api_key":str(api_key)[2:].replace("'",""),"response_code":"1"})
+                return Response({"api_key":str(api_key)[2:].replace("'",""),"token":login["token"],"response_code":"1"},status=status.HTTP_200_OK)
+        except Exception as e:
+            import traceback
+            print(traceback.format_exc())
+            Log_model_services.Log_Model_Service.update_response(logid,{"Error_Code":e.args,"response_code":"2"})
+            return Response({"Error_Code":e.args,"response_code":"2"},status=status.HTTP_400_BAD_REQUEST)
+class ResendLoginOTP(APIView):
+    def post(self,req):
+        request_obj = "path:: "+req.path+" :: headers::"+str(req.headers)+" :: meta_data:: "+str(req.META)+"data::"+str(req.data)
+        logs = Log_model_services.Log_Model_Service(log_type="post request on "+req.path,client_ip_address=req.META['REMOTE_ADDR'],server_ip_address=const.server_ip,full_request=request_obj,remarks="get request on "+req.path+" for fetching the log records")
+        logid=logs.save()
+        try:
+         login=login_service.Login_service.resend_otp(req.data["verification_code"],req.META['REMOTE_ADDR'])
+        #  api_key=auth.AESCipher(const.AuthKey,const.AuthIV).encrypt(login)
+         Log_model_services.Log_Model_Service.update_response(logid,{"verification_token":login,"response_code":"1"})
+         return Response({"verification_token":login,"response_code":"1"},status=status.HTTP_200_OK)
+         
+        except Exception as e:
+            import traceback
+            print(traceback.format_exc())
+            Log_model_services.Log_Model_Service.update_response(logid,{"Error":e.args,"response_code":'2'})
+            return Response({"Error":e.args,"response_code":'2'},status=status.HTTP_400_BAD_REQUEST)

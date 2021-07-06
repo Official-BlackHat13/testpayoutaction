@@ -21,5 +21,6 @@ class MerchantModel(models.Model):
     updated_by = models.CharField(max_length=300)
     deleted_by = models.CharField(max_length=300)
     is_ip_checking = models.BooleanField(default=True)
+    email = models.EmailField(default=None,null=True)
     def __str__(self):
         return str(self.id)

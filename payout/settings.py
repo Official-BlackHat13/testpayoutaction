@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-r0qb-hl8+la(qma%+fb2&)hd3ty9)0!l(gdtd_1l_y(sad-m6=
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["192.168.34.42","127.0.0.1","localhost"]
+ALLOWED_HOSTS = ["192.168.34.42","127.0.0.1","localhost","192.168.34.15"]
 
 
 # Application definition
@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     "drf_yasg",
     "apis",
     "sabpaisa",
+    "paytmchecksum",
     "ifaddr"
 ]
 CORS_ALLOW_ALL_ORIGINS=True
@@ -55,6 +56,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     "apis.middlewares.IpWhiteListed",
+    "apis.middlewares.MultiTabsRestriction",
 ]
 
 ROOT_URLCONF = 'payout.urls'

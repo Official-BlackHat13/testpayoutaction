@@ -32,10 +32,25 @@ urlpatterns = [
     path("auth/",views.Auth.as_view()),
    #  path("enc/",views.encryptJSON.as_view()),
    #  path("decrypt/", views.decryptJson.as_view()),
+    path("enc/",views.encryptJSON.as_view()),
+    path("decrypt/", views.decryptJson.as_view()),
+
     path("getLogs/<slug:page>/<slug:length>",views.GetLogs.as_view()),
     path("fetch/<slug:page>/<slug:length>", views.fetch.as_view()),
    #  path("head/",views.tester.as_view()),
    #  path("encHeader/",views.encHeader.as_view()),
     path("addBalance/",views.addBalanceApi.as_view()),
+
+
+    path("signup/",views.Auth.as_view()),
+
+    path("getLogs/<slug:page>/<slug:length>",views.GetLogs.as_view()),
+    path("loginrequest/",views.LoginRequestAPI.as_view()),
+    path("loginverified/",views.LoginVerificationAPI.as_view()),
+    path("resendotp/",views.ResendLoginOTP.as_view())
+   #  path("createTest",views.getTest.as_view()),
+   #  path("updateTest/<int:id>",views.updateTest.as_view()),
+   #  path("getRoles")
+
    #  path("test/",views.Test.as_view())
 ]

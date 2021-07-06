@@ -247,7 +247,7 @@ class Ledger_Model_Service:
         ledgermodel.bene_ifsc = const.bene_ifsc
         ledgermodel.createdBy = decResp.get("created_by")
         ledgermodel.created_at = datetime.now()
-        ledgermodel.status = decResp.get("status")
+        ledgermodel.status = True
         ledgermodel.charge = decResp.get("charge")
         ledgermodel.save()  
         log_service.table_id = ledgermodel.id
@@ -261,4 +261,3 @@ def generate_unique_code():
         if(LedgerModel.objects.filter(customer_ref_no=resp).count() == 0):
             break
     return resp
-
