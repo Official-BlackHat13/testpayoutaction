@@ -45,7 +45,7 @@ class Login_service:
     def login_verification(verification_token,otp,client_ip_address,geo_location):
         record = Otp_Model_Services.fetch_by_verification_token_with_otp(verification_token,otp)
         # print("record--> :: "+str(record[0].user))
-        # print(record[0]=="OTP Expired",len(record))
+        
         if record[0]=="OTP Expired" :
             return record[0]
         elif len(record)==0 :

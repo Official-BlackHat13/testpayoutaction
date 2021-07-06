@@ -27,7 +27,11 @@ class LedgerModel(models.Model):
     deletedBy = models.CharField(max_length=20, default=None, null=True)
     status = models.CharField(max_length=20,default=True)
     trans_amount_type = models.CharField(max_length=20)
-    remarks = models.CharField(max_length=9000)
+    remarks = models.CharField(max_length=900)
+    linked_ledger_id=models.IntegerField(null=True)
+    status_code = models.CharField(null=True,max_length=900)
+    system_remarks=models.CharField(null=True,max_length=900)
+
     objects = models.Manager()
     def __str__(self):
         return str(self.id)

@@ -67,21 +67,27 @@ class Auth(APIView):
             Log_model_services.Log_Model_Service.update_response(logid,{"Message":"some error","error":e.args,"trace_back":e.with_traceback(e.__traceback__)})
             
             return Response({"Message":"some error","error":e.args},status=status.HTTP_400_BAD_REQUEST)
+# class icicBankRequest(APIView):
+#     def post(self,req):
+
 class bankApiPaymentView(APIView):
-    permission_classes = (IsAuthenticated, )
+    # permission_classes = (IsAuthenticated, )
     @swagger_auto_schema(request_body=payout_docs.request,responses=payout_docs.response_schema_dict)
     def post(self,req):
         request_obj = "path::"+req.path+"headers::"+req.headers+"meta_data::"+str(req.META)+"data::"+req.data
         # payment_service=IFDC_service.payment.Payment()
-        client_code = req.data["client_code"]
+        api_key = req.headers['api_key']
+        merchant_id=auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(api_key)
         encrypted_code=req.data["encrypted_code"]
         log = Log_model_services.Log_Model_Service(log_type="Post request at "+req.path+" slug",client_ip_address=req.META['REMOTE_ADDR'],server_ip_address=const.server_ip,full_request=request_obj)
         logid=log.save()
-        client = Client_model_service.Client_Model_Service.fetch_by_clientcode(client_code=client_code)
+        client = Client_model_service.Client_Model_Service.fetch_by_id(merchant_id,req.META['REMOTE_ADDR'],"merchant id :: "+merchant_id)
         bank = Bank_model_services.Bank_model_services.fetch_by_id(client.bank)
-        payout=payout_service.PayoutService(client_code=client_code,encrypted_code=encrypted_code,client_ip_address=req.META['REMOTE_ADDR'])
+        payout=payout_service.PayoutService(merchant_id=merchant_id,encrypted_code=encrypted_code,client_ip_address=req.META['REMOTE_ADDR'])
         if(bank.bank_name=="ICICI"):
          res = payout.excuteICICI()
+        elif bank.bank_name=="PAYTM":
+            res = payout.excutePAYTM()
         else:
             res = payout.excuteIDFC()
         if(res=="Payout Done"):

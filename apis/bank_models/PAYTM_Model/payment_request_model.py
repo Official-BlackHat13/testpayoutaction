@@ -1,4 +1,4 @@
-from datetime import datetime
+import datetime
 
 class Payment_Request_Model:
     def __init__(self,subwalletGuid=None,orderId=None,beneficiaryAccount=None,beneficiaryIFSC=None,amount=None,purpose=None,transfer_mode=None):
@@ -19,7 +19,8 @@ class Payment_Request_Model:
             "amount":self.amount,
             "transferMode":self.transfer_Mode,
             "purpose":self.purpose,
-            "date":str(datetime.now().date())
+            "comments": "disbursal",
+            "date":str(datetime.date.today())
         }
 
 
