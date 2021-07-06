@@ -20,6 +20,7 @@ class UserActiveModel(models.Model):
     created_by=models.DateTimeField(default=None,null=True)
     deleted_by=models.DateTimeField(default=None,null=True)
     updated_by=models.DateTimeField(default=None,null=True)
+    login_token=models.CharField(max_length=300)
     def __str__(self) -> str:
         return str(self.id)
 

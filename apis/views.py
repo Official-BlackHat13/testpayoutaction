@@ -257,7 +257,7 @@ class LoginVerificationAPI(APIView):
         logid=logs.save()
         try:
             print(req.data)
-            login=login_service.Login_service.login_verification(req.data['verification_code'],req.data["otp"],req.META['REMOTE_ADDR'])
+            login=login_service.Login_service.login_verification(req.data['verification_code'],req.data["otp"],req.META['REMOTE_ADDR'],req.data['geo_location'])
             print('done')
             if(login=="OTP Expired"):
                 Log_model_services.Log_Model_Service.update_response(logid,{"message":"OTP Expired","response_code":"0"})
@@ -269,7 +269,7 @@ class LoginVerificationAPI(APIView):
                 # print(str(login[0]))
                 api_key=auth.AESCipher(const.AuthKey,const.AuthIV).encrypt(str(login["user_id"]))
                 Log_model_services.Log_Model_Service.update_response(logid,{"api_key":str(api_key)[2:].replace("'",""),"response_code":"1"})
-                return Response({"api_key":str(api_key)[2:].replace("'",""),"token":login["token"],"response_code":"1"},status=status.HTTP_200_OK)
+                return Response({"api_key":str(api_key)[2:].replace("'",""),"jwt_token":login["jwt_token"],"user_token":login['user_token'],"response_code":"1"},status=status.HTTP_200_OK)
         except Exception as e:
             import traceback
             print(traceback.format_exc())
