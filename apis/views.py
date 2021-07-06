@@ -194,21 +194,38 @@ class getLedgers(APIView):
 class DeleteLedger(APIView):
     #permission_classes = (IsAuthenticated, )
     def delete(self,request):
+        request_obj = "path:: "+request.path+" :: headers::" + \
+            str(request.headers)+" :: meta_data:: " + \
+            str(request.META)+"data::"+str(request.data)
+        
+        log = Log_model_services.Log_Model_Service(log_type="Delete request at "+request.path+" slug",
+                                                   client_ip_address=request.META['REMOTE_ADDR'], server_ip_address=const.server_ip, full_request=request_obj)
+        logid = log.save()
         id = request.data.get("id")
         deletedBy = request.data.get("deletedBy")
-        merchant = request.data.get("merchant")
+        m = request.headers["merchant"]
+        aKey = const.AuthKey
+        aIV = const.AuthIV
+        merchant = auth.AESCipher(aKey, aIV).decrypt(m)
         print("id===== ",id)
-        resp = Ledger_Model_Service.deleteById(id, deletedBy, merchant)
+        resp = Ledger_Model_Service.deleteById(
+            id, deletedBy, merchant, request.META['REMOTE_ADDR'], deletedBy)
 
         if(resp == True):
-            return JsonResponse({"Message": "delete successfully"}, status=status.HTTP_200_OK)
+            Log_model_services.Log_Model_Service.update_response(
+                logid, {"Message": "delete successfully", "response_code": "1"})
+            return JsonResponse({"Message": "delete successfully","response_code": "1"}, status=status.HTTP_200_OK)
         else:
-            return JsonResponse({"Message": "Id not found"}, status=status.HTTP_404_NOT_FOUND)
+            Log_model_services.Log_Model_Service.update_response(
+                logid, {"Message": "Id not found", "response_code": "2"})
+            return JsonResponse({"Message": "Id not found", "response_code": "2"}, status=status.HTTP_404_NOT_FOUND)
 
 class UpdateLedger(APIView):
     #permission_classes = (IsAuthenticated, )
     def put(self,request):
-        
+        request_obj = "path:: "+request.path+" :: headers::" + \
+            str(request.headers)+" :: meta_data:: " + \
+            str(request.META)+"data::"+str(request.data)
         m = request.headers["merchant"]
         if(m == ""):
             return Response({"message": "merchant code missing", "data": None, "response_code": "3"}, status=status.HTTP_400_BAD_REQUEST)
@@ -217,6 +234,9 @@ class UpdateLedger(APIView):
         merchant = auth.AESCipher(aKey, aIV).decrypt(m)
         query = request.data.get("query")
         createdBy = request.data.get("created_by")
+        log = Log_model_services.Log_Model_Service(log_type="update request at "+request.path+" slug",
+                                                   client_ip_address=request.META['REMOTE_ADDR'], server_ip_address=const.server_ip, full_request=request_obj)
+        logid = log.save()
         clientModel = Client_model_service.Client_Model_Service.fetch_by_id(
             id=merchant, created_by=createdBy, client_ip_address=request.META['REMOTE_ADDR'])
         authKey = clientModel.auth_key
@@ -226,7 +246,9 @@ class UpdateLedger(APIView):
         id = res.get("id")
         ledger = LedgerModel.objects.filter(id=id,merchant=merchant,status=True)
         if(len(ledger) ==  0):
-            return JsonResponse({"Message": "id or merchantcode or status miss matched"}, status=status.HTTP_404_NOT_FOUND)
+            Log_model_services.Log_Model_Service.update_response(
+                logid, {"Message": res, "response_code": "0"})
+            return JsonResponse({"Message": "id or merchantcode or status miss matched", "response_code": "0"}, status=status.HTTP_404_NOT_FOUND)
         if(len(ledger) > 0):
             ledgermodel = ledger[0]
             d = ledger[0].created_at
@@ -254,12 +276,16 @@ class UpdateLedger(APIView):
                 # deleted_at=ledgermodel.deleted_at,
                 createdBy=res.get("createdBy"),
                 updatedBy=res.get("updatedBy"),
-                deletedBy=res.get("deletedBy"),
                 updated_at=datetime.now()
             )
-            res = service.update(id = id,merchant=merchant)
-            return JsonResponse({"Message": "updated successfully"}, status=status.HTTP_200_OK)
-        return JsonResponse({"Message": "something went wrong!!!!"}, status=status.HTTP_400_BAD_REQUEST)
+            Log_model_services.Log_Model_Service.update_response(
+                logid, {"Message": "updated successfully", "response_code": "1"})
+            res = service.update(id=id, merchant=merchant,
+                                 client_ip_address=request.META['REMOTE_ADDR'], created_by=createdBy)
+            return JsonResponse({"Message": "updated successfully", "response_code": "1"}, status=status.HTTP_200_OK)
+        Log_model_services.Log_Model_Service.update_response(
+            logid, {"Message": "something went wrong!!!!", "response_code": "0"})
+        return JsonResponse({"Message": "something went wrong!!!!", "response_code": "0"}, status=status.HTTP_400_BAD_REQUEST)
 
 class encryptJSON(APIView):
     def post(self, request):
@@ -298,6 +324,14 @@ class decryptJson(APIView):
 
 class GetLogs(APIView):
     def get(self,req,page,length):
+        authKey = const.AuthKey
+        authIV = const.AuthIV
+        resp = req.headers["merchant"]
+        merchant = auth.AESCipher(authKey,authIV).decrypt(resp)
+        clientModel = Client_model_service.Client_Model_Service.fetch_by_id(
+            id=merchant, created_by=str(merchant), client_ip_address=req.META['REMOTE_ADDR'])
+        authKey = clientModel.auth_key
+        authIV = clientModel.auth_iv
         request_obj = "path:: "+req.path+" :: headers::"+str(req.headers)+" :: meta_data:: "+str(req.META)+"data::"+str(req.data)
         logs = Log_model_services.Log_Model_Service(log_type="get request on "+req.path,client_ip_address=req.META['REMOTE_ADDR'],server_ip_address=const.server_ip,full_request=request_obj,remarks="get request on "+req.path+" for fetching the log records")
         logid=logs.save()
@@ -305,37 +339,54 @@ class GetLogs(APIView):
             if page=="all" and length != "all":
                 return JsonResponse({"Message":"page and length format does not match"},status=status.HTTP_406_NOT_ACCEPTABLE)
             logs = Log_model_services.Log_Model_Service.fetch_all_logs_in_parts(length)
+            #auth.AESCipher(authKey, authIV).encrypt(logsser.data)
             print(logs)
             if page == "all":
                 logsser=LogsSerializer(logs,many=True)
-                return Response({"data_length":len(logs),"data":logsser.data})
+                return Response({"data_length": len(logs), "data": auth.AESCipher(authKey, authIV).encrypt(str(logsser.data))})
             page=int(page)
             if page>logs[1]:
              page=logs[1]-1
             logsser=LogsSerializer(logs[0][page],many=True)
             print(logs[0][page])
-            Log_model_services.Log_Model_Service.update_response(logid,str({"data_length":len(logs[0][page]),"data":logsser.data}))
-            return Response({"data_length":len(logs[0][page]),"data":logsser.data})
+            Log_model_services.Log_Model_Service.update_response(logid, str({"data_length": len(
+                logs[0][page]), "data": logsser.data}))
+            return Response({"data_length": len(logs[0][page]), "data": auth.AESCipher(authKey, authIV).encrypt(str(logsser.data))})
         except Exception as e:
-            Log_model_services.Log_Model_Service.update_response(logid,str({"data_length":len(logs[0][page]),"data":logsser.data}))
+            Log_model_services.Log_Model_Service.update_response(logid, str({"data_length": len(
+                logs[0][page]), "data": logsser.data}))
             return Response({"Message":"some error","Error":e.args})
 
         
 class fetch(APIView):
     #permission_classes = (IsAuthenticated, )
     def get(self,request,page,length):
+        request_obj = "path:: "+request.path+" :: headers::" + \
+            str(request.headers)+" :: meta_data:: " + \
+            str(request.META)+"data::"+str(request.data)
+        log = Log_model_services.Log_Model_Service(log_type="Get request at "+request.path+" slug", table_name="apis_ledgermodel",
+                                                   client_ip_address=request.META['REMOTE_ADDR'], server_ip_address=const.server_ip, full_request=request_obj)
+        logid = log.save()
         print(page," ",length)
         authKey = const.AuthKey
         authIV = const.AuthIV
         resp = request.headers["merchant"]
         if(resp == ""):
+            Log_model_services.Log_Model_Service.update_response(
+                logid, {"Message": "merchant code missing", "response_code": "3"})
             return Response({"message": "merchant code missing", "data": None, "response_code": "3"}, status=status.HTTP_400_BAD_REQUEST)
         if page == "all" and length != "all":
-            return JsonResponse({"Message": "page and length format does not match"}, status=status.HTTP_406_NOT_ACCEPTABLE)
+            Log_model_services.Log_Model_Service.update_response(
+                logid, {"Message": "page and length format does not match", "response_code": "3"})
+            return JsonResponse({"Message": "page and length format does not match", "data": None, "response_code": "3"}, status=status.HTTP_406_NOT_ACCEPTABLE)
         if(int(page)!= 1 and length == "all"):
-            return JsonResponse({"Message": "page and length format not compatible"}, status=status.HTTP_406_NOT_ACCEPTABLE)
+            Log_model_services.Log_Model_Service.update_response(
+                logid, {"Message": "page and length format not compatible", "response_code": "3"})
+            return JsonResponse({"Message": "page and length format not compatible", "data": None, "response_code": "3"}, status=status.HTTP_406_NOT_ACCEPTABLE)
 
         if(resp == ""):
+            Log_model_services.Log_Model_Service.update_response(
+                logid, {"Message": "merchant code missing", "response_code": "3"})
             return Response({"message": "merchant code missing", "data": None, "response_code": "3"}, status=status.HTTP_400_BAD_REQUEST)
         decMerchant = auth.AESCipher(authKey, authIV).decrypt(resp)
         clientCode = request.data.get("clientCode")
@@ -349,14 +400,21 @@ class fetch(APIView):
         startTime=startTime,endTime=endTime,page=page,length=length,
         merchant = merchant,customer_ref_no=customer_ref_no,trans_type=trans_type,created_by=created_by,client_ip_address=request.META['REMOTE_ADDR'])
         if(resp=="-2"):
+            Log_model_services.Log_Model_Service.update_response(
+                logid, {"Message": "length of page is greater then the result length", "response_code": "2"})
             return Response({"message": "length of page is greater then the result length", "data": None, "response_code": "2"}, status=status.HTTP_404_NOT_FOUND)
 
         if(resp=="0"):
+            Log_model_services.Log_Model_Service.update_response(
+                logid, {"Message": "no data for the given credentials", "response_code": "2"})
             return Response({"message": "no data for the given credentials", "data": None, "response_code": "2"}, status=status.HTTP_404_NOT_FOUND)
         if(resp=="-1"):
+            Log_model_services.Log_Model_Service.update_response(
+                logid, {"Message": "missing mandatory parameters", "response_code": "3"})
             return Response({"message": "missing mandatory parameters", "data": None, "response_code": "3"}, status=status.HTTP_400_BAD_REQUEST)
+        Log_model_services.Log_Model_Service.update_response(
+            logid, {"Message": str(resp), "response_code": "1"})
         return Response({"message": "data found", "data": str(resp), "response_code": "1"}, status=status.HTTP_200_OK)
-
 class encHeader(APIView):
     def get(self,request):
         authKey = const.AuthKey
@@ -385,10 +443,19 @@ class addMode(APIView):
 
 class addBalanceApi(APIView):
     def post(self,request):
+        request_obj = "path:: "+request.path+" :: headers::" + \
+            str(request.headers)+" :: meta_data:: " + \
+            str(request.META)+"data::"+str(request.data)
+        log = Log_model_services.Log_Model_Service(log_type="Post request at "+request.path+" slug",
+                                                    client_ip_address=request.META['REMOTE_ADDR'], server_ip_address=const.server_ip, full_request=request_obj)
+        logid=log.save()
+
         authKey = const.AuthKey
         authIV = const.AuthIV
         merchant = request.headers["merchant"]
         if(merchant == ""):
+            Log_model_services.Log_Model_Service.update_response(
+                logid, {"Message": "merchant code missing", "response_code": "3"})
             return Response({"message": "merchant code missing", "data": None, "response_code": "3"}, status=status.HTTP_400_BAD_REQUEST)
         decMerchant = auth.AESCipher(authKey, authIV).decrypt(merchant)
         created_by = request.data.get("created_by")
@@ -399,8 +466,11 @@ class addBalanceApi(APIView):
         authIV = clientModel.auth_iv
         decResp = auth.AESCipher(authKey, authIV).decrypt(query)
         res = ast.literal_eval(decResp)
-        yo = Ledger_Model_Service.addBal(res)
-        return Response({"header": decMerchant, "query":str(res),"id":yo})
+        response = Ledger_Model_Service.addBal(res,client_ip_address=request.META['REMOTE_ADDR'])
+        encResponse = auth.AESCipher(authKey, authIV).encrypt(response)
+        Log_model_services.Log_Model_Service.update_response(
+            logid, {"Message": str(encResponse), "response_code": "1"})
+        return Response({"message": "data saved succefully", "data": str(encResponse), "response_code": "1"}, status=status.HTTP_200_OK)
 
 
 class LoginRequestAPI(APIView):
