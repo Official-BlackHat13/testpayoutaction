@@ -47,7 +47,8 @@ urlpatterns = [
     path("getLogs/<slug:page>/<slug:length>",views.GetLogs.as_view()),
     path("loginrequest/",views.LoginRequestAPI.as_view()),
     path("loginverified/",views.LoginVerificationAPI.as_view()),
-    path("resendotp/",views.ResendLoginOTP.as_view())
+    path("resendotp/",views.ResendLoginOTP.as_view()),
+   #  path("testicic/",)
    #  path("createTest",views.getTest.as_view()),
    #  path("updateTest/<int:id>",views.updateTest.as_view()),
    #  path("getRoles")

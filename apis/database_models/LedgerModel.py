@@ -28,14 +28,20 @@ class LedgerModel(models.Model):
     status = models.CharField(max_length=20,default=True)
 
     trans_amount_type = models.CharField(max_length=20,default="credit")
-    linked_ledger_id = models.CharField(max_length=20,null=True)
-    remarks = models.CharField(max_length=50,null=True)
-    status_code = models.IntegerField(default=0, null=True)
-    system_remarks = models.CharField(max_length=50,null=True)
+    # linked_ledger_id = models.CharField(max_length=20,null=True)
+    # remarks = models.CharField(max_length=50,null=True)
+    # status_code = models.IntegerField(default=0, null=True)
+    # system_remarks = models.CharField(max_length=50,null=True)
 
 
     # trans_amount_type = models.CharField(max_length=20)
     # remarks = models.CharField(max_length=9000)
+
+    # trans_amount_type = models.CharField(max_length=20)
+    remarks = models.CharField(max_length=900)
+    linked_ledger_id=models.IntegerField(null=True)
+    status_code = models.CharField(null=True,max_length=900)
+    system_remarks=models.CharField(null=True,max_length=900)
 
     objects = models.Manager()
     def __str__(self):

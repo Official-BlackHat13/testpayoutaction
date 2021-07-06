@@ -94,21 +94,27 @@ class Auth(APIView):
             Log_model_services.Log_Model_Service.update_response(logid,{"Message":"some error","error":e.args,"trace_back":e.with_traceback(e.__traceback__)})
             
             return Response({"Message":"some error","error":e.args},status=status.HTTP_400_BAD_REQUEST)
+# class icicBankRequest(APIView):
+#     def post(self,req):
+
 class bankApiPaymentView(APIView):
-    permission_classes = (IsAuthenticated, )
+    # permission_classes = (IsAuthenticated, )
     @swagger_auto_schema(request_body=payout_docs.request,responses=payout_docs.response_schema_dict)
     def post(self,req):
         request_obj = "path::"+req.path+"headers::"+req.headers+"meta_data::"+str(req.META)+"data::"+req.data
         # payment_service=IFDC_service.payment.Payment()
-        client_code = req.data["client_code"]
+        api_key = req.headers['api_key']
+        merchant_id=auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(api_key)
         encrypted_code=req.data["encrypted_code"]
         log = Log_model_services.Log_Model_Service(log_type="Post request at "+req.path+" slug",client_ip_address=req.META['REMOTE_ADDR'],server_ip_address=const.server_ip,full_request=request_obj)
         logid=log.save()
-        client = Client_model_service.Client_Model_Service.fetch_by_clientcode(client_code=client_code)
+        client = Client_model_service.Client_Model_Service.fetch_by_id(merchant_id,req.META['REMOTE_ADDR'],"merchant id :: "+merchant_id)
         bank = Bank_model_services.Bank_model_services.fetch_by_id(client.bank)
-        payout=payout_service.PayoutService(client_code=client_code,encrypted_code=encrypted_code,client_ip_address=req.META['REMOTE_ADDR'])
+        payout=payout_service.PayoutService(merchant_id=merchant_id,encrypted_code=encrypted_code,client_ip_address=req.META['REMOTE_ADDR'])
         if(bank.bank_name=="ICICI"):
          res = payout.excuteICICI()
+        elif bank.bank_name=="PAYTM":
+            res = payout.excutePAYTM()
         else:
             res = payout.excuteIDFC()
         if(res=="Payout Done"):
@@ -429,7 +435,7 @@ class LoginVerificationAPI(APIView):
         logid=logs.save()
         try:
             print(req.data)
-            login=login_service.Login_service.login_verification(req.data['verification_code'],req.data["otp"],req.META['REMOTE_ADDR'])
+            login=login_service.Login_service.login_verification(req.data['verification_code'],req.data["otp"],req.META['REMOTE_ADDR'],req.data['geo_location'])
             print('done')
             if(login=="OTP Expired"):
                 Log_model_services.Log_Model_Service.update_response(logid,{"message":"OTP Expired","response_code":"0"})
@@ -441,7 +447,7 @@ class LoginVerificationAPI(APIView):
                 # print(str(login[0]))
                 api_key=auth.AESCipher(const.AuthKey,const.AuthIV).encrypt(str(login["user_id"]))
                 Log_model_services.Log_Model_Service.update_response(logid,{"api_key":str(api_key)[2:].replace("'",""),"response_code":"1"})
-                return Response({"api_key":str(api_key)[2:].replace("'",""),"token":login["token"],"response_code":"1"},status=status.HTTP_200_OK)
+                return Response({"api_key":str(api_key)[2:].replace("'",""),"jwt_token":login["jwt_token"],"user_token":login['user_token'],"response_code":"1"},status=status.HTTP_200_OK)
         except Exception as e:
             import traceback
             print(traceback.format_exc())
