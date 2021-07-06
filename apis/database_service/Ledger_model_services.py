@@ -126,7 +126,9 @@ class Ledger_Model_Service:
         log_service.save()
         return ledgerModel
 
-    def deleteById(id, deletedBy,merchant):
+    def deleteById(id, deletedBy,merchant,client_ip_address,createdBy):
+        log_service = Log_model_services.Log_Model_Service(log_type="delete", table_name="apis_ledgermodel", remarks="deleting records in apis_ledgermodel table",
+                                                           client_ip_address=client_ip_address, server_ip_address=const.server_ip, created_by=createdBy)
         ledger = LedgerModel.objects.filter(id=id,merchant=merchant)
         if(len(ledger) > 0):
             ledgermodel = LedgerModel()
@@ -136,6 +138,8 @@ class Ledger_Model_Service:
             ledgerModel.deletedBy = deletedBy
             ledgerModel.deleted_at = datetime.now()
             ledgerModel.save()
+            log_service.table_id = id
+            log_service.save()
             return True
         return False
 
@@ -147,11 +151,11 @@ class Ledger_Model_Service:
         return True
     
     @staticmethod
-    def getBalance(merchant_id,client_ip_address,created_by):
+    def getBalance(clientCode,client_ip_address,created_by):
         log_service=Log_model_services.Log_Model_Service(log_type="get balance",table_name="apis_ledgermodel",remarks="getting balance from apis_ledgermodel table via getBalance stored procedure",client_ip_address=client_ip_address,server_ip_address=const.server_ip,created_by=created_by)
         
         cursors = connection.cursor()
-        cursors.execute('call getBalance("'+merchant_id+'",@balance)')
+        cursors.execute('call getBalance("'+clientCode+'",@balance)')
         cursors.execute("select @balance")
         value = cursors.fetchall()
         cursors.close()
@@ -173,7 +177,11 @@ class Ledger_Model_Service:
             
 
 
-    def update(self,id,merchant):
+    def update(self,id,merchant,client_ip_address,created_by):
+        log_service = Log_model_services.Log_Model_Service(log_type="update", table_name="apis_ledgermodel", remarks="updating records in apis_ledgermodel table",
+                                                           client_ip_address=client_ip_address, server_ip_address=const.server_ip, created_by=created_by)
+        log_service.table_id = id
+        log_service.save()
         ledger = LedgerModel.objects.filter(id=id, merchant=merchant)
         if(len(ledger) > 0):
             ledgermodel = LedgerModel()
@@ -232,7 +240,9 @@ class Ledger_Model_Service:
             return True
         return False
 
-    def addBal(decResp):
+    def addBal(decResp, client_ip_address):
+        log_service = Log_model_services.Log_Model_Service(log_type="create", table_name="apis_ledgermodel", remarks="saving records in apis_ledgermodel table",
+                                                           client_ip_address=client_ip_address, server_ip_address=const.server_ip, created_by=decResp.get("created_by"))
         ledgermodel = LedgerModel()
         ledgermodel.amount = decResp.get("amount")
         modeOfTrans = decResp.get("mode")
@@ -257,9 +267,11 @@ class Ledger_Model_Service:
         ledgermodel.bene_ifsc = const.bene_ifsc
         ledgermodel.createdBy = decResp.get("created_by")
         ledgermodel.created_at = datetime.now()
-        ledgermodel.status = decResp.get("status")
+        ledgermodel.status = True
         ledgermodel.charge = decResp.get("charge")
-        ledgermodel.save()
+        ledgermodel.save()  
+        log_service.table_id = ledgermodel.id
+        log_service.save()
         return str(ledgermodel.id)
         
 def generate_unique_code():
@@ -269,4 +281,3 @@ def generate_unique_code():
         if(LedgerModel.objects.filter(customer_ref_no=resp).count() == 0):
             break
     return resp
-

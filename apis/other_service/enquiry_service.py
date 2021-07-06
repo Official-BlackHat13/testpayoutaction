@@ -1,3 +1,4 @@
+from apis import const
 from http import client
 import json
 import math
@@ -5,7 +6,7 @@ import re
 from rest_framework import status
 from sabpaisa import auth
 from datetime import datetime
-
+from apis.database_service import Log_model_services
 from ..database_service import Client_model_service
 from rest_framework.permissions import AND
 from ..models import LedgerModel
@@ -81,6 +82,11 @@ class ICICI_service:
 
     
     def fetchLedgerByParams(merchant, created_by, page,length,client_ip_address, client_code=None, customer_ref_no=None, startTime=None, endTime=None, trans_type=None):
+        print("fect.................")
+        log_service = Log_model_services.Log_Model_Service(log_type="fetch", table_name="apis_ledgermodel", remarks="fetching records in apis_ledgermodel table",
+                                                           client_ip_address=client_ip_address, server_ip_address=const.server_ip, created_by=created_by)
+        log_service.save()
+        print("fect.................")
         resp = list()
         query = str()
         if(merchant==None):
@@ -158,7 +164,7 @@ class ICICI_service:
                     "trans_amount_type": l.trans_amount_type
                 }
                 resp.append(d)
-        print("length = ", int(length), " and ", len(resp))
+        # print("length = ", int(length), " and ", len(resp))
         if(len(resp) == 0):
             return "0"
         if(length == "all"):
@@ -178,7 +184,7 @@ class ICICI_service:
             "splitlen": str(splitlen)
         }
         respJson = str(json)
-        print("response..... ", respJson)
+        # print("response..... ", respJson)
         #return split_list[int(page)-1]
         clientModel = Client_model_service.Client_Model_Service.fetch_by_id(
             id=merchant, created_by=created_by,client_ip_address=client_ip_address)
@@ -186,5 +192,5 @@ class ICICI_service:
         authIV = clientModel.auth_iv
         string = str(resp)
         encResp = auth.AESCipher(authKey, authIV).encrypt(respJson)
-        
+          
         return encResp
