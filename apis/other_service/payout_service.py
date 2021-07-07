@@ -57,6 +57,7 @@ class PayoutService:
              ledgerModelService.bene_ifsc=payoutrequestmodel.ifscCode
              ledgerModelService.type_status="Generated"
              ledgerModelService.trans_type=payoutrequestmodel.clientPaymode
+             ledgerModelService.charge=Ledger_model_services.Ledger_Model_Service.calculate_charge(payoutrequestmodel.clientPaymode,payoutrequestmodel.txnAmount,self.client_ip_address)
              ledgerModelService.van=payoutrequestmodel.van
              ledgerModelService.trans_amount_type = "debited"
              ledgerModelService.trans_time=datetime.now()
@@ -71,18 +72,35 @@ class PayoutService:
 
              response_model = paytm_response_model.Payment_Response_Model.from_json(response.json())
              if(response_model.status=="ACCEPTED"):
-                 ledgerModelService.update_status(id,"Proccesing")
-                 class ServiceThread(threading.Thread):
+                ledgerModelService.update_status(id,"Proccesing")
+                class ServiceThread(threading.Thread):
                      def run(self):
                          time.sleep(20)
                          checksum=paytmchecksum.generateSignature(json.dumps({"orderId":order_id}), const.paytm_merchant_key)
                          response = requests.post(bank_api.paytm.staging_paytmEnquiryAPI(),json={"orderId":order_id},headers={"Content-type": "application/json", "x-mid": const.paytm_merchant_id, "x-checksum":checksum})
                          if response.json()['status']=="SUCCESS":
                              ledgerModelService.update_status(id,"Success")
+                             ledgerModelService.client_id=clientModel.id
+                             ledgerModelService.client_code=clientModel.client_code
+                             ledgerModelService.amount=payoutrequestmodel.txnAmount
+                             ledgerModelService.bank_id=clientmodel.bank
+                             ledgerModelService.bank_ref_no="waiting"
+                             ledgerModelService.customer_ref_no=payoutrequestmodel.clientTransactionId
+                             ledgerModelService.status="initated"
+                             ledgerModelService.bene_account_name=payoutrequestmodel.accountHolderName
+                             ledgerModelService.bene_account_number=payoutrequestmodel.creditAccountNumber
+                             ledgerModelService.bene_ifsc=payoutrequestmodel.ifscCode
+                             ledgerModelService.type_status="Generated"
+                             ledgerModelService.trans_type=payoutrequestmodel.clientPaymode
+                             ledgerModelService.van=payoutrequestmodel.van
+                             ledgerModelService.trans_amount_type = "debited"
+                             ledgerModelService.trans_time=datetime.now()
                          else:
                              ledgerModelService.update_status(id,"Failed")
                          print("Service Done")
+                ServiceThread().start()
              return "Payout Done"
+             
             else:
              return message
         except Exception as e:
