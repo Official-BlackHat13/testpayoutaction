@@ -4,7 +4,10 @@
 from http import client
 from django.db.models import query
 from requests.sessions import merge_hooks
-
+from django.shortcuts import redirect
+from pyexcel_xls import get_data as xls_get
+from pyexcel_xlsx import get_data as xlsx_get
+from django.utils.datastructures import MultiValueDictKeyError
 # from apis.database_models.Test import TestModel
 
 from rest_framework.exceptions import server_error
@@ -27,6 +30,7 @@ from .database_models import LedgerModel,ModeModel
 from apis.database_service.Ledger_model_services import *
 from django.http.response import JsonResponse
 from apis.other_service.enquiry_service import *
+from apis.database_service.Beneficiary_model_services import *
 from .database_service import Client_model_service,Bank_model_services
 
 from rest_framework.parsers import JSONParser
@@ -94,21 +98,27 @@ class Auth(APIView):
             Log_model_services.Log_Model_Service.update_response(logid,{"Message":"some error","error":e.args,"trace_back":e.with_traceback(e.__traceback__)})
             
             return Response({"Message":"some error","error":e.args},status=status.HTTP_400_BAD_REQUEST)
+# class icicBankRequest(APIView):
+#     def post(self,req):
+
 class bankApiPaymentView(APIView):
-    permission_classes = (IsAuthenticated, )
+    # permission_classes = (IsAuthenticated, )
     @swagger_auto_schema(request_body=payout_docs.request,responses=payout_docs.response_schema_dict)
     def post(self,req):
         request_obj = "path::"+req.path+"headers::"+req.headers+"meta_data::"+str(req.META)+"data::"+req.data
         # payment_service=IFDC_service.payment.Payment()
-        client_code = req.data["client_code"]
+        api_key = req.headers['api_key']
+        merchant_id=auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(api_key)
         encrypted_code=req.data["encrypted_code"]
         log = Log_model_services.Log_Model_Service(log_type="Post request at "+req.path+" slug",client_ip_address=req.META['REMOTE_ADDR'],server_ip_address=const.server_ip,full_request=request_obj)
         logid=log.save()
-        client = Client_model_service.Client_Model_Service.fetch_by_clientcode(client_code=client_code)
+        client = Client_model_service.Client_Model_Service.fetch_by_id(merchant_id,req.META['REMOTE_ADDR'],"merchant id :: "+merchant_id)
         bank = Bank_model_services.Bank_model_services.fetch_by_id(client.bank)
-        payout=payout_service.PayoutService(client_code=client_code,encrypted_code=encrypted_code,client_ip_address=req.META['REMOTE_ADDR'])
+        payout=payout_service.PayoutService(merchant_id=merchant_id,encrypted_code=encrypted_code,client_ip_address=req.META['REMOTE_ADDR'])
         if(bank.bank_name=="ICICI"):
          res = payout.excuteICICI()
+        elif bank.bank_name=="PAYTM":
+            res = payout.excutePAYTM()
         else:
             res = payout.excuteIDFC()
         if(res=="Payout Done"):
@@ -498,7 +508,7 @@ class LoginVerificationAPI(APIView):
         logid=logs.save()
         try:
             print(req.data)
-            login=login_service.Login_service.login_verification(req.data['verification_code'],req.data["otp"],req.META['REMOTE_ADDR'])
+            login=login_service.Login_service.login_verification(req.data['verification_code'],req.data["otp"],req.META['REMOTE_ADDR'],req.data['geo_location'])
             print('done')
             if(login=="OTP Expired"):
                 Log_model_services.Log_Model_Service.update_response(logid,{"message":"OTP Expired","response_code":"0"})
@@ -510,7 +520,7 @@ class LoginVerificationAPI(APIView):
                 # print(str(login[0]))
                 api_key=auth.AESCipher(const.AuthKey,const.AuthIV).encrypt(str(login["user_id"]))
                 Log_model_services.Log_Model_Service.update_response(logid,{"api_key":str(api_key)[2:].replace("'",""),"response_code":"1"})
-                return Response({"api_key":str(api_key)[2:].replace("'",""),"token":login["token"],"response_code":"1"},status=status.HTTP_200_OK)
+                return Response({"api_key":str(api_key)[2:].replace("'",""),"jwt_token":login["jwt_token"],"user_token":login['user_token'],"response_code":"1"},status=status.HTTP_200_OK)
         except Exception as e:
             import traceback
             print(traceback.format_exc())
@@ -532,3 +542,88 @@ class ResendLoginOTP(APIView):
             print(traceback.format_exc())
             Log_model_services.Log_Model_Service.update_response(logid,{"Error":e.args,"response_code":'2'})
             return Response({"Error":e.args,"response_code":'2'},status=status.HTTP_400_BAD_REQUEST)
+        
+
+class fetchBeneficiary(APIView):
+    def get(self,request):
+        return Response({"msg":"done","data":list(BeneficiaryModel.objects.filter().all().values()),"response_code":'2'},status=status.HTTP_400_BAD_REQUEST)
+
+class updateBeneficiary(APIView):
+    def put(self,request):
+        
+        id = request.data.get("id")
+        bene = BeneficiaryModel.objects.filter(id=id)
+        if(len(bene)==0):
+            return Response({"msg":"not found","response_code":'0'},status=status.HTTP_404_NOT_FOUND)
+        full_name = request.data.get("full_name")
+        account_number = request.data.get("account_number")
+        ifsc_code = request.data.get("ifsc_code")
+        merchant_id = request.data.get("merchant_id")
+        updated_by = request.data.get("updated_by")
+        created_at = bene[0].created_at
+        updated_at = datetime.now()
+        service = Beneficiary_Model_Services(full_name=full_name,account_number=account_number,ifsc_code=ifsc_code,merchant_id=merchant_id)
+        service.update(id=id,updated_at=updated_at,updated_by=updated_by,created_at=created_at)
+        return Response({"msg":"done","response_code":'1'},status=status.HTTP_200_OK)
+
+class deleteBeneficiary(APIView):
+    def delete(self,request):
+        id = request.data.get("id")
+        bene = BeneficiaryModel.objects.filter(id=id)
+        if(len(bene)==0):
+            return Response({"msg":"not found","response_code":'0'},status=status.HTTP_404_NOT_FOUND)
+        
+        BeneficiaryModel.objects.filter(id=id).delete()
+        return Response({"msg":"done","response_code":'1'},status=status.HTTP_200_OK)
+
+
+class saveBeneficiary(APIView):
+    def post(self, request, format=None):
+        # api_key = request.headers.get("api_key")
+        # print("api key ===== ",api_key)
+        api_key = request.headers['api-key']
+        merchantId = int(auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(api_key))
+        print(merchantId)
+        try:
+            excel_file = request.FILES["files"]
+        except MultiValueDictKeyError:
+            return Response({"msg":"not done","response_code":'1'},status=status.HTTP_400_BAD_REQUEST)
+
+        if (str(excel_file).split(".")[-1] == "xls"):
+            data = xls_get(excel_file, column_limit=4)
+        elif (str(excel_file).split(".")[-1] == "xlsx"):
+            data = xlsx_get(excel_file, column_limit=4)
+        datas = data["Sheet1"]
+        full_name = str()
+        account_number=str()
+        ifsc_code=str()
+        merchant_id=str()
+        for d in datas:
+            if(d[0]!="full_name"):
+                full_name = d[0]
+                account_number = d[1]
+                ifsc_code = d[2]
+                merchant_id = d[3]
+                resultSet = BeneficiaryModel.objects.filter(merchant_id=merchantId,account_number=account_number,ifsc_code=ifsc_code)
+                if(len(resultSet)==0 and merchant_id==merchantId):
+                    service = Beneficiary_Model_Services(full_name=full_name,account_number=account_number,ifsc_code=ifsc_code,merchant_id=merchant_id)
+                    service.save()
+        return Response({"msg":"data parsed and saved to database","response_code":'1'},status=status.HTTP_200_OK)
+
+class login(APIView):
+    def post(self,request):
+        username= request.data.get("username")
+        password = request.data.get("password")
+        email = request.data.get("email")
+        otp = int(randomstring.randomNumber(6))
+        response = requests.post(const.email_api,headers={"user-agent":"Application","Accept":"*/*","Content-Type":"application/json; charset=utf-8"},json={"toEmail": email,
+        "toCc": "",
+        "subject": "OTP for Sabpaisa Payout",
+        "msg": "Please find the otp for your payout login request "+str(otp)})
+        return Response({"msg":"OTP SENT ","response_code":'1'},status=status.HTTP_200_OK)
+
+
+class otpVerification(APIView):
+    def post(self,request):
+        otp = request.data.get("otp")
+        return Response({"msg":"logged in","response_code":'1'},status=status.HTTP_200_OK)

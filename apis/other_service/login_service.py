@@ -1,6 +1,8 @@
+from datetime import datetime, timedelta
 from django.http import response
 from ..database_service.Client_model_service import Client_Model_Service
 from ..database_service.Otp_model_services import Otp_Model_Services
+from ..database_service.UserActive_model_service import UserActive_Model_Service
 from ..Utils import randomstring
 import requests
 import threading
@@ -40,10 +42,10 @@ class Login_service:
             ExpireOTP().start()
             return otp_service.verification_token
     @staticmethod
-    def login_verification(verification_token,otp,client_ip_address):
+    def login_verification(verification_token,otp,client_ip_address,geo_location):
         record = Otp_Model_Services.fetch_by_verification_token_with_otp(verification_token,otp)
         # print("record--> :: "+str(record[0].user))
-        print(record[0]=="OTP Expired",len(record))
+        
         if record[0]=="OTP Expired" :
             return record[0]
         elif len(record)==0 :
@@ -52,9 +54,9 @@ class Login_service:
             client=Client_Model_Service.fetch_by_id(record[0].user,client_ip_address,created_by="merchant_id::"+str(record[0].user))
             print("record--> :: "+str(record[0].user))
             res = requests.post(const.domain+"api/token/",json={"username":client.client_username,"password":client.client_password})
-            
+            val_dic=UserActive_Model_Service(client.id,active_status="active",login_status="active",client_ip_address=client_ip_address,login_time=datetime.now(),login_expire_time=datetime.now()+timedelta(days=3),geo_location=geo_location).save()
             Otp_Model_Services.update_status(record[0].id,"Verified")
-            return {"user_id":record[0].user,"token":res.json()}
+            return {"user_id":record[0].user,"jwt_token":res.json(),"user_token":{"login_token":val_dic["login_token"],"tab_login":val_dic["tab_token"]}}
     @staticmethod
     def resend_otp(verification_token,client_ip_address):
         record = Otp_Model_Services.fetch_by_verification_only(verification_token)

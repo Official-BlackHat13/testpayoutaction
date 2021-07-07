@@ -73,14 +73,22 @@ def IpWhiteListed(get_response):
 
 def MultiTabsRestriction(get_response):
     def middleware(req):
+
         if req.path!="/api/" and req.path!="/" and "/admin/" not in req.path and req.path!="/api/auth/" and req.path not in "/api/token/" and req.path!="/api/loginrequest/" and req.path!="/api/loginverified/" and req.path!="/api/resendotp/" and const.multitabs:
+            
             merchant_id = req.headers["api_key"]
             tab_token=req.headers["tab_token"]
+            login_token=req.headers['login_token']
             ip=req.META['REMOTE_ADDR']
+            logged_in_active_users=UserActive_Model_Service.check_active_user(login_token=login_token,tab_token=tab_token)
+            if len(logged_in_active_users)>0:
+                res=HttpResponse(str({"message":"Already active on some other tab on some other device"}))
+                res['Content-Type'] = 'application/json'
+                return res
             merchant_id=auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(merchant_id)
             user_active=UserActive_Model_Service.fetch_by_merchant_id(merchant_id)
-            last_login_time=user_active.last_server_call_time
-            login_expire = user_active.login_expire_time
+            # last_login_time=user_active.last_server_call_time
+            # login_expire = user_active.login_expire_time
             now = datetime.now()
             now.replace(tzinfo=timezone.utc)
             if user_active.client_ip_address!=ip and user_active.login_status=="active":

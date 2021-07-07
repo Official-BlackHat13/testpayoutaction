@@ -27,7 +27,7 @@ class PayoutRequestModel:
         self.clientPaymode=clientPaymode
         self.environment=environment
     @staticmethod
-    def from_json(json):
+    def from_json(json)->list:
         requestModel=PayoutRequestModel()
         try:
             if json['userName']=="":

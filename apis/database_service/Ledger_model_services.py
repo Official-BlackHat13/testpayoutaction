@@ -6,9 +6,14 @@ import uuid
 from rest_framework import status
 from sabpaisa import auth
 from datetime import datetime
+
 from ..database_service import Client_model_service
 from rest_framework.permissions import AND
 from ..models import LedgerModel,ModeModel
+
+
+from ..models import ChargeModel
+
 from . import Log_model_services
 from django.db import connection
 from sabpaisa import main
@@ -29,6 +34,7 @@ class Ledger_Model_Service:
         self.bene_account_name=bene_account_name
         self.bene_account_number=bene_account_number
         self.bene_ifsc=bene_ifsc
+        
         self.request_header=request_header
         self.van=van
         self.createdBy=createdBy
@@ -156,6 +162,20 @@ class Ledger_Model_Service:
         print(value)
         log_service.save()
         return value[0][0]
+    @staticmethod
+    def calculate_charge(mode,amount,client_ip_address):
+        mode = ModeModel.objects.filter(mode=mode)
+        charge=ChargeModel.objects.filter(mode=mode[0].id,min_amount__lt=amount,max_amount__gt=amount)
+        charge_amount=0
+        if(len(charge)>0 and charge[0].charge_percentage_or_fix=="percentage"):
+            charge_amount=(amount/100)*charge[0].charge
+            return charge_amount
+        elif (len(charge)>0 and charge[0].charge_percentage_or_fix=="fix"):
+            return charge[0].charge
+        else:
+            None
+            
+
 
     def update(self,id,merchant,client_ip_address,created_by):
         log_service = Log_model_services.Log_Model_Service(log_type="update", table_name="apis_ledgermodel", remarks="updating records in apis_ledgermodel table",
