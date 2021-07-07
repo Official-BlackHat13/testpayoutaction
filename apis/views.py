@@ -4,7 +4,10 @@
 from http import client
 from django.db.models import query
 from requests.sessions import merge_hooks
-
+from django.shortcuts import redirect
+from pyexcel_xls import get_data as xls_get
+from pyexcel_xlsx import get_data as xlsx_get
+from django.utils.datastructures import MultiValueDictKeyError
 # from apis.database_models.Test import TestModel
 
 from rest_framework.exceptions import server_error
@@ -27,6 +30,7 @@ from .database_models import LedgerModel,ModeModel
 from apis.database_service.Ledger_model_services import *
 from django.http.response import JsonResponse
 from apis.other_service.enquiry_service import *
+from apis.database_service.Beneficiary_model_services import *
 from .database_service import Client_model_service,Bank_model_services
 
 from rest_framework.parsers import JSONParser
@@ -540,4 +544,70 @@ class ResendLoginOTP(APIView):
             Log_model_services.Log_Model_Service.update_response(logid,{"Error":e.args,"response_code":'2'})
             return Response({"Error":e.args,"response_code":'2'},status=status.HTTP_400_BAD_REQUEST)
         
+
+class fetchBeneficiary(APIView):
+    def get(self,request):
+        return Response({"msg":"done","data":list(BeneficiaryModel.objects.filter().all().values()),"response_code":'2'},status=status.HTTP_400_BAD_REQUEST)
+
+class updateBeneficiary(APIView):
+    def put(self,request):
+        
+        id = request.data.get("id")
+        bene = BeneficiaryModel.objects.filter(id=id)
+        if(len(bene)==0):
+            return Response({"msg":"not found","response_code":'0'},status=status.HTTP_404_NOT_FOUND)
+        full_name = request.data.get("full_name")
+        account_number = request.data.get("account_number")
+        ifsc_code = request.data.get("ifsc_code")
+        merchant_id = request.data.get("merchant_id")
+        updated_by = request.data.get("updated_by")
+        created_at = bene[0].created_at
+        updated_at = datetime.now()
+        service = Beneficiary_Model_Services(full_name=full_name,account_number=account_number,ifsc_code=ifsc_code,merchant_id=merchant_id)
+        service.update(id=id,updated_at=updated_at,updated_by=updated_by,created_at=created_at)
+        return Response({"msg":"done","response_code":'1'},status=status.HTTP_200_OK)
+
+class deleteBeneficiary(APIView):
+    def delete(self,request):
+        id = request.data.get("id")
+        bene = BeneficiaryModel.objects.filter(id=id)
+        if(len(bene)==0):
+            return Response({"msg":"not found","response_code":'0'},status=status.HTTP_404_NOT_FOUND)
+        
+        BeneficiaryModel.objects.filter(id=id).delete()
+        return Response({"msg":"done","response_code":'1'},status=status.HTTP_200_OK)
+
+
+class saveBeneficiary(APIView):
+    def post(self, request, format=None):
+        # api_key = request.headers.get("api_key")
+        # print("api key ===== ",api_key)
+        api_key = request.headers['api-key']
+        merchantId = int(auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(api_key))
+        print(merchantId)
+        try:
+            excel_file = request.FILES["files"]
+        except MultiValueDictKeyError:
+            return Response({"msg":"not done","response_code":'1'},status=status.HTTP_400_BAD_REQUEST)
+
+        if (str(excel_file).split(".")[-1] == "xls"):
+            data = xls_get(excel_file, column_limit=4)
+        elif (str(excel_file).split(".")[-1] == "xlsx"):
+            data = xlsx_get(excel_file, column_limit=4)
+        datas = data["Sheet1"]
+        full_name = str()
+        account_number=str()
+        ifsc_code=str()
+        merchant_id=str()
+        for d in datas:
+            if(d[0]!="full_name"):
+                full_name = d[0]
+                account_number = d[1]
+                ifsc_code = d[2]
+                merchant_id = d[3]
+                resultSet = BeneficiaryModel.objects.filter(merchant_id=merchantId,account_number=account_number,ifsc_code=ifsc_code)
+                if(len(resultSet)==0 and merchant_id==merchantId):
+                    service = Beneficiary_Model_Services(full_name=full_name,account_number=account_number,ifsc_code=ifsc_code,merchant_id=merchant_id)
+                    service.save()
+        return Response({"msg":"data parsed and saved to database","response_code":'1'},status=status.HTTP_200_OK)
 

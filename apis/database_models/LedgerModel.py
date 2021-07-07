@@ -38,7 +38,7 @@ class LedgerModel(models.Model):
     # remarks = models.CharField(max_length=9000)
 
     # trans_amount_type = models.CharField(max_length=20)
-    remarks = models.CharField(max_length=900)
+    remarks = models.CharField(max_length=900,default="remarks")
     linked_ledger_id=models.IntegerField(null=True)
     status_code = models.CharField(null=True,max_length=900)
     system_remarks=models.CharField(null=True,max_length=900)

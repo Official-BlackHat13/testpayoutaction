@@ -13,6 +13,6 @@ class BeneficiaryModel(models.Model):
     updated_at=models.DateTimeField(default=None,null=True)
     created_by=models.DateTimeField(default=None,null=True)
     deleted_by=models.DateTimeField(default=None,null=True)
-    updated_by=models.DateTimeField(default=None,null=True)
+    updated_by=models.CharField(max_length=20,null=True)
     def __str__(self):
         return str(self.id)
