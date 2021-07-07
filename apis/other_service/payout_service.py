@@ -3,7 +3,7 @@ import time
 from sabpaisa import auth
 
 import bank_api
-from ..database_service import Client_model_service,Ledger_model_services
+from ..database_service import Client_model_service,Ledger_model_services,Mode_model_services,Beneficiary_model_services
 from ..Utils import splitString
 from ..bank_models.IDFC_Model import payment_request_model
 from ..bank_models.ICICI_Model import payment_request_model as icic_payment_model
@@ -37,11 +37,15 @@ class PayoutService:
             if map["usern"]!=clientModel.client_username and map["pass"]!=clientModel.client_password:
                 return False
             payoutrequestmodel,valid,message=PayoutRequestModel.from_json(map)
-            
+            mode=Mode_model_services.Mode_Model_Service.fetch_by_mode(payoutrequestmodel.clientPaymode)
             if(valid):
              bal = Ledger_model_services.Ledger_Model_Service.getBalance(self.merchant_id)
              if bal<payoutrequestmodel.txnAmount:
                  return "Not Sufficent Balance"
+             bene=Beneficiary_model_services.Beneficiary_Model_Services.fetch_by_account_number_ifsc(self.merchant_id,payoutrequestmodel.creditAccountNumber,payoutrequestmodel.ifscCode)
+             if bene==None:
+                 return "Beneficiary Not Added"
+
              ledgerModelService = Ledger_model_services.Ledger_Model_Service() 
              clientModelService=Client_model_service.Client_Model_Service()
              clientmodel=clientModelService.fetch_by_id(self.merchant_id)
@@ -56,9 +60,10 @@ class PayoutService:
              ledgerModelService.bene_account_number=payoutrequestmodel.creditAccountNumber
              ledgerModelService.bene_ifsc=payoutrequestmodel.ifscCode
              ledgerModelService.type_status="Generated"
-             ledgerModelService.trans_type=payoutrequestmodel.clientPaymode
+             ledgerModelService.trans_type="payout"
              ledgerModelService.charge=Ledger_model_services.Ledger_Model_Service.calculate_charge(payoutrequestmodel.clientPaymode,payoutrequestmodel.txnAmount,self.client_ip_address)
              ledgerModelService.van=payoutrequestmodel.van
+             ledgerModelService.mode=mode.id
              ledgerModelService.trans_amount_type = "debited"
              ledgerModelService.trans_time=datetime.now()
              id=ledgerModelService.save(client_ip_address=self.client_ip_address)
@@ -91,7 +96,8 @@ class PayoutService:
                              ledgerModelService.bene_account_number=payoutrequestmodel.creditAccountNumber
                              ledgerModelService.bene_ifsc=payoutrequestmodel.ifscCode
                              ledgerModelService.type_status="Generated"
-                             ledgerModelService.trans_type=payoutrequestmodel.clientPaymode
+                             ledgerModelService.trans_type="charge"
+                             ledgerModelService.mode=mode.id
                              ledgerModelService.van=payoutrequestmodel.van
                              ledgerModelService.trans_amount_type = "debited"
                              ledgerModelService.trans_time=datetime.now()
