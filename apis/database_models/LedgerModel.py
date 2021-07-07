@@ -5,7 +5,7 @@ class LedgerModel(models.Model):
     merchant=models.IntegerField()
     client_code=models.CharField(max_length=60)
     amount=models.FloatField()
-    trans_type=models.CharField(max_length=20)
+    trans_type=models.CharField(max_length=20) #payout/payin/charge
     type_status=models.CharField(max_length=60)
     bank_ref_no=models.CharField(max_length=1000)
     customer_ref_no=models.CharField(max_length=1000)
