@@ -97,12 +97,21 @@ DATABASES = {
     #     # 'socket': '/Applications/XAMPP/xamppfiles/var/mysql/mysql.sock'
     # }
     # Localdatabase
+    #  'default': {
+    #     'ENGINE': 'django.db.backends.mysql',
+    #     'NAME': 'payout_for_development',
+    #     'USER': 'payout_for_development',
+    #     'PASSWORD': 'payout@123',
+    #     'HOST': 'localhost',
+    #     'PORT': '3306',
+    #     # 'socket': '/Applications/XAMPP/xamppfiles/var/mysql/mysql.sock'
+    # }
      'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'payout_for_development',
-        'USER': 'payout_for_development',
-        'PASSWORD': 'payout@123',
-        'HOST': 'localhost',
+        'NAME': 'stagingPayout',
+        'USER': 'stagingPayout',
+        'PASSWORD': 'ooTee0ie',
+        'HOST': '172.16.157.5',
         'PORT': '3306',
         # 'socket': '/Applications/XAMPP/xamppfiles/var/mysql/mysql.sock'
     }

@@ -257,7 +257,7 @@ class Ledger_Model_Service:
         m = ModeModel.objects.filter(mode = modeOfTrans)
         ledgermodel.mode = m[0].id
         ledgermodel.bank_ref_no = decResp.get("bank_ref_no")
-        ledgermodel.trans_amount_type = "credit"
+        ledgermodel.trans_amount_type = "credited"
         ledgermodel.trans_type = "payin"
         ledgermodel.type_status = decResp.get("type_status")
         ledgermodel.request_header = decResp.get("request_header")
