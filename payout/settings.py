@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-r0qb-hl8+la(qma%+fb2&)hd3ty9)0!l(gdtd_1l_y(sad-m6=
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["192.168.34.42","127.0.0.1","localhost","192.168.34.15"]
+ALLOWED_HOSTS = ["192.168.34.42","127.0.0.1","localhost","192.168.34.15","192.168.34.43"]
 
 
 # Application definition
@@ -99,8 +99,8 @@ DATABASES = {
     # Localdatabase
      'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'Payout_database',
-        'USER': 'payout_user',
+        'NAME': 'payout_for_development',
+        'USER': 'payout_for_development',
         'PASSWORD': 'payout@123',
         'HOST': 'localhost',
         'PORT': '3306',
