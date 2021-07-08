@@ -43,11 +43,11 @@ class Ledger_Model_Service:
         self.created_at=created_at
         self.deleted_at = deleted_at
         self.updated_at=updated_at
-        self.status = status
+        # self.status = status
         self.mode = mode
         self.charge = charge
 
-    def save(self,createdBy, merchant, client_ip_address=None):
+    def save(self,createdBy, client_ip_address=None):
         #log_service = Log_model_services.Log_Model_Service(log_type="create",table_name="apis_ledgermodel",client_ip_address=client_ip_address,server_ip_address=const.server_ip,created_by=self.client_code)
         ledgermodel = LedgerModel()
         ledgermodel.merchant=self.merchant
@@ -72,23 +72,24 @@ class Ledger_Model_Service:
         ledgermodel.created_at = self.created_at
         ledgermodel.deleted_at = self.deleted_at
         ledgermodel.updated_at = self.updated_at
-        ledgermodel.status = self.status
+        # ledgermodel.status = self.status
         ledgermodel.mode=self.mode
         ledgermodel.charge = self.charge
         ledgermodel.save()
 
         #start
-        clientModel = Client_model_service.Client_Model_Service.fetch_by_id(
-            id=merchant, created_by=createdBy, client_ip_address=client_ip_address)
+        # clientModel = Client_model_service.Client_Model_Service.fetch_by_id(
+        #     id=self.merchant, created_by=createdBy, client_ip_address=client_ip_address)
 
-        authKey = clientModel.auth_key
-        authIV = clientModel.auth_iv
-        respId = ledgermodel.id
-        if(ledgermodel.id<=0):
-            return "0"
-        resp = str(respId)
-        encResp = auth.AESCipher(authKey, authIV).encrypt(resp)
-        return encResp
+        # authKey = clientModel.auth_key
+        # authIV = clientModel.auth_iv
+        # respId = ledgermodel.id
+        # if(ledgermodel.id<=0):
+        #     return "0"
+        # resp = str(respId)
+        # encResp = auth.AESCipher(authKey, authIV).encrypt(resp)
+        # return encResp
+        return ledgermodel.id
         #end
     
     def fetch_by_clientid(self,client_id,client_ip_address,created_by):
@@ -151,29 +152,36 @@ class Ledger_Model_Service:
         return True
     
     @staticmethod
-    def getBalance(clientCode,client_ip_address,created_by):
+    def getBalance(merchant_id,client_ip_address,created_by):
         log_service=Log_model_services.Log_Model_Service(log_type="get balance",table_name="apis_ledgermodel",remarks="getting balance from apis_ledgermodel table via getBalance stored procedure",client_ip_address=client_ip_address,server_ip_address=const.server_ip,created_by=created_by)
         
         cursors = connection.cursor()
-        cursors.execute('call getBalance("'+clientCode+'",@balance)')
+        print(merchant_id)
+        cursors.execute("call getBalance('"+merchant_id+"',@balance,@cred,@deb)")
         cursors.execute("select @balance")
+        # cursors.execute("Call getAmount("'credited'",5,@cred);")
+        # cursors.execute("Call getAmount("'debited'",5,@deb);")
+        # cursors.execute("")
         value = cursors.fetchall()
         cursors.close()
-        print(value)
+        print(value[0][0])
         log_service.save()
-        return value[0][0]
+        return int(value[0][0])
     @staticmethod
     def calculate_charge(mode,amount,client_ip_address):
         mode = ModeModel.objects.filter(mode=mode)
+        print(mode[0].id)
         charge=ChargeModel.objects.filter(mode=mode[0].id,min_amount__lt=amount,max_amount__gt=amount)
+        print(charge[0].charge_percentage_or_fix)
         charge_amount=0
         if(len(charge)>0 and charge[0].charge_percentage_or_fix=="percentage"):
             charge_amount=(amount/100)*charge[0].charge
             return charge_amount
         elif (len(charge)>0 and charge[0].charge_percentage_or_fix=="fix"):
+            print(charge[0].charge)
             return charge[0].charge
         else:
-            None
+            return None
             
 
 
@@ -216,16 +224,16 @@ class Ledger_Model_Service:
         return ledgermodel.id
 
         
-    @staticmethod
-    def getBalance(clientCode):
-        cursors = connection.cursor()
-        cursors.execute('call getBalance("'+clientCode+'",@balance)')
-        cursors.execute("select @balance")
-        value = cursors.fetchall()
-        cursors.close()
+    # @staticmethod
+    # def getBalance(clientCode):
+    #     cursors = connection.cursor()
+    #     cursors.execute('call getBalance("'+clientCode+'",@balance)')
+    #     cursors.execute("select @balance")
+    #     value = cursors.fetchall()
+    #     cursors.close()
         
-        print(value)
-        return value[0][0]
+    #     print(value)
+    #     return value[0][0]
 
     def updateTransTime(id, transTime):
         ledger = LedgerModel.objects.filter(id=id)

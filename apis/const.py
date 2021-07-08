@@ -2,7 +2,7 @@ import abc
 import socket
 import ifaddr
 ipwhitelisting=False
-domain = "http://localhost:8000/"
+domain = "http://localhost:80/"
 server_ip = socket.gethostbyname(socket.gethostname())
 
 

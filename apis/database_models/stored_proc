@@ -1,7 +1,7 @@
 -- DELIMITER &&
 -- create PROCEDURE getAmount(in type varchar(20),in merchant_id int,out value int)
 -- begin
--- select sum(amount) into value from apis_ledgermodel where trans_amount_type=type and id=merchant_id and status="Success";
+-- select sum(amount) into value from apis_ledgermodel where trans_amount_type=type and merchant_id=merchant_id and status="Success";
 -- end 
 -- && DELIMITER ;
 

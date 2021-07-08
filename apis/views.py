@@ -110,7 +110,7 @@ class bankApiPaymentView(APIView):
     # permission_classes = (IsAuthenticated, )
     @swagger_auto_schema(request_body=payout_docs.request,responses=payout_docs.response_schema_dict)
     def post(self,req):
-        request_obj = "path::"+req.path+"headers::"+req.headers+"meta_data::"+str(req.META)+"data::"+req.data
+        request_obj = "path::"+req.path+"headers::"+str(req.headers)+"meta_data::"+str(req.META)+"data::"+str(req.data)
         # payment_service=IFDC_service.payment.Payment()
         api_key = req.headers['api_key']
         merchant_id=auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(api_key)
@@ -118,7 +118,9 @@ class bankApiPaymentView(APIView):
         log = Log_model_services.Log_Model_Service(log_type="Post request at "+req.path+" slug",client_ip_address=req.META['REMOTE_ADDR'],server_ip_address=const.server_ip,full_request=request_obj)
         logid=log.save()
         client = Client_model_service.Client_Model_Service.fetch_by_id(merchant_id,req.META['REMOTE_ADDR'],"merchant id :: "+merchant_id)
-        bank = Bank_model_services.Bank_model_services.fetch_by_id(client.bank)
+        print("client bank::"+str(client.bank))
+        bank = Bank_model_services.Bank_model_services.fetch_by_id(client.bank,req.META['REMOTE_ADDR'],"merchant id :: "+merchant_id)
+        # print("bank::"+str(bank))
         payout=payout_service.PayoutService(merchant_id=merchant_id,encrypted_code=encrypted_code,client_ip_address=req.META['REMOTE_ADDR'])
         if(bank.bank_name=="ICICI"):
          res = payout.excuteICICI()
@@ -467,7 +469,7 @@ class addBalanceApi(APIView):
 
         authKey = const.AuthKey
         authIV = const.AuthIV
-        merchant = request.headers["merchant"]
+        merchant = request.headers["api-key"]
         if(merchant == ""):
             Log_model_services.Log_Model_Service.update_response(
                 logid, {"Message": "merchant code missing", "response_code": "3"})
@@ -584,16 +586,18 @@ class deleteBeneficiary(APIView):
 
 class saveBeneficiary(APIView):
     def post(self, request, format=None):
+        print("exceuting :: after middleware")
         # api_key = request.headers.get("api_key")
         # print("api key ===== ",api_key)
-        api_key = request.headers['api-key']
-        merchantId = int(auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(api_key))
+        api_key = str(request.headers['api-key'])
+        print(api_key)        
+        merchantId =auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(api_key)
         print(merchantId)
+        print(request.data["files"])
         try:
             excel_file = request.FILES["files"]
         except MultiValueDictKeyError:
             return Response({"msg":"not done","response_code":'1'},status=status.HTTP_400_BAD_REQUEST)
-
         if (str(excel_file).split(".")[-1] == "xls"):
             data = xls_get(excel_file, column_limit=4)
         elif (str(excel_file).split(".")[-1] == "xlsx"):
@@ -609,8 +613,8 @@ class saveBeneficiary(APIView):
                 account_number = d[1]
                 ifsc_code = d[2]
                 merchant_id = d[3]
-                resultSet = BeneficiaryModel.objects.filter(merchant_id=merchantId,account_number=account_number,ifsc_code=ifsc_code)
-                if(len(resultSet)==0 and merchant_id==merchantId):
-                    service = Beneficiary_Model_Services(full_name=full_name,account_number=account_number,ifsc_code=ifsc_code,merchant_id=merchant_id)
-                    service.save()
+                resultSet = BeneficiaryModel.objects.filter(merchant_id=int(merchantId),account_number=account_number,ifsc_code=ifsc_code)
+                # if(len(resultSet)==0 and merchant_id==merchantId):
+                service = Beneficiary_Model_Services(full_name=full_name,account_number=account_number,ifsc_code=ifsc_code,merchant_id=merchant_id)
+                service.save()
         return Response({"msg":"data parsed and saved to database","response_code":'1'},status=status.HTTP_200_OK)

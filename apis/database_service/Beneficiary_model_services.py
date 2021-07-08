@@ -19,7 +19,7 @@ class Beneficiary_Model_Services:
         return beneficiarymodel
     @staticmethod
     def fetch_by_account_number_ifsc(merchant_id,account_number,ifsc):
-        beneficiarymodel=BeneficiaryModel.objects.filter(merchant_id=merchant_id,account_number=account_number,ifsc=ifsc)
+        beneficiarymodel=BeneficiaryModel.objects.filter(merchant_id=merchant_id,account_number=account_number,ifsc_code=ifsc)
         if len(beneficiarymodel)==0:
             return None
         return beneficiarymodel

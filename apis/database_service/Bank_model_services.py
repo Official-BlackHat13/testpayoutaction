@@ -36,4 +36,4 @@ class Bank_model_services:
         bankModel=BankModel.objects.get(id=id)
         log_service.table_id=bankModel.id
         log_service.save()
-        return True
+        return bankModel

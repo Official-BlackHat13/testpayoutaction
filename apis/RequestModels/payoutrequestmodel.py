@@ -30,14 +30,14 @@ class PayoutRequestModel:
     def from_json(json)->list:
         requestModel=PayoutRequestModel()
         try:
-            if json['userName']=="":
+            if json['usern']=="":
              return [None,False,"Username is missing"]
             else:
-             requestModel.userName=json["userName"]
-            if json['password']=="":
+             requestModel.userName=json["usern"]
+            if json['pass']=="":
                 return [None,False,"Password is missing"]
             else:
-             requestModel.password=json["password"]
+             requestModel.password=json["pass"]
             if json["payeeFirstName"]=="":
                 return [None,False,"Payee First Name is missing"]
             else:
