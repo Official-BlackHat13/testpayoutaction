@@ -192,5 +192,4 @@ class ICICI_service:
         authIV = clientModel.auth_iv
         string = str(resp)
         encResp = auth.AESCipher(authKey, authIV).encrypt(respJson)
-          
         return encResp

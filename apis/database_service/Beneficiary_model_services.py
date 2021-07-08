@@ -23,4 +23,15 @@ class Beneficiary_Model_Services:
         if len(beneficiarymodel)==0:
             return None
         return beneficiarymodel
+    def update(self,updated_by,updated_at,id,created_at):
+        beneficiarymodel = BeneficiaryModel()
+        beneficiarymodel.id = id
+        beneficiarymodel.full_name=self.full_name
+        beneficiarymodel.account_number=self.account_number
+        beneficiarymodel.ifsc_code=self.ifsc_code
+        beneficiarymodel.merchant_id=self.merchant_id
+        beneficiarymodel.updated_at = updated_at
+        beneficiarymodel.created_at=created_at
+        beneficiarymodel.updated_by=updated_by
+        beneficiarymodel.save()
 

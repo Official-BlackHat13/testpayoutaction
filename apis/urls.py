@@ -25,29 +25,34 @@ urlpatterns = [
     path("payout/",views.bankApiPaymentView.as_view()),
     #path("addBalance/",lambda a:a),
     path("enquiry/",views.bankApiEnquiryView.as_view()),
-    path("fetchAllLedgers/", views.getLedgers.as_view()),
-    path("saveLedger/", views.LedgerSaveRequest.as_view()),
+   #  path("fetchAllLedgers/", views.getLedgers.as_view()),
+   #  path("saveLedger/", views.LedgerSaveRequest.as_view()),
     path("deleteLedger/", views.DeleteLedger.as_view()),
     path("update/", views.UpdateLedger.as_view()),
 
-   
-
-
+   #  path("auth/",views.Auth.as_view()),
+   #  path("enc/",views.encryptJSON.as_view()),
+   #  path("decrypt/", views.decryptJson.as_view()),
     path("enc/",views.encryptJSON.as_view()),
     path("decrypt/", views.decryptJson.as_view()),
+
     path("getLogs/<slug:page>/<slug:length>",views.GetLogs.as_view()),
     path("fetch/<slug:page>/<slug:length>", views.fetch.as_view()),
-    path("head/",views.tester.as_view()),
-    path("encHeader/",views.encHeader.as_view()),
+   #  path("head/",views.tester.as_view()),
+   #  path("encHeader/",views.encHeader.as_view()),
     path("addBalance/",views.addBalanceApi.as_view()),
 
 
     path("signup/",views.Auth.as_view()),
-
     path("getLogs/<slug:page>/<slug:length>",views.GetLogs.as_view()),
     path("loginrequest/",views.LoginRequestAPI.as_view()),
     path("loginverified/",views.LoginVerificationAPI.as_view()),
     path("resendotp/",views.ResendLoginOTP.as_view()),
+   #  path("saveBeneficiary/",views.saveBeneficiary.as_view()),
+    path("fetchBeneficiary/",views.fetchBeneficiary.as_view()),
+    path("updateBeneficiary/",views.updateBeneficiary.as_view()),
+    path("deleteBeneficiary/",views.deleteBeneficiary.as_view()),
+    path("saveBeneficiary/",views.saveBeneficiary.as_view())
    #  path("testicic/",)
    #  path("createTest",views.getTest.as_view()),
    #  path("updateTest/<int:id>",views.updateTest.as_view()),
