@@ -30,7 +30,7 @@ urlpatterns = [
     path("deleteLedger/", views.DeleteLedger.as_view()),
     path("update/", views.UpdateLedger.as_view()),
 
-    path("auth/",views.Auth.as_view()),
+   #  path("auth/",views.Auth.as_view()),
    #  path("enc/",views.encryptJSON.as_view()),
    #  path("decrypt/", views.decryptJson.as_view()),
     path("enc/",views.encryptJSON.as_view()),
@@ -52,9 +52,7 @@ urlpatterns = [
     path("fetchBeneficiary/",views.fetchBeneficiary.as_view()),
     path("updateBeneficiary/",views.updateBeneficiary.as_view()),
     path("deleteBeneficiary/",views.deleteBeneficiary.as_view()),
-    path("saveBeneficiary/",views.saveBeneficiary.as_view()),
-    path("login/",views.login.as_view()),
-    path("otpVerify/",views.otpVerification.as_view())
+    path("saveBeneficiary/",views.saveBeneficiary.as_view())
    #  path("testicic/",)
    #  path("createTest",views.getTest.as_view()),
    #  path("updateTest/<int:id>",views.updateTest.as_view()),

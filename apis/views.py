@@ -546,7 +546,7 @@ class ResendLoginOTP(APIView):
 
 class fetchBeneficiary(APIView):
     def get(self,request):
-        return Response({"msg":"done","data":list(BeneficiaryModel.objects.filter().all().values()),"response_code":'2'},status=status.HTTP_400_BAD_REQUEST)
+        return Response({"msg":"done","data":list(BeneficiaryModel.objects.filter().all().values()),"response_code":'1'},status=status.HTTP_200_OK)
 
 class updateBeneficiary(APIView):
     def put(self,request):
@@ -609,21 +609,3 @@ class saveBeneficiary(APIView):
                     service = Beneficiary_Model_Services(full_name=full_name,account_number=account_number,ifsc_code=ifsc_code,merchant_id=merchant_id)
                     service.save()
         return Response({"msg":"data parsed and saved to database","response_code":'1'},status=status.HTTP_200_OK)
-
-class login(APIView):
-    def post(self,request):
-        username= request.data.get("username")
-        password = request.data.get("password")
-        email = request.data.get("email")
-        otp = int(randomstring.randomNumber(6))
-        response = requests.post(const.email_api,headers={"user-agent":"Application","Accept":"*/*","Content-Type":"application/json; charset=utf-8"},json={"toEmail": email,
-        "toCc": "",
-        "subject": "OTP for Sabpaisa Payout",
-        "msg": "Please find the otp for your payout login request "+str(otp)})
-        return Response({"msg":"OTP SENT ","response_code":'1'},status=status.HTTP_200_OK)
-
-
-class otpVerification(APIView):
-    def post(self,request):
-        otp = request.data.get("otp")
-        return Response({"msg":"logged in","response_code":'1'},status=status.HTTP_200_OK)
