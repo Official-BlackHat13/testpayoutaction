@@ -35,21 +35,21 @@ class PayoutService:
             query=auth.AESCipher(authKey,authIV).decrypt(self.encrypted_code)
             map=splitString.StringToMap(query)
             print(str(map))
-            if map["usern"]!=clientModel.client_username and map["pass"]!=clientModel.client_password:
-                return False
+            # if map["usern"]!=clientModel.client_username and map["pass"]!=clientModel.client_password:
+            #     return [False,{}]
             payoutrequestmodel,valid,message=PayoutRequestModel.from_json(map)
-            print(payoutrequestmodel.clientPaymode)
-            mode=Mode_model_services.Mode_Model_Service.fetch_by_mode(payoutrequestmodel.clientPaymode)
+            # print(payoutrequestmodel.clientPaymode)
+            mode=Mode_model_services.Mode_Model_Service.fetch_by_mode("IMPS")
             if(valid):
              bal = Ledger_model_services.Ledger_Model_Service.getBalance(self.merchant_id,self.client_ip_address,"Merchant_ID :: "+str(self.merchant_id))
-             print("amount :: "+payoutrequestmodel.txnAmount)
+             print("amount :: "+payoutrequestmodel.amount)
              print("balance ::"+str(bal))
-             if bal<int(payoutrequestmodel.txnAmount):
+             if bal<int(payoutrequestmodel.amount):
                  
-                 return "Not Sufficent Balance"
-             bene=Beneficiary_model_services.Beneficiary_Model_Services.fetch_by_account_number_ifsc(self.merchant_id,payoutrequestmodel.creditAccountNumber,payoutrequestmodel.ifscCode)
+                 return ["Not Sufficent Balance",{}]
+             bene=Beneficiary_model_services.Beneficiary_Model_Services.fetch_by_account_number_ifsc(self.merchant_id,payoutrequestmodel.beneficiaryAccount,payoutrequestmodel.beneficiaryIFSC)
              if bene==None:
-                 return "Beneficiary Not Added"
+                 return ["Beneficiary Not Added",{}]
 
              ledgerModelService = Ledger_model_services.Ledger_Model_Service() 
              clientModelService=Client_model_service.Client_Model_Service()
@@ -57,23 +57,23 @@ class PayoutService:
              ledgerModelService.client_id=clientModel.id
              ledgerModelService.merchant=self.merchant_id
              ledgerModelService.client_code=clientModel.client_code
-             ledgerModelService.amount=payoutrequestmodel.txnAmount
+             ledgerModelService.amount=payoutrequestmodel.amount
              ledgerModelService.bank_id=clientmodel.bank
              ledgerModelService.bank_ref_no="waiting"
-             ledgerModelService.customer_ref_no=payoutrequestmodel.clientTransactionId
+             ledgerModelService.customer_ref_no=payoutrequestmodel.orderId
              ledgerModelService.trans_status="initated"
-             ledgerModelService.bene_account_name=payoutrequestmodel.accountHolderName
-             ledgerModelService.bene_account_number=payoutrequestmodel.creditAccountNumber
-             ledgerModelService.bene_ifsc=payoutrequestmodel.ifscCode
+             ledgerModelService.bene_account_name=payoutrequestmodel.beneficiaryName
+             ledgerModelService.bene_account_number=payoutrequestmodel.beneficiaryAccount
+             ledgerModelService.bene_ifsc=payoutrequestmodel.beneficiaryIFSC
              ledgerModelService.request_header="null"
              ledgerModelService.type_status="Generated"
              ledgerModelService.trans_type="payout"
-             order_id=paytm_extra.generate_order_id()
-             ledgerModelService.customer_ref_no=order_id
-             charge=Ledger_model_services.Ledger_Model_Service.calculate_charge(payoutrequestmodel.clientPaymode,payoutrequestmodel.txnAmount,self.client_ip_address)
+            #  order_id=paytm_extra.generate_order_id()
+            #  ledgerModelService.customer_ref_no=order_id
+             charge=Ledger_model_services.Ledger_Model_Service.calculate_charge("IMPS",payoutrequestmodel.amount,self.client_ip_address)
              print(charge)
              ledgerModelService.charge=charge
-             ledgerModelService.van=payoutrequestmodel.van
+             ledgerModelService.van="null"
              ledgerModelService.mode=mode.id
              ledgerModelService.payout_trans_id=generater.generate_token()
              ledgerModelService.trans_amount_type = "debited"
@@ -81,22 +81,24 @@ class PayoutService:
              id=ledgerModelService.save(client_ip_address=self.client_ip_address,createdBy="Merchant Id :: "+ str(self.merchant_id))
              ledgerModelService.update_status(id,'Requested',client_ip_address=self.client_ip_address,created_by="Merchant_Id :: "+str(self.merchant_id))
              
-             request_model=paytm_request_model.Payment_Request_Model(subwalletGuid=const.paytm_subwalletGuid,orderId=order_id,beneficiaryAccount=payoutrequestmodel.creditAccountNumber,beneficiaryIFSC=payoutrequestmodel.ifscCode,amount=payoutrequestmodel.txnAmount,purpose=paytm_extra.purpose_list[0])
+             request_model=paytm_request_model.Payment_Request_Model(subwalletGuid=const.paytm_subwalletGuid,orderId=payoutrequestmodel.orderId,beneficiaryAccount=payoutrequestmodel.beneficiaryAccount,beneficiaryIFSC=payoutrequestmodel.beneficiaryIFSC,amount=payoutrequestmodel.amount,purpose=payoutrequestmodel.purpose)
              post_data = json.dumps(request_model.to_json())
              checksum = paytmchecksum.generateSignature(post_data, const.paytm_merchant_key)
              
              response = requests.post(bank_api.paytm.staging_paytmPaymentAPI(),json=request_model.to_json(),headers={"Content-type": "application/json", "x-mid": const.paytm_merchant_id, "x-checksum":checksum})
              print(response.json())
              response_model = paytm_response_model.Payment_Response_Model.from_json(response.json())
+
              if(response_model.status=="ACCEPTED"):
                 ledgerModelService.update_status(id,"Proccesing",client_ip_address=self.client_ip_address,created_by="Merchant ID :: "+str(self.merchant_id))
                 client_ip_address_temp=self.client_ip_address
                 merchant_id_temp = self.merchant_id
+                thread = None
                 class ServiceThread(threading.Thread):
                      def run(self):
-                         time.sleep(20)
-                         checksum=paytmchecksum.generateSignature(json.dumps({"orderId":order_id}), const.paytm_merchant_key)
-                         response = requests.post(bank_api.paytm.staging_paytmEnquiryAPI(),json={"orderId":order_id},headers={"Content-type": "application/json", "x-mid": const.paytm_merchant_id, "x-checksum":checksum})
+                         time.sleep(40)
+                         checksum=paytmchecksum.generateSignature(json.dumps({"orderId":payoutrequestmodel.orderId}), const.paytm_merchant_key)
+                         response = requests.post(bank_api.paytm.staging_paytmEnquiryAPI(),json={"orderId":payoutrequestmodel.orderId},headers={"Content-type": "application/json", "x-mid": const.paytm_merchant_id, "x-checksum":checksum})
                          print(response.json())
                          if response.json()['status']=="SUCCESS":
                              ledgerModelService.update_status(id,"Success")
@@ -116,18 +118,27 @@ class PayoutService:
                              ledgerModelService.van=payoutrequestmodel.van
                              ledgerModelService.trans_amount_type = "debited"
                              ledgerModelService.trans_time=datetime.now()
+                             ledgerModelService.save()
+                         elif response.json()["status"]=="PENDING":
+                             ledgerModelService.update_status(id,"Pending",client_ip_address_temp,"Merchant :: "+str(merchant_id_temp))
+                             
+                             ServiceThread().start()
                          else:
                              ledgerModelService.update_status(id,"Failed",client_ip_address_temp,"Merchant :: "+str(merchant_id_temp))
                          print("Service Done")
-                ServiceThread().start()
-             return "Payout Done"
+                thread=ServiceThread().start()
+             else:
+                 ledgerModelService.update_status(id,"Failed",self.client_ip_address,"Merchant :: "+str(self.merchant_id))
+                             
+                 
+             return ["Payout Done",{"orderId":ledgerModelService.customer_ref_no,"amount":ledgerModelService.amount,"status": "PROCESSING","requestedDatetime": str(datetime.now()).split(".")[0]}]
              
             else:
              return message
         except Exception as e:
               import traceback
               print(traceback.format_exc())
-              return e.args
+              return [e.args,{}]
     def excuteICICI(self):
         log = Log_Model_Service(log_type="excuting ICICI service",client_ip_address=self.client_ip_address,server_ip_address=const.server_ip,created_by=self.client_code)
         log.save()

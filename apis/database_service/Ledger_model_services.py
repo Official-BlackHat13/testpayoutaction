@@ -56,6 +56,7 @@ class Ledger_Model_Service:
         ledgermodel.trans_type=self.trans_type
         ledgermodel.type_status=self.type_status
         ledgermodel.trans_status=self.trans_status
+        ledgermodel.created_at=datetime.now()
         ledgermodel.bank_ref_no=self.bank_ref_no
         ledgermodel.customer_ref_no=self.customer_ref_no
         ledgermodel.bank=self.bank_id
@@ -70,7 +71,7 @@ class Ledger_Model_Service:
         ledgermodel.createdBy=self.createdBy
         ledgermodel.updatedBy = self.updatedBy
         ledgermodel.deletedBy=self.deletedBy
-        ledgermodel.created_at = self.created_at
+        # ledgermodel.created_at = self.created_at
         ledgermodel.deleted_at = self.deleted_at
         ledgermodel.updated_at = self.updated_at
         # ledgermodel.status = self.status
@@ -123,8 +124,10 @@ class Ledger_Model_Service:
 
         ledgerModel=LedgerModel.objects.get(id=id)
         ledgerModel.trans_status=status
+        ledgerModel.updated_at=datetime.now()
         ledgerModel.save()
         log_service.table_id=ledgerModel.id
+        
         log_service.save()
         return ledgerModel
 

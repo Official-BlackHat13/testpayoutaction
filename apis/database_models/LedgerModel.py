@@ -19,7 +19,7 @@ class LedgerModel(models.Model):
     charge=models.FloatField()
     trans_time = models.DateTimeField(default=datetime.now())
     van=models.CharField(max_length=200)
-    created_at=models.DateTimeField(default=datetime.now(),null=True)
+    created_at=models.DateTimeField(default=datetime.now())
     deleted_at = models.DateTimeField(default=None, null=True)
     updated_at = models.DateTimeField(default=None, null=True)
     createdBy= models.CharField(max_length=20,default=None,null=True)

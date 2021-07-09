@@ -22,7 +22,7 @@ def IpWhiteListed(get_response):
                     error_res['Content-Type'] = 'application/json'
                     return error_res
                 
-                merchant_id = request.headers["api_key"]
+                merchant_id = request.headers["auth_token"]
                 merchant_id=auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(merchant_id)
                 print(merchant_id)
                 clientmodel=Client_Model_Service.fetch_by_id(int(merchant_id),request.META['REMOTE_ADDR'],merchant_id)
@@ -76,7 +76,7 @@ def MultiTabsRestriction(get_response):
 
         if req.path!="/api/" and req.path!="/" and "/admin/" not in req.path and req.path!="/api/auth/" and req.path not in "/api/token/" and req.path!="/api/loginrequest/" and req.path!="/api/loginverified/" and req.path!="/api/resendotp/" and const.multitabs:
             
-            merchant_id = req.headers["api_key"]
+            merchant_id = req.headers["auth_token"]
             tab_token=req.headers["tab_token"]
             login_token=req.headers['login_token']
             ip=req.META['REMOTE_ADDR']

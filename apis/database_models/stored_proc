@@ -1,17 +1,31 @@
 -- DELIMITER &&
 -- create PROCEDURE getAmount(in type varchar(20),in merchant_id int,out value int)
 -- begin
--- select sum(amount) into value from apis_ledgermodel where trans_amount_type=type and merchant_id=merchant_id and status="Success";
+-- select sum(amount) into value from apis_ledgermodel where trans_amount_type=type and merchant=merchant_id and trans_status="Success" or trans_status="Pending" or trans_status="Requested";
 -- end 
 -- && DELIMITER ;
 
-
 -- DELIMITER &&
--- create PROCEDURE getBalance(in merchant_id int,out balance int)
+-- create PROCEDURE getBalance(in merchant_id int,out balance int,out cred1 int,out deb1 int)
 -- begin
 -- Call getAmount("credited",merchant_id,@cred);
 -- Call getAmount("debited",merchant_id,@deb);
--- select @cred-@deb into balance;
+
+-- if (isnull(@cred)) then
+-- set cred1=0;
+
+-- else
+-- set cred1 = @cred;
+-- end if;
+-- if (isnull(@deb)) then
+-- set deb1=0;
+
+-- else
+-- set deb1 = @deb;
+-- end if;
+
+-- select cred1-deb1 into balance;
+
 -- end 
 -- && DELIMITER ;
 
