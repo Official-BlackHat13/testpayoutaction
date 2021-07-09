@@ -42,7 +42,6 @@ class LedgerModel(models.Model):
     linked_ledger_id=models.IntegerField(null=True)
     status_code = models.CharField(null=True,max_length=900)
     system_remarks=models.CharField(null=True,max_length=900)
-
     objects = models.Manager()
     def __str__(self):
         return str(self.id)

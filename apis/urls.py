@@ -37,7 +37,7 @@ urlpatterns = [
     path("decrypt/", views.decryptJson.as_view()),
 
     path("getLogs/<slug:page>/<slug:length>",views.GetLogs.as_view()),
-    path("PayoutTransactionResponse/<slug:page>/<slug:length>", views.fetch.as_view()),
+    path("PayoutTransactionEnquiry/<slug:page>/<slug:length>", views.fetch.as_view()),
    #  path("head/",views.tester.as_view()),
    #  path("encHeader/",views.encHeader.as_view()),
     path("addBalance/",views.addBalanceApi.as_view()),

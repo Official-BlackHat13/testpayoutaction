@@ -306,22 +306,29 @@ class UpdateLedger(APIView):
 
 class encryptJSON(APIView):
     def post(self, request):
-        id = request.data.get("id")
-        query      = request.data.get("query")
-        createdBy = request.data.get("createdBy")
-        ip = request.data.get("ip")
-        print(query)
-        print(str(query))
-        print(type(str(query)))
-        # return Response({"message": "credential not matched", "data": None, "response_code": "3"}, status=status.HTTP_404_NOT_FOUND)
-        clientModel = Client_model_service.Client_Model_Service.fetch_by_id(
-            client_ip_address=ip, id = id, created_by=createdBy)
+        # id = request.data.get("id")
+        # query      = request.data.get("query")
+        # createdBy = request.data.get("createdBy")
+        # ip = request.data.get("ip")
+        # print(query)
+        # print(str(query))
+        # print(type(str(query)))
+        # # return Response({"message": "credential not matched", "data": None, "response_code": "3"}, status=status.HTTP_404_NOT_FOUND)
+        # clientModel = Client_model_service.Client_Model_Service.fetch_by_id(
+        #     client_ip_address=ip, id = id, created_by=createdBy)
         
-        authKey = clientModel.auth_key
-        authIV = clientModel.auth_iv
-        encResp = auth.AESCipher(authKey, authIV).encrypt(str(query))
-        print(encResp)
-        return Response({"message": "data", "data": encResp, "response_code": "3"}, status=status.HTTP_200_OK)
+        # authKey = clientModel.auth_key
+        # authIV = clientModel.auth_iv
+        # encResp = auth.AESCipher(authKey, authIV).encrypt(str(query))
+        # print(encResp)
+        #start
+        s="usern=payout_admin_1000&pass=payout@123&payeeFirstName=Kanishk&payeeLastName=Dixit&payeeMob=8979626196&payeeEmail=test@gmail.com&txnAmount=1&returnUrl=.&creditAccountNumber=50100217519021&ifscCode=HDFC0002535&bankBranch=Delhi&accountHolderName=Sagar&clientTransactionId=.&clientPaymode=IMPS&environment=."
+        l="k3rnF6vnOT6rIHrHjAS0JQ=="
+        op=str(auth.AESCipher("V2LIyBdVGZKF7PjE","NUBC7i1mAwYc9nCo").encrypt(s))
+        op = op[2:].replace("'","")
+        print(op)
+        #end
+        return Response({"message": "data", "data": str(op), "response_code": "3"}, status=status.HTTP_200_OK)
 
 class decryptJson(APIView):
     def post(self,request):

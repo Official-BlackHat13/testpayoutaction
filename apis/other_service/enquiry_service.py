@@ -91,21 +91,84 @@ class ICICI_service:
         query = str()
         if(merchant==None):
             return "-1"
-        if(client_code != None and merchant != None):
+        elif(client_code != None and merchant != None and customer_ref_no!=None and trans_type != None):
+            resp = LedgerModel.objects.filter(merchant=merchant,client_code=client_code,customer_ref_no=customer_ref_no,trans_type=trans_type).values()
+            clientModel = Client_model_service.Client_Model_Service.fetch_by_id(
+            id=merchant, created_by=created_by, client_ip_address=client_ip_address)
+            authKey = clientModel.auth_key
+            authIV = clientModel.auth_iv
+            #start
+            if(len(resp) == 0):
+                return "0"
+            if(length == "all"):
+                return str(resp)
+            if(int(length) > len(resp)):
+                return "-2"
+
+            if(int(length)>=len(resp) and int(page)>1):
+                return "-2"
+            length = int(length)
+            splitlen = math.ceil(len(resp)/length)
+            split_list = []
+            for i in range(splitlen):
+                split_list.append(resp[length*i:length*(i+1)])
+            json = {
+                "data": str(split_list[int(page)-1]),
+                "splitlen": str(splitlen)
+            }
+            respJson = str(json)
+            # print("response..... ", respJson)
+            #return split_list[int(page)-1]
+            clientModel = Client_model_service.Client_Model_Service.fetch_by_id(
+                id=merchant, created_by=created_by,client_ip_address=client_ip_address)
+            authKey = clientModel.auth_key
+            authIV = clientModel.auth_iv
+            string = str(resp)
+            encResp = auth.AESCipher(authKey, authIV).encrypt(respJson)
+            return respJson
+            #end
+        elif(client_code != None and merchant != None):
             query = "call fet(\""+client_code+"\","+merchant+");"
         elif(customer_ref_no != None and merchant != None):
             query = "call fet(\""+customer_ref_no+"\","+merchant+");"
         elif(trans_type != None and merchant != None):
             query = "call fet(\""+trans_type+"\","+merchant+");"
         elif(merchant!=None):
-            query = LedgerModel.objects.filter(merchant=merchant).values()
+            resp = LedgerModel.objects.filter(merchant=merchant).values()
             clientModel = Client_model_service.Client_Model_Service.fetch_by_id(
             id=merchant, created_by=created_by, client_ip_address=client_ip_address)
             authKey = clientModel.auth_key
             authIV = clientModel.auth_iv
-            string = str(list(query))
-            encResp = auth.AESCipher(authKey, authIV).encrypt(string)
-            return encResp
+            #start
+            if(len(resp) == 0):
+                return "0"
+            if(length == "all"):
+                return str(resp)
+            if(int(length) > len(resp)):
+                return "-2"
+
+            if(int(length)>=len(resp) and int(page)>1):
+                return "-2"
+            length = int(length)
+            splitlen = math.ceil(len(resp)/length)
+            split_list = []
+            for i in range(splitlen):
+                split_list.append(resp[length*i:length*(i+1)])
+            json = {
+                "data": str(split_list[int(page)-1]),
+                "splitlen": str(splitlen)
+            }
+            respJson = str(json)
+            # print("response..... ", respJson)
+            #return split_list[int(page)-1]
+            clientModel = Client_model_service.Client_Model_Service.fetch_by_id(
+                id=merchant, created_by=created_by,client_ip_address=client_ip_address)
+            authKey = clientModel.auth_key
+            authIV = clientModel.auth_iv
+            string = str(resp)
+            encResp = auth.AESCipher(authKey, authIV).encrypt(respJson)
+            return respJson
+            #end
         elif(startTime!=None and endTime!=None  and merchant!=None):
             startYear = int(startTime[0:4])
             startMonth = int(startTime[5:7])
@@ -124,17 +187,37 @@ class ICICI_service:
                             hour=startHours, minute=startMinute, second=0, microsecond=0)
             end = dt.replace(year=endYear, day=endDay, month=endMonth,
                             hour=endHours, minute=endMinute, second=0, microsecond=0)
-            Ledger = LedgerModel.objects.filter(trans_time__range=[start, end])
+            resp = LedgerModel.objects.filter(trans_time__range=[start, end])
+            #start
+            if(len(resp) == 0):
+                return "0"
+            if(length == "all"):
+                return str(resp)
+            if(int(length) > len(resp)):
+                return "-2"
 
+            if(int(length)>=len(resp) and int(page)>1):
+                return "-2"
+            length = int(length)
+            splitlen = math.ceil(len(resp)/length)
+            split_list = []
+            for i in range(splitlen):
+                split_list.append(resp[length*i:length*(i+1)])
+            json = {
+                "data": str(split_list[int(page)-1]),
+                "splitlen": str(splitlen)
+            }
+            respJson = str(json)
+            # print("response..... ", respJson)
+            #return split_list[int(page)-1]
             clientModel = Client_model_service.Client_Model_Service.fetch_by_id(
-                id=merchant, created_by=created_by, client_ip_address=client_ip_address)
+                id=merchant, created_by=created_by,client_ip_address=client_ip_address)
             authKey = clientModel.auth_key
             authIV = clientModel.auth_iv
-            if(len(Ledger) == 0):
-                return "0"
-            resp = str(list(Ledger.values()))
-            encResp = auth.AESCipher(authKey, authIV).encrypt(resp)
+            string = str(resp)
+            encResp = auth.AESCipher(authKey, authIV).encrypt(respJson)
             return encResp
+            #end
         for l in LedgerModel.objects.raw(query):
                 d = {
                     "id": l.id,
@@ -165,31 +248,38 @@ class ICICI_service:
                 }
                 resp.append(d)
         # print("length = ", int(length), " and ", len(resp))
-        if(len(resp) == 0):
-            return "0"
-        if(length == "all"):
-            return str(resp)
-        if(int(length) > len(resp)):
-            return "-2"
+        # if(len(resp) == 0):
+        #     return "0"
+        # if(length == "all"):
+        #     return str(resp)
+        # if(int(length) > len(resp)):
+        #     return "-2"
 
-        if(int(length)>=len(resp) and int(page)>1):
-            return "-2"
-        length = int(length)
-        splitlen = math.ceil(len(resp)/length)
-        split_list = []
-        for i in range(splitlen):
-            split_list.append(resp[length*i:length*(i+1)])
-        json = {
-            "data": str(split_list[int(page)-1]),
-            "splitlen": str(splitlen)
-        }
-        respJson = str(json)
+        # if(int(length)>=len(resp) and int(page)>1):
+        #     return "-2"
+        # length = int(length)
+        # splitlen = math.ceil(len(resp)/length)
+        # split_list = []
+        # for i in range(splitlen):
+        #     split_list.append(resp[length*i:length*(i+1)])
+        # json = {
+        #     "data": str(split_list[int(page)-1]),
+        #     "splitlen": str(splitlen)
+        # }
+        # respJson = str(json)
         # print("response..... ", respJson)
         #return split_list[int(page)-1]
-        clientModel = Client_model_service.Client_Model_Service.fetch_by_id(
-            id=merchant, created_by=created_by,client_ip_address=client_ip_address)
-        authKey = clientModel.auth_key
-        authIV = clientModel.auth_iv
-        string = str(resp)
-        encResp = auth.AESCipher(authKey, authIV).encrypt(respJson)
-        return encResp
+        dict= {
+            'payoutTransactionId':'PAYOUT_TRANSACTION_ID',
+            'amount': d.amount,
+            'transType': d.trans_type,
+            'statusType': "stat",
+            'bankRefNo': 'UTR_NUMBER',
+            'orderId': "order",
+            'beneficiaryAccountName': 'BENEFICIARY_ACCOUNT_NAME',
+            'beneficiaryAccountNumber': 'BENEFICIARY_ACCOUNT_NUMBER',
+            'beneficiaryIFSC': 'BENEFICIARY_IFSC_HERE',
+            'transStatus': 'SUCCESS','transTime': 'FORMATTED_DATETIME',
+            'mode': 'IMPS/CASH/NEFT/RTGS/PAYIN'
+        }
+        return dict
