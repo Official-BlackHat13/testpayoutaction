@@ -19,7 +19,7 @@ from rest_framework.views import APIView
 from rest_framework.response import *
 from rest_framework import status
 from drf_yasg.utils import swagger_auto_schema
-from .API_docs import payout_docs,auth_docs,login_docs
+from .API_docs import payout_docs,auth_docs,login_docs,payoutTransactionEnquiry_docs,addBalance_docs,addBeneficiary_docs
 from datetime import datetime
 from .serializersFolder.serializers import LogsSerializer
 #from .serializers import *
@@ -32,20 +32,13 @@ from django.http.response import JsonResponse
 from apis.other_service.enquiry_service import *
 from apis.database_service.Beneficiary_model_services import *
 from .database_service import Client_model_service,Bank_model_services
-
 from rest_framework.parsers import JSONParser
 from .database_service import Client_model_service,Bank_model_services,IpWhitelisting_model_service
-
 from django.contrib.auth.models import User
 # from .database_service import Client_model_service,Ledger_model_services
 from rest_framework.permissions import IsAuthenticated
 from . import const
 from .Utils import randomstring
-
-
-
-
-
 from sabpaisa import auth
 from datetime import datetime
 # class bankApiViewtest(APIView):
@@ -448,6 +441,7 @@ class encHeader(APIView):
         encResp = auth.AESCipher(authKey, authIV).encrypt(resp)
         return Response({"header": encResp, "authkey": authKey, "authIV": authIV})
 class paymentEnc(APIView):
+    @swagger_auto_schema(request_body=payoutTransactionEnquiry_docs.request,responses=payoutTransactionEnquiry_docs.response_schema_dict)
     def post(self,req):
         data = req.data["query"]
         auth_token = req.headers["auth_token"]
@@ -495,6 +489,7 @@ class addMode(APIView):
         m.save()
 
 class addBalanceApi(APIView):
+    @swagger_auto_schema(request_body=addBalance_docs.request,responses=addBalance_docs.response_schema_dict)
     def post(self,request):
         request_obj = "path:: "+request.path+" :: headers::" + \
             str(request.headers)+" :: meta_data:: " + \
@@ -511,7 +506,7 @@ class addBalanceApi(APIView):
                 logid, {"Message": "merchant code missing", "response_code": "3"})
             return Response({"message": "merchant code missing", "data": None, "response_code": "3"}, status=status.HTTP_400_BAD_REQUEST)
         decMerchant = auth.AESCipher(authKey, authIV).decrypt(merchant)
-        created_by = request.data.get("created_by")
+        created_by = "merchant ::"+decMerchant
         query = request.data.get("query")
         clientModel = Client_model_service.Client_Model_Service.fetch_by_id(
             id=decMerchant, created_by=created_by, client_ip_address=request.META['REMOTE_ADDR'])
@@ -621,6 +616,7 @@ class deleteBeneficiary(APIView):
 
 
 class saveBeneficiary(APIView):
+    @swagger_auto_schema(request_body=addBeneficiary_docs.request,responses=addBeneficiary_docs.response_schema_dict)
     def post(self, request, format=None):
         print("exceuting :: after middleware")
         # api_key = request.headers.get("api_key")
