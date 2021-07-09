@@ -395,7 +395,7 @@ class fetch(APIView):
         print(page," ",length)
         authKey = const.AuthKey
         authIV = const.AuthIV
-        resp = request.headers["merchant"]
+        resp = request.headers["auth_token"]
         if(resp == ""):
             Log_model_services.Log_Model_Service.update_response(
                 logid, {"Message": "merchant code missing", "response_code": "3"})
@@ -447,7 +447,35 @@ class encHeader(APIView):
         resp = request.data.get("header")
         encResp = auth.AESCipher(authKey, authIV).encrypt(resp)
         return Response({"header": encResp, "authkey": authKey, "authIV": authIV})
-
+class paymentEnc(APIView):
+    def post(self,req):
+        data = req.data["query"]
+        auth_token = req.headers["auth_token"]
+        merchant_id = auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(auth_token)
+        clientModel = Client_model_service.Client_Model_Service.fetch_by_id(id=merchant_id, created_by="Merchant :: "+str(merchant_id), client_ip_address=req.META['REMOTE_ADDR'])
+        authKey = clientModel.auth_key
+        authIV = clientModel.auth_iv
+        encResp = auth.AESCipher(authKey, authIV).decrypt(data)
+        customer_ref = encResp.split(":")[1].replace('"','')
+        rec =ICICI_service.get_enc(customer_ref,req.META['REMOTE_ADDR'],created_by="Merchant id :: "+str(merchant_id))
+        if rec!=None:
+            res = {
+                    'payoutTransactionId':rec.payout_trans_id,
+                    'amount': rec.amount,
+                    'transType': rec.trans_type,
+                    'statusType': rec.type_status,
+                    'bankRefNo': rec.bank_ref_no,
+                    'orderId': rec.customer_ref_no,
+                    'beneficiaryAccountName': rec.bene_account_name,
+                    'beneficiaryAccountNumber': rec.bene_account_number,
+                    'beneficiaryIFSC': rec.bene_ifsc,
+                    'transStatus': rec.trans_status,
+                    'mode': rec.mode
+                }
+            enc = str(auth.AESCipher(authKey,authIV).encrypt(str(res)))[2:].replace("'","")
+            return Response({"message": "data found","resData": enc,"responseCode": "1"})
+        else:
+            return Response({"message":"NOT_FOUND","response_code":"0"})
 class tester(APIView):
     def get(self,request):
         authKey = const.AuthKey
@@ -597,7 +625,7 @@ class saveBeneficiary(APIView):
         print("exceuting :: after middleware")
         # api_key = request.headers.get("api_key")
         # print("api key ===== ",api_key)
-        api_key = str(request.headers['api-key'])
+        api_key = str(request.headers['auth_token'])
         print(api_key)        
         merchantId =auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(api_key)
         print(merchantId)
@@ -622,7 +650,8 @@ class saveBeneficiary(APIView):
                 ifsc_code = d[2]
                 merchant_id = d[3]
                 resultSet = BeneficiaryModel.objects.filter(merchant_id=int(merchantId),account_number=account_number,ifsc_code=ifsc_code)
-                # if(len(resultSet)==0 and merchant_id==merchantId):
-                service = Beneficiary_Model_Services(full_name=full_name,account_number=account_number,ifsc_code=ifsc_code,merchant_id=merchant_id)
-                service.save()
+                if(len(resultSet)==0 and merchant_id==int(merchantId)):
+                 print("added")
+                 service = Beneficiary_Model_Services(full_name=full_name,account_number=account_number,ifsc_code=ifsc_code,merchant_id=merchant_id)
+                 service.save()
         return Response({"msg":"data parsed and saved to database","response_code":'1'},status=status.HTTP_200_OK)

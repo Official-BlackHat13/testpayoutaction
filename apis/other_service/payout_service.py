@@ -101,7 +101,7 @@ class PayoutService:
                          response = requests.post(bank_api.paytm.staging_paytmEnquiryAPI(),json={"orderId":payoutrequestmodel.orderId},headers={"Content-type": "application/json", "x-mid": const.paytm_merchant_id, "x-checksum":checksum})
                          print(response.json())
                          if response.json()['status']=="SUCCESS":
-                             ledgerModelService.update_status(id,"Success")
+                             ledgerModelService.update_status(id,"Success",client_ip_address_temp,"Merchant :: "+str(merchant_id_temp))
                              ledgerModelService.client_id=clientModel.id
                              ledgerModelService.client_code=clientModel.client_code
                              ledgerModelService.amount=payoutrequestmodel.txnAmount

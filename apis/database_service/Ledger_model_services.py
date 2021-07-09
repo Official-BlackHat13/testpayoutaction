@@ -118,6 +118,12 @@ class Ledger_Model_Service:
         ledgerModels=LedgerModel.objects.filter(van=van)
         log_service.save()
         return ledgerModels
+    @staticmethod
+    def fetch_customer_ref_no(customer_ref_no,client_ip_address,created_by):
+        log_service=Log_model_services.Log_Model_Service(log_type="fetch",table_name="apis_ledgermodel",remarks="fetching all records from ledger table by van ",client_ip_address=client_ip_address,server_ip_address=const.server_ip,created_by=created_by)
+        ledgerModels=LedgerModel.objects.filter(customer_ref_no=customer_ref_no)
+        log_service.save()
+        return ledgerModels
 
     def update_status(self,id,status,client_ip_address,created_by):
         log_service=Log_model_services.Log_Model_Service(log_type="update",table_name="apis_ledgermodel",remarks="updating status from ledger table for the record fetched by id ",client_ip_address=client_ip_address,server_ip_address=const.server_ip,created_by=created_by)
@@ -280,6 +286,8 @@ class Ledger_Model_Service:
         ledgermodel.createdBy = decResp.get("created_by")
         ledgermodel.created_at = datetime.now()
         ledgermodel.status = True
+        ledgermodel.trans_status = decResp.get("trans_status")
+        ledgermodel.payout_trans_id = decResp.get("payout_trans_id")
         ledgermodel.charge = decResp.get("charge")
         ledgermodel.save()  
         log_service.table_id = ledgermodel.id

@@ -1,3 +1,4 @@
+from apis.database_service.Ledger_model_services import Ledger_Model_Service
 from apis import const
 from http import client
 import json
@@ -80,7 +81,12 @@ class ICICI_service:
         encResp = auth.AESCipher(authKey, authIV).encrypt(resp)
         return encResp
 
-    
+    @staticmethod
+    def get_enc(customer_ref,client_ip_address,created_by):
+        rec = Ledger_Model_Service.fetch_customer_ref_no(customer_ref_no=customer_ref,client_ip_address=client_ip_address,created_by=created_by)
+        if rec==0:
+            return None
+        return rec[0]
     def fetchLedgerByParams(merchant, created_by, page,length,client_ip_address, client_code=None, customer_ref_no=None, startTime=None, endTime=None, trans_type=None):
         print("fect.................")
         log_service = Log_model_services.Log_Model_Service(log_type="fetch", table_name="apis_ledgermodel", remarks="fetching records in apis_ledgermodel table",
