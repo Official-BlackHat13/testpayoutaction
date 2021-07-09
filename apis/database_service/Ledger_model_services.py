@@ -263,7 +263,7 @@ class Ledger_Model_Service:
         ledgermodel.bank_ref_no = decResp.get("bank_ref_no")
         ledgermodel.trans_amount_type = "credited"
         ledgermodel.trans_type = "payin"
-        ledgermodel.type_status = decResp.get("type_status")
+        ledgermodel.type_status = "Generated"
         ledgermodel.request_header = decResp.get("request_header")
         bankResp = "NULL"
         ledgermodel.remarks = decResp.get("remarks")

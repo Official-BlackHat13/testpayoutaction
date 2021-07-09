@@ -44,7 +44,6 @@ class LedgerModel(models.Model):
     system_remarks=models.CharField(null=True,max_length=900)
     payout_trans_id=models.CharField(max_length=100,default=None)
     purpose=models.CharField(max_length=1000,null=True)
-
     objects = models.Manager()
     def __str__(self):
         return str(self.id)
