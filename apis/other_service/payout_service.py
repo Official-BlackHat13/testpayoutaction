@@ -13,7 +13,7 @@ from ..bank_models.PAYTM_Model import payment_request_model as paytm_request_mod
 from ..bank_models.PAYTM_Model import payment_response_model as paytm_response_model
 from ..bank_models.PAYTM_Model import paytm_extra
 from .. import const
-
+from ..Utils import generater
 from ..RequestModels.payoutrequestmodel import PayoutRequestModel
 import requests
 import paytmchecksum 
@@ -75,6 +75,7 @@ class PayoutService:
              ledgerModelService.charge=charge
              ledgerModelService.van=payoutrequestmodel.van
              ledgerModelService.mode=mode.id
+             ledgerModelService.payout_trans_id=generater.generate_token()
              ledgerModelService.trans_amount_type = "debited"
              ledgerModelService.trans_time=datetime.now()
              id=ledgerModelService.save(client_ip_address=self.client_ip_address,createdBy="Merchant Id :: "+ str(self.merchant_id))
