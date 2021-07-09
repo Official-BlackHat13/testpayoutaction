@@ -384,7 +384,7 @@ class GetLogs(APIView):
         
 class fetch(APIView):
     #permission_classes = (IsAuthenticated, )
-    def get(self,request,page,length):
+    def post(self,request,page,length):
         request_obj = "path:: "+request.path+" :: headers::" + \
             str(request.headers)+" :: meta_data:: " + \
             str(request.META)+"data::"+str(request.data)

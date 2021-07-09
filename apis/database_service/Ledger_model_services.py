@@ -18,7 +18,7 @@ from . import Log_model_services
 from django.db import connection
 from sabpaisa import main
 class Ledger_Model_Service:
-    def __init__(self,id=None, merchant=None, client_code=None, trans_amount_type=None, type_status=None, amount=None, van=None, trans_type=None, trans_status=None, bank_ref_no=None, customer_ref_no=None, bank_id=None, trans_time=None, bene_account_name=None, bene_account_number=None, bene_ifsc=None, request_header=None, createdBy=None, updatedBy=None, deletedBy=None, created_at=None, deleted_at=None, updated_at=None, status=True, mode=None, charge=None):
+    def __init__(self,id=None, merchant=None, client_code=None, payout_trans_id=None,trans_amount_type=None, type_status=None, amount=None, van=None, trans_type=None, trans_status=None, bank_ref_no=None, customer_ref_no=None, bank_id=None, trans_time=None, bene_account_name=None, bene_account_number=None, bene_ifsc=None, request_header=None, createdBy=None, updatedBy=None, deletedBy=None, created_at=None, deleted_at=None, updated_at=None, status=True, mode=None, charge=None):
         self.id = id
         self.merchant=merchant
         self.client_code=client_code
@@ -34,7 +34,7 @@ class Ledger_Model_Service:
         self.bene_account_name=bene_account_name
         self.bene_account_number=bene_account_number
         self.bene_ifsc=bene_ifsc
-        
+        self.payout_trans_id=payout_trans_id
         self.request_header=request_header
         self.van=van
         self.createdBy=createdBy
@@ -60,6 +60,7 @@ class Ledger_Model_Service:
         ledgermodel.customer_ref_no=self.customer_ref_no
         ledgermodel.bank=self.bank_id
         ledgermodel.trans_time = self.trans_time
+        ledgermodel.payout_trans_id=self.payout_trans_id
         ledgermodel.trans_amount_type = self.trans_amount_type
         ledgermodel.van=self.van
         ledgermodel.bene_account_name=self.bene_account_name
@@ -259,7 +260,7 @@ class Ledger_Model_Service:
         ledgermodel.bank_ref_no = decResp.get("bank_ref_no")
         ledgermodel.trans_amount_type = "credited"
         ledgermodel.trans_type = "payin"
-        ledgermodel.type_status = decResp.get("type_status")
+        ledgermodel.type_status = "Generated"
         ledgermodel.request_header = decResp.get("request_header")
         bankResp = "NULL"
         ledgermodel.remarks = decResp.get("remarks")

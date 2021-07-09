@@ -220,31 +220,17 @@ class ICICI_service:
             #end
         for l in LedgerModel.objects.raw(query):
                 d = {
-                    "id": l.id,
-                    "merchant": l.merchant,
-                    "client_code": l.client_code,
-                    "amount": l.amount,
-                    "trans_type": l.trans_type,
-                    "type_status": l.type_status,
-                    "bank_ref_no": l.bank_ref_no,
-                    "customer_ref_no": l.customer_ref_no,
-                    "bank": l.bank,
-                    "bene_account_name": l.bene_account_name,
-                    "bene_account_number": l.bene_account_number,
-                    "bene_ifsc": l.bene_ifsc,
-                    "trans_status": l.trans_status,
-                    "charge": l.charge,
-                    "mode": l.mode,
-                    "request_header": l.request_header,
-                    "trans_time": l.trans_time,
-                    "van": l.van,
-                    "created_at": l.created_at,
-                    "deleted_at": l.deleted_at,
-                    "updated_at": l.updated_at,
-                    "createdBy": l.createdBy,
-                    "updatedBy": l.updatedBy,
-                    "status": l.status,
-                    "trans_amount_type": l.trans_amount_type
+                    'payoutTransactionId':l.payout_trans_id,
+                    'amount': l.amount,
+                    'transType': l.trans_type,
+                    'statusType': l.type_status,
+                    'bankRefNo': l.bank_ref_no,
+                    'orderId': l.customer_ref_no,
+                    'beneficiaryAccountName': l.bene_account_name,
+                    'beneficiaryAccountNumber': l.bene_account_number,
+                    'beneficiaryIFSC': l.bene_ifsc,
+                    'transStatus': l.trans_status,
+                    'mode': l.mode
                 }
                 resp.append(d)
         # print("length = ", int(length), " and ", len(resp))
@@ -269,17 +255,4 @@ class ICICI_service:
         # respJson = str(json)
         # print("response..... ", respJson)
         #return split_list[int(page)-1]
-        dict= {
-            'payoutTransactionId':'PAYOUT_TRANSACTION_ID',
-            'amount': d.amount,
-            'transType': d.trans_type,
-            'statusType': "stat",
-            'bankRefNo': 'UTR_NUMBER',
-            'orderId': "order",
-            'beneficiaryAccountName': 'BENEFICIARY_ACCOUNT_NAME',
-            'beneficiaryAccountNumber': 'BENEFICIARY_ACCOUNT_NUMBER',
-            'beneficiaryIFSC': 'BENEFICIARY_IFSC_HERE',
-            'transStatus': 'SUCCESS','transTime': 'FORMATTED_DATETIME',
-            'mode': 'IMPS/CASH/NEFT/RTGS/PAYIN'
-        }
-        return dict
+        return d
