@@ -17,7 +17,7 @@ response_schema_dict = {
     "402": openapi.Response(
         description="custom 402 description",
         examples={
-            "application/json": {"message":"Not Sufficent Balance","response_code":"0"}
+            "application/json": {"message":"Not Sufficent Balance or Beneficary not matched","response_code":"0"}
         }
     ),
     "401":openapi.Response(
