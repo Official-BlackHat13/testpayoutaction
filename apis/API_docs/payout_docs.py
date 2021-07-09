@@ -7,6 +7,7 @@ response_schema_dict = {
         examples={
             "application/json": {
                 "message":"Payout done",
+                "resData": "Encrypted Data",
                 "response_code":"1"
             },
             
@@ -35,6 +36,6 @@ response_schema_dict = {
 request=openapi.Schema(
     type=openapi.TYPE_OBJECT, 
     properties={
-        'clientCode': openapi.Schema(type=openapi.TYPE_STRING, description='string'),
-        'query': openapi.Schema(type=openapi.TYPE_STRING, description='string'),
+        'auth-token(header)': openapi.Schema(type=openapi.TYPE_STRING, description='string'),
+        'encrypted_code': openapi.Schema(type=openapi.TYPE_STRING, description='string'),
     })
