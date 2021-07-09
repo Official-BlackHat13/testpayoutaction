@@ -68,6 +68,8 @@ class PayoutService:
              ledgerModelService.request_header="null"
              ledgerModelService.type_status="Generated"
              ledgerModelService.trans_type="payout"
+             order_id=paytm_extra.generate_order_id()
+             ledgerModelService.customer_ref_no=order_id
              charge=Ledger_model_services.Ledger_Model_Service.calculate_charge(payoutrequestmodel.clientPaymode,payoutrequestmodel.txnAmount,self.client_ip_address)
              print(charge)
              ledgerModelService.charge=charge
@@ -77,7 +79,7 @@ class PayoutService:
              ledgerModelService.trans_time=datetime.now()
              id=ledgerModelService.save(client_ip_address=self.client_ip_address,createdBy="Merchant Id :: "+ str(self.merchant_id))
              ledgerModelService.update_status(id,'Requested',client_ip_address=self.client_ip_address,created_by="Merchant_Id :: "+str(self.merchant_id))
-             order_id=paytm_extra.generate_order_id()
+             
              request_model=paytm_request_model.Payment_Request_Model(subwalletGuid=const.paytm_subwalletGuid,orderId=order_id,beneficiaryAccount=payoutrequestmodel.creditAccountNumber,beneficiaryIFSC=payoutrequestmodel.ifscCode,amount=payoutrequestmodel.txnAmount,purpose=paytm_extra.purpose_list[0])
              post_data = json.dumps(request_model.to_json())
              checksum = paytmchecksum.generateSignature(post_data, const.paytm_merchant_key)
@@ -94,6 +96,7 @@ class PayoutService:
                          time.sleep(20)
                          checksum=paytmchecksum.generateSignature(json.dumps({"orderId":order_id}), const.paytm_merchant_key)
                          response = requests.post(bank_api.paytm.staging_paytmEnquiryAPI(),json={"orderId":order_id},headers={"Content-type": "application/json", "x-mid": const.paytm_merchant_id, "x-checksum":checksum})
+                         print(response.json())
                          if response.json()['status']=="SUCCESS":
                              ledgerModelService.update_status(id,"Success")
                              ledgerModelService.client_id=clientModel.id
