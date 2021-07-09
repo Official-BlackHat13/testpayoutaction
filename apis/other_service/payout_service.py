@@ -104,21 +104,21 @@ class PayoutService:
                              ledgerModelService.update_status(id,"Success",client_ip_address_temp,"Merchant :: "+str(merchant_id_temp))
                              ledgerModelService.client_id=clientModel.id
                              ledgerModelService.client_code=clientModel.client_code
-                             ledgerModelService.amount=payoutrequestmodel.txnAmount
+                             ledgerModelService.amount=charge
                              ledgerModelService.bank_id=clientmodel.bank
                              ledgerModelService.bank_ref_no="waiting"
-                             ledgerModelService.customer_ref_no=payoutrequestmodel.clientTransactionId
-                             ledgerModelService.trans_status="initated"
-                             ledgerModelService.bene_account_name=payoutrequestmodel.accountHolderName
-                             ledgerModelService.bene_account_number=payoutrequestmodel.creditAccountNumber
-                             ledgerModelService.bene_ifsc=payoutrequestmodel.ifscCode
+                             ledgerModelService.customer_ref_no=payoutrequestmodel.orderId
+                             ledgerModelService.trans_status="Success"
+                             ledgerModelService.bene_account_name=payoutrequestmodel.beneficiaryName
+                             ledgerModelService.bene_account_number=payoutrequestmodel.beneficiaryAccount
+                             ledgerModelService.bene_ifsc=payoutrequestmodel.beneficiaryIFSC
                              ledgerModelService.type_status="Generated"
                              ledgerModelService.trans_type="charge"
                              ledgerModelService.mode=mode.id
-                             ledgerModelService.van=payoutrequestmodel.van
+                             ledgerModelService.van=""
                              ledgerModelService.trans_amount_type = "debited"
                              ledgerModelService.trans_time=datetime.now()
-                             ledgerModelService.save()
+                             ledgerModelService.save("Merchant Id :: "+str(merchant_id_temp),client_ip_address_temp)
                          elif response.json()["status"]=="PENDING":
                              ledgerModelService.update_status(id,"Pending",client_ip_address_temp,"Merchant :: "+str(merchant_id_temp))
                              

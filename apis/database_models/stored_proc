@@ -1,10 +1,4 @@
--- DELIMITER &&
--- create PROCEDURE getAmount(in type varchar(20),in merchant_id int,out value int)
--- begin
--- select sum(amount) into value from apis_ledgermodel where trans_amount_type=type and merchant=merchant_id and trans_status="Success" or trans_status="Pending" or trans_status="Requested";
--- end 
--- && DELIMITER ;
-
+#get balance
 -- DELIMITER &&
 -- create PROCEDURE getBalance(in merchant_id int,out balance int,out cred1 int,out deb1 int)
 -- begin
@@ -28,8 +22,13 @@
 
 -- end 
 -- && DELIMITER ;
-
-
+#get amount
+-- DELIMITER &&
+-- create PROCEDURE getAmount(in type varchar(20),in merchant_id int,out value int)
+-- begin
+-- select sum(amount) into value from apis_ledgermodel where trans_amount_type=type and merchant=merchant_id and trans_status in ("Success","Pending","Requested","Proccesing");
+-- end 
+-- && DELIMITER ;
 --DELIMITER $$
 --CREATE DEFINER=`root`@`localhost` PROCEDURE `fet`(IN n varchar(1000), m int(11))
 --BEGIN
