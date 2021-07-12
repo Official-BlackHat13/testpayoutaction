@@ -35,3 +35,4 @@ paytm_merchant_id = "SubPai61513678214850"
 paytm_merchant_key = "@B0h97BGQ#YC_lIE"
 email_api = "https://adminapi.sabpaisa.in/REST/Email/sendEmail"
 
+test_merchants=True

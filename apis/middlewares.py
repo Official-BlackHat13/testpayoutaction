@@ -1,7 +1,9 @@
+from apis.database_models.ClientModel import MerchantModel
 import requests
 from apis.database_models.IpWhiteListedModel import IpWhiteListedModel
 from apis.database_service.Client_model_service import Client_Model_Service
 from apis.database_service.UserActive_model_service import UserActive_Model_Service
+from apis.models import RoleModel
 from . import models
 from rest_framework.response import *
 from django.shortcuts import HttpResponse

@@ -41,7 +41,7 @@ from django.contrib.auth.models import User
 from rest_framework.permissions import IsAuthenticated
 from . import const
 from .Utils import randomstring
-
+from .models import MerchantModel,RoleModel
 
 
 
@@ -112,9 +112,14 @@ class bankApiPaymentView(APIView):
     def post(self,req):
         request_obj = "path::"+req.path+"headers::"+str(req.headers)+"meta_data::"+str(req.META)+"data::"+str(req.data)
         # payment_service=IFDC_service.payment.Payment()
+        
+        
+        
+
         api_key = req.headers['auth_token']
         merchant_id=auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(api_key)
         encrypted_code=req.data["encrypted_code"]
+        
         log = Log_model_services.Log_Model_Service(log_type="Post request at "+req.path+" slug",client_ip_address=req.META['REMOTE_ADDR'],server_ip_address=const.server_ip,full_request=request_obj)
         logid=log.save()
         client = Client_model_service.Client_Model_Service.fetch_by_id(merchant_id,req.META['REMOTE_ADDR'],"merchant id :: "+merchant_id)
@@ -129,7 +134,11 @@ class bankApiPaymentView(APIView):
         else:
             res = payout.excuteIDFC()
         if(res[0]=="Payout Done"):
-            enc_str=str(auth.AESCipher(client.auth_key,client.auth_iv).encrypt(str(res[1])))[2:].replace("'","")
+            merchant=MerchantModel.objects.get(id=merchant_id)
+            role = RoleModel.objects.get(id=merchant.role)
+            enc_str=res[1]
+            if const.merchant_check and role.role_name!="test":
+             enc_str=str(auth.AESCipher(client.auth_key,client.auth_iv).encrypt(str(res[1])))[2:].replace("'","")
             Log_model_services.Log_Model_Service.update_response(logid,{"Message":res,"response_code":"1"})
             return Response({"Message":"Payout Done",'resData':enc_str,"response_code":"1"},status=status.HTTP_200_OK)
         elif (res[0]=="Not Sufficent Balance"):
@@ -449,33 +458,47 @@ class encHeader(APIView):
         return Response({"header": encResp, "authkey": authKey, "authIV": authIV})
 class paymentEnc(APIView):
     def post(self,req):
-        data = req.data["query"]
-        auth_token = req.headers["auth_token"]
-        merchant_id = auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(auth_token)
-        clientModel = Client_model_service.Client_Model_Service.fetch_by_id(id=merchant_id, created_by="Merchant :: "+str(merchant_id), client_ip_address=req.META['REMOTE_ADDR'])
-        authKey = clientModel.auth_key
-        authIV = clientModel.auth_iv
-        encResp = auth.AESCipher(authKey, authIV).decrypt(data)
-        customer_ref = encResp.split(":")[1].replace('"','')
-        rec =ICICI_service.get_enc(customer_ref,req.META['REMOTE_ADDR'],created_by="Merchant id :: "+str(merchant_id))
-        if rec!=None:
-            res = {
-                    'payoutTransactionId':rec.payout_trans_id,
-                    'amount': rec.amount,
-                    'transType': rec.trans_type,
-                    'statusType': rec.type_status,
-                    'bankRefNo': rec.bank_ref_no,
-                    'orderId': rec.customer_ref_no,
-                    'beneficiaryAccountName': rec.bene_account_name,
-                    'beneficiaryAccountNumber': rec.bene_account_number,
-                    'beneficiaryIFSC': rec.bene_ifsc,
-                    'transStatus': rec.trans_status,
-                    'mode': rec.mode
-                }
-            enc = str(auth.AESCipher(authKey,authIV).encrypt(str(res)))[2:].replace("'","")
-            return Response({"message": "data found","resData": enc,"responseCode": "1"})
-        else:
-            return Response({"message":"NOT_FOUND","response_code":"0"})
+        try:
+            data = req.data["query"]
+            auth_token = req.headers["auth_token"]
+            print("auth token :: "+auth_token)
+            merchant_id = auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(auth_token)
+            print("merchant id :: "+merchant_id)
+            clientModel = Client_model_service.Client_Model_Service.fetch_by_id(id=merchant_id, created_by="Merchant :: "+str(merchant_id), client_ip_address=req.META['REMOTE_ADDR'])
+            
+            authKey = clientModel.auth_key
+            authIV = clientModel.auth_iv
+            encResp=data
+            merchant=MerchantModel.objects.get(id=merchant_id)
+            role = RoleModel.objects.get(id=merchant.role)
+            if const.merchant_check and role.role_name!="test" :
+             encResp = auth.AESCipher(authKey, authIV).decrypt(data)
+            customer_ref = encResp.split(":")[1].replace('"','')
+            rec =ICICI_service.get_enc(customer_ref,req.META['REMOTE_ADDR'],created_by="Merchant id :: "+str(merchant_id))
+            if rec!=None:
+                res = {
+                        'payoutTransactionId':rec.payout_trans_id,
+                        'amount': rec.amount,
+                        'transType': rec.trans_type,
+                        'statusType': rec.type_status,
+                        'bankRefNo': rec.bank_ref_no,
+                        'orderId': rec.customer_ref_no,
+                        'beneficiaryAccountName': rec.bene_account_name,
+                        'beneficiaryAccountNumber': rec.bene_account_number,
+                        'beneficiaryIFSC': rec.bene_ifsc,
+                        'transStatus': rec.trans_status,
+                        'mode': rec.mode
+                    }
+                enc = res
+                if const.merchant_check and role.role_name!="test":
+                 enc = str(auth.AESCipher(authKey,authIV).encrypt(str(res)))[2:].replace("'","")
+                return Response({"message": "data found","resData": enc,"responseCode": "1"})
+            else:
+                return Response({"message":"NOT_FOUND","response_code":"0"})
+        except Exception as e:
+            import traceback
+            print(traceback.format_exc())
+            return Response({"message":e.args})
 class tester(APIView):
     def get(self,request):
         authKey = const.AuthKey
