@@ -82,7 +82,6 @@ class Auth(APIView):
         request_obj = "path:: "+req.path+" :: headers::"+str(req.headers)+" :: meta_data:: "+str(req.META)+"data::"+str(req.data)
         user = req.data
         print("req data::"+str(req.data))
-        
         log = Log_model_services.Log_Model_Service(log_type="Post request at "+req.path+" slug",client_ip_address=req.META['REMOTE_ADDR'],server_ip_address=const.server_ip,full_request=request_obj)
         logid=log.save()
         print("log::"+str(logid))
@@ -189,19 +188,6 @@ class LedgerSaveRequest(APIView):
             return Response({"message": "nothing to show", "data": None, "response_code": "0"}, status=status.HTTP_404_NOT_FOUND)
         return Response({"message": "data found", "data": resp, "response_code": "1"}, status=status.HTTP_200_OK)
         
-
-class getLedgers(APIView):
-    permission_classes = (IsAuthenticated, )
-    def get(self,request):
-        clientCode = request.data.get("client_code")
-        createdBy = request.data.get("createdBy")
-        ip = request.data.get("ip_address")
-        resp = ICICI_service.fetchAll(clientCode,createdBy,ip)
-        if(resp == "0"):
-            return Response({"message": "nothing to show", "data":None,"response_code": "0"}, status=status.HTTP_404_NOT_FOUND)
-        return Response({"message": "data found","data":resp, "response_code": "1"}, status=status.HTTP_200_OK)
-
-
 class DeleteLedger(APIView):
     #permission_classes = (IsAuthenticated, )
     def delete(self,request):
@@ -300,45 +286,21 @@ class UpdateLedger(APIView):
 
 class encryptJSON(APIView):
     def post(self, request):
-        # id = request.data.get("id")
-        # query      = request.data.get("query")
-        # createdBy = request.data.get("createdBy")
-        # ip = request.data.get("ip")
-        # print(query)
-        # print(str(query))
-        # print(type(str(query)))
-        # # return Response({"message": "credential not matched", "data": None, "response_code": "3"}, status=status.HTTP_404_NOT_FOUND)
-        # clientModel = Client_model_service.Client_Model_Service.fetch_by_id(
-        #     client_ip_address=ip, id = id, created_by=createdBy)
-        
-        # authKey = clientModel.auth_key
-        # authIV = clientModel.auth_iv
-        # encResp = auth.AESCipher(authKey, authIV).encrypt(str(query))
-        # print(encResp)
-        #start
-        s="usern=payout_admin_1000&pass=payout@123&payeeFirstName=Kanishk&payeeLastName=Dixit&payeeMob=8979626196&payeeEmail=test@gmail.com&txnAmount=1&returnUrl=.&creditAccountNumber=50100217519021&ifscCode=HDFC0002535&bankBranch=Delhi&accountHolderName=Sagar&clientTransactionId=.&clientPaymode=IMPS&environment=."
-        l="k3rnF6vnOT6rIHrHjAS0JQ=="
-        op=str(auth.AESCipher("V2LIyBdVGZKF7PjE","NUBC7i1mAwYc9nCo").encrypt(s))
-        op = op[2:].replace("'","")
-        print(op)
-        #end
-        return Response({"message": "data", "data": str(op), "response_code": "3"}, status=status.HTTP_200_OK)
+        query = str(request.data.get("query"))
+        authKey = request.data.get("authkey")
+        authIV = request.data.get("authiv")
+        normal=request.data.get("yo")
+        print("..... ",normal)
+        encResp = auth.AESCipher(authKey,authIV).encrypt(query)
+        return Response({"message": "data", "data": str(encResp), "response_code": "3"}, status=status.HTTP_200_OK)
 
 class decryptJson(APIView):
     def post(self,request):
-        id = request.data.get("id")
         query = request.data.get("query")
-        createdBy = request.data.get("createdBy")
-        ip = request.data.get("ip")
-        clientModel = Client_model_service.Client_Model_Service.fetch_by_id(
-            client_ip_address=ip, id=id, created_by=createdBy)
-
-        authKey = clientModel.auth_key
-        authIV = clientModel.auth_iv
-        encResp = auth.AESCipher(authKey, authIV).decrypt(query)
-        res = ast.literal_eval(encResp)
-        print("...... ",res)
-        return Response({"message": "data", "data":str(encResp),"response_code": "3"}, status=status.HTTP_404_NOT_FOUND)
+        authKey = request.data.get("authkey")
+        authIV = request.data.get("authiv")
+        encResp = auth.AESCipher(authKey,authIV).decrypt(query)
+        return Response({"message": "data", "data": str(encResp), "response_code": "3"}, status=status.HTTP_200_OK)
 
 class GetLogs(APIView):
     def get(self,req,page,length):
@@ -374,7 +336,6 @@ class GetLogs(APIView):
             Log_model_services.Log_Model_Service.update_response(logid, str({"data_length": len(
                 logs[0][page]), "data": logsser.data}))
             return Response({"Message":"some error","Error":e.args})
-
         
 class fetch(APIView):
     #permission_classes = (IsAuthenticated, )
@@ -382,10 +343,9 @@ class fetch(APIView):
         request_obj = "path:: "+request.path+" :: headers::" + \
             str(request.headers)+" :: meta_data:: " + \
             str(request.META)+"data::"+str(request.data)
-        log = Log_model_services.Log_Model_Service(log_type="Get request at "+request.path+" slug", table_name="apis_ledgermodel",
+        log = Log_model_services.Log_Model_Service(log_type="Post request at "+request.path+" slug", table_name="apis_ledgermodel",
                                                    client_ip_address=request.META['REMOTE_ADDR'], server_ip_address=const.server_ip, full_request=request_obj)
         logid = log.save()
-        print(page," ",length)
         authKey = const.AuthKey
         authIV = const.AuthIV
         resp = request.headers["auth_token"]
@@ -401,22 +361,40 @@ class fetch(APIView):
             Log_model_services.Log_Model_Service.update_response(
                 logid, {"Message": "page and length format not compatible", "response_code": "3"})
             return JsonResponse({"Message": "page and length format not compatible", "data": None, "response_code": "3"}, status=status.HTTP_406_NOT_ACCEPTABLE)
-
         if(resp == ""):
             Log_model_services.Log_Model_Service.update_response(
                 logid, {"Message": "merchant code missing", "response_code": "3"})
             return Response({"message": "merchant code missing", "data": None, "response_code": "3"}, status=status.HTTP_400_BAD_REQUEST)
         decMerchant = auth.AESCipher(authKey, authIV).decrypt(resp)
-        clientCode = request.data.get("clientCode")
-        merchant = decMerchant
-        customer_ref_no = request.data.get("customer_ref_no")
-        startTime = request.data.get("startTime")
-        endTime = request.data.get("endTime")
-        trans_type = request.data.get("trans_type")
-        created_by = request.data.get("created_by")
-        resp = ICICI_service.fetchLedgerByParams(client_code = clientCode,
+        clientModel = Client_model_service.Client_Model_Service.fetch_by_id(
+                id=decMerchant, created_by="merchant id :: "+decMerchant, client_ip_address=request.META['REMOTE_ADDR'])
+        authKey = clientModel.auth_key
+        authIV = clientModel.auth_iv
+        query = auth.AESCipher(authKey,authIV).decrypt(request.data.get("query")).split("'")
+        key = query[1]
+        value = query[3]
+        clientCode = None
+        customer_ref_no = None
+        trans_type=None
+        startTime=None
+        endTime = None
+        if(len(query)>5):
+            customer_ref_no=query[3]
+            trans_type=query[7]
+            clientCode=query[11]
+        elif(key=="startTime"):
+            startTime = value
+            if(query[5]=="endTime"):
+                endTime=query[7]
+        elif(key=="clientCode"):
+            clientCode = value
+        elif(key=="orderId"):
+            customer_ref_no = value
+        elif(key=="trans_type"):
+            trans_type = value
+        resp = enquiry_service.fetchLedgerByParams(client_code = clientCode,
         startTime=startTime,endTime=endTime,page=page,length=length,
-        merchant = merchant,customer_ref_no=customer_ref_no,trans_type=trans_type,created_by=created_by,client_ip_address=request.META['REMOTE_ADDR'])
+        merchant = decMerchant,customer_ref_no=customer_ref_no,trans_type=trans_type,created_by="merchant id :: "+decMerchant,client_ip_address=request.META['REMOTE_ADDR'])
         if(resp=="-2"):
             Log_model_services.Log_Model_Service.update_response(
                 logid, {"Message": "length of page is greater then the result length", "response_code": "2"})
@@ -430,16 +408,30 @@ class fetch(APIView):
             Log_model_services.Log_Model_Service.update_response(
                 logid, {"Message": "missing mandatory parameters", "response_code": "3"})
             return Response({"message": "missing mandatory parameters", "data": None, "response_code": "3"}, status=status.HTTP_400_BAD_REQUEST)
+        result = list()
+        if(len(resp)>0):
+            for r in resp:
+                res = { 
+                        "id":r.get("id"),
+                        'payoutTransactionId':r.get("payout_trans_id"),
+                        'amount': r.get("amount"),
+                        'transType': r.get("trans_type"),
+                        'statusType': r.get("type_status"),
+                        'bankRefNo': r.get("bank_ref_no"),
+                        'orderId': r.get("customer_ref_no"),
+                        'beneficiaryAccountName': r.get("bene_account_name"),
+                        'beneficiaryAccountNumber': r.get("bene_account_number"),
+                        'beneficiaryIFSC': r.get("bene_ifsc"),
+                        'transStatus': r.get("trans_status"),
+                        'mode': r.get("mode")
+                    }
+                result.append(res)
+        
+        encResult = auth.AESCipher(authKey,authIV).encrypt(str(result))
         Log_model_services.Log_Model_Service.update_response(
             logid, {"Message": str(resp), "response_code": "1"})
-        return Response({"message": "data found", "data": str(resp), "response_code": "1"}, status=status.HTTP_200_OK)
-class encHeader(APIView):
-    def get(self,request):
-        authKey = const.AuthKey
-        authIV = const.AuthIV
-        resp = request.data.get("header")
-        encResp = auth.AESCipher(authKey, authIV).encrypt(resp)
-        return Response({"header": encResp, "authkey": authKey, "authIV": authIV})
+        return Response({"message": "data found", "data": encResult, "response_code": "1"}, status=status.HTTP_200_OK)
+
 class paymentEnc(APIView):
     @swagger_auto_schema(request_body=payoutTransactionEnquiry_docs.request,responses=payoutTransactionEnquiry_docs.response_schema_dict)
     def post(self,req):
@@ -451,7 +443,7 @@ class paymentEnc(APIView):
         authIV = clientModel.auth_iv
         encResp = auth.AESCipher(authKey, authIV).decrypt(data)
         customer_ref = encResp.split(":")[1].replace('"','')
-        rec =ICICI_service.get_enc(customer_ref,req.META['REMOTE_ADDR'],created_by="Merchant id :: "+str(merchant_id))
+        rec =enquiry_service.get_enc(customer_ref,req.META['REMOTE_ADDR'],created_by="Merchant id :: "+str(merchant_id))
         if rec!=None:
             res = {
                     'payoutTransactionId':rec.payout_trans_id,
@@ -475,18 +467,8 @@ class tester(APIView):
         authKey = const.AuthKey
         authIV = const.AuthIV
         resp = request.headers["merchant"]
-        if(resp == ""):
-            print("yo..............")
         decMerchant = auth.AESCipher(authKey, authIV).decrypt(resp)
         return Response({"header": decMerchant, "authkey": authKey, "authIV": authIV})
-
-
-class addMode(APIView):
-    def post(self,request):
-        m = ModeModel()
-        m.mode = "credit"
-        m.created_at = datetime.now()
-        m.save()
 
 class addBalanceApi(APIView):
     @swagger_auto_schema(request_body=addBalance_docs.request,responses=addBalance_docs.response_schema_dict)
@@ -497,10 +479,9 @@ class addBalanceApi(APIView):
         log = Log_model_services.Log_Model_Service(log_type="Post request at "+request.path+" slug",
                                                     client_ip_address=request.META['REMOTE_ADDR'], server_ip_address=const.server_ip, full_request=request_obj)
         logid=log.save()
-
         authKey = const.AuthKey
         authIV = const.AuthIV
-        merchant = request.headers["api-key"]
+        merchant = request.headers["auth_token"]
         if(merchant == ""):
             Log_model_services.Log_Model_Service.update_response(
                 logid, {"Message": "merchant code missing", "response_code": "3"})
@@ -545,9 +526,7 @@ class LoginVerificationAPI(APIView):
         logs = Log_model_services.Log_Model_Service(log_type="post request on "+req.path,client_ip_address=req.META['REMOTE_ADDR'],server_ip_address=const.server_ip,full_request=request_obj,remarks="get request on "+req.path+" for fetching the log records")
         logid=logs.save()
         try:
-            print(req.data)
             login=login_service.Login_service.login_verification(req.data['verification_code'],req.data["otp"],req.META['REMOTE_ADDR'],req.data['geo_location'])
-            print('done')
             if(login=="OTP Expired"):
                 Log_model_services.Log_Model_Service.update_response(logid,{"message":"OTP Expired","response_code":"0"})
                 return Response({"message":"OTP Expired","response_code":"0"},status=status.HTTP_400_BAD_REQUEST)
@@ -574,21 +553,19 @@ class ResendLoginOTP(APIView):
         #  api_key=auth.AESCipher(const.AuthKey,const.AuthIV).encrypt(login)
          Log_model_services.Log_Model_Service.update_response(logid,{"verification_token":login,"response_code":"1"})
          return Response({"verification_token":login,"response_code":"1"},status=status.HTTP_200_OK)
-         
         except Exception as e:
             import traceback
             print(traceback.format_exc())
             Log_model_services.Log_Model_Service.update_response(logid,{"Error":e.args,"response_code":'2'})
             return Response({"Error":e.args,"response_code":'2'},status=status.HTTP_400_BAD_REQUEST)
         
-
 class fetchBeneficiary(APIView):
     def get(self,request):
+        
         return Response({"msg":"done","data":list(BeneficiaryModel.objects.filter().all().values()),"response_code":'1'},status=status.HTTP_200_OK)
 
 class updateBeneficiary(APIView):
     def put(self,request):
-        
         id = request.data.get("id")
         bene = BeneficiaryModel.objects.filter(id=id)
         if(len(bene)==0):
@@ -618,14 +595,8 @@ class deleteBeneficiary(APIView):
 class saveBeneficiary(APIView):
     @swagger_auto_schema(request_body=addBeneficiary_docs.request,responses=addBeneficiary_docs.response_schema_dict)
     def post(self, request, format=None):
-        print("exceuting :: after middleware")
-        # api_key = request.headers.get("api_key")
-        # print("api key ===== ",api_key)
         api_key = str(request.headers['auth_token'])
-        print(api_key)        
         merchantId =auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(api_key)
-        print(merchantId)
-        print(request.data["files"])
         try:
             excel_file = request.FILES["files"]
         except MultiValueDictKeyError:
