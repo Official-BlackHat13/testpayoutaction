@@ -15,9 +15,9 @@ bene_account_name = "SRS"
 bene_account_number="98765"
 bene_ifsc = "12345"
 
-paytm_subwalletGuid = "4957c207-dafa-11eb-bbc6-fa163e429e83"
-paytm_merchant_id = "SubPai61513678214850"
-paytm_merchant_key = "@B0h97BGQ#YC_lIE"
+# paytm_subwalletGuid = "4957c207-dafa-11eb-bbc6-fa163e429e83"
+# paytm_merchant_id = "SubPai61513678214850"
+# paytm_merchant_key = "@B0h97BGQ#YC_lIE"
 
 
 
