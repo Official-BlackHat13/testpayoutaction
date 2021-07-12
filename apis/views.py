@@ -139,6 +139,8 @@ class bankApiPaymentView(APIView):
             enc_str=res[1]
             if const.merchant_check and role.role_name!="test":
              enc_str=str(auth.AESCipher(client.auth_key,client.auth_iv).encrypt(str(res[1])))[2:].replace("'","")
+            elif not const.merchant_check:
+                enc_data = str(auth.AESCipher(client.auth_key, client.auth_iv).encrypt(str(res[1])))[2:].replace("'","")
             Log_model_services.Log_Model_Service.update_response(logid,{"Message":res,"response_code":"1"})
             return Response({"Message":"Payout Done",'resData':enc_str,"response_code":"1"},status=status.HTTP_200_OK)
         elif (res[0]=="Not Sufficent Balance"):
@@ -385,7 +387,14 @@ class GetLogs(APIView):
             print(logs[0][page])
             Log_model_services.Log_Model_Service.update_response(logid, str({"data_length": len(
                 logs[0][page]), "data": logsser.data}))
-            return Response({"data_length": len(logs[0][page]), "data": auth.AESCipher(authKey, authIV).encrypt(str(logsser.data))})
+            merchant=MerchantModel.objects.get(id=self.merchant_id)
+            role = RoleModel.objects.get(id=merchant.role)
+            enc_data=logsser.data
+            if const.merchant_check and role.role_name!="test" :
+             enc_data = auth.AESCipher(authKey, authIV).encrypt(str(logsser.data))
+            elif not const.merchant_check:
+                enc_data = auth.AESCipher(authKey, authIV).encrypt(str(logsser.data))
+            return Response({"data_length": len(logs[0][page]), "data": enc_data})
         except Exception as e:
             Log_model_services.Log_Model_Service.update_response(logid, str({"data_length": len(
                 logs[0][page]), "data": logsser.data}))
@@ -492,6 +501,8 @@ class paymentEnc(APIView):
                 enc = res
                 if const.merchant_check and role.role_name!="test":
                  enc = str(auth.AESCipher(authKey,authIV).encrypt(str(res)))[2:].replace("'","")
+                elif not const.merchant_check:
+                    enc = str(auth.AESCipher(authKey,authIV).encrypt(str(res)))[2:].replace("'","")
                 return Response({"message": "data found","resData": enc,"responseCode": "1"})
             else:
                 return Response({"message":"NOT_FOUND","response_code":"0"})

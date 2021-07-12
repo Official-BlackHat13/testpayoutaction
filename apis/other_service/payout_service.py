@@ -41,7 +41,8 @@ class PayoutService:
             if const.merchant_check and role.role_name!="test" :
 
              query=auth.AESCipher(authKey,authIV).decrypt(self.encrypted_code)
-            
+            elif not const.merchant_check:
+                enc_data = auth.AESCipher(authKey, authIV).decrypt(self.encrypted_code)
             map=splitString.StringToMap(query)
             print(str(map))
             # if map["usern"]!=clientModel.client_username and map["pass"]!=clientModel.client_password:
