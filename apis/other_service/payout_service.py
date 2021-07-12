@@ -38,10 +38,10 @@ class PayoutService:
             merchant=MerchantModel.objects.get(id=self.merchant_id)
             role = RoleModel.objects.get(id=merchant.role)
             query=self.encrypted_code
-            if const.merchant_check and role.role_name!="test" :
+            if const.test_merchants and role.role_name!="test" :
 
              query=auth.AESCipher(authKey,authIV).decrypt(self.encrypted_code)
-            elif not const.merchant_check:
+            elif not const.test_merchants:
                 enc_data = auth.AESCipher(authKey, authIV).decrypt(self.encrypted_code)
             map=splitString.StringToMap(query)
             print(str(map))

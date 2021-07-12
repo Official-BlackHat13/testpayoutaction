@@ -137,9 +137,9 @@ class bankApiPaymentView(APIView):
             merchant=MerchantModel.objects.get(id=merchant_id)
             role = RoleModel.objects.get(id=merchant.role)
             enc_str=res[1]
-            if const.merchant_check and role.role_name!="test":
+            if const.test_merchants and role.role_name!="test":
              enc_str=str(auth.AESCipher(client.auth_key,client.auth_iv).encrypt(str(res[1])))[2:].replace("'","")
-            elif not const.merchant_check:
+            elif not const.test_merchants:
                 enc_data = str(auth.AESCipher(client.auth_key, client.auth_iv).encrypt(str(res[1])))[2:].replace("'","")
             Log_model_services.Log_Model_Service.update_response(logid,{"Message":res,"response_code":"1"})
             return Response({"Message":"Payout Done",'resData':enc_str,"response_code":"1"},status=status.HTTP_200_OK)
@@ -362,7 +362,7 @@ class GetLogs(APIView):
     def get(self,req,page,length):
         authKey = const.AuthKey
         authIV = const.AuthIV
-        resp = req.headers["merchant"]
+        resp = req.headers["auth_token"]
         merchant = auth.AESCipher(authKey,authIV).decrypt(resp)
         clientModel = Client_model_service.Client_Model_Service.fetch_by_id(
             id=merchant, created_by=str(merchant), client_ip_address=req.META['REMOTE_ADDR'])
@@ -371,6 +371,8 @@ class GetLogs(APIView):
         request_obj = "path:: "+req.path+" :: headers::"+str(req.headers)+" :: meta_data:: "+str(req.META)+"data::"+str(req.data)
         logs = Log_model_services.Log_Model_Service(log_type="get request on "+req.path,client_ip_address=req.META['REMOTE_ADDR'],server_ip_address=const.server_ip,full_request=request_obj,remarks="get request on "+req.path+" for fetching the log records")
         logid=logs.save()
+        merchant=MerchantModel.objects.get(id=merchant)
+        role = RoleModel.objects.get(id=merchant.role)
         try:
             if page=="all" and length != "all":
                 return JsonResponse({"Message":"page and length format does not match"},status=status.HTTP_406_NOT_ACCEPTABLE)
@@ -379,6 +381,14 @@ class GetLogs(APIView):
             print(logs)
             if page == "all":
                 logsser=LogsSerializer(logs,many=True)
+                enc_data=logsser.data
+                print(role.role_name)
+                if const.merchant_check and role.role_name!="test" :
+                  enc_data = auth.AESCipher(authKey, authIV).encrypt(str(logsser.data))
+                elif not const.merchant_check:
+                  enc_data = auth.AESCipher(authKey, authIV).encrypt(str(logsser.data))
+                print(enc_data)
+                
                 return Response({"data_length": len(logs), "data": auth.AESCipher(authKey, authIV).encrypt(str(logsser.data))})
             page=int(page)
             if page>logs[1]:
@@ -387,13 +397,18 @@ class GetLogs(APIView):
             print(logs[0][page])
             Log_model_services.Log_Model_Service.update_response(logid, str({"data_length": len(
                 logs[0][page]), "data": logsser.data}))
-            merchant=MerchantModel.objects.get(id=self.merchant_id)
-            role = RoleModel.objects.get(id=merchant.role)
+            
+            print(merchant.id)
             enc_data=logsser.data
-            if const.merchant_check and role.role_name!="test" :
+            print(enc_data)
+            print(role.role_name)
+            if const.test_merchants and role.role_name!="test" :
+             print("if")
              enc_data = auth.AESCipher(authKey, authIV).encrypt(str(logsser.data))
-            elif not const.merchant_check:
+            elif not const.test_merchants:
+                print("else")
                 enc_data = auth.AESCipher(authKey, authIV).encrypt(str(logsser.data))
+            print(enc_data)
             return Response({"data_length": len(logs[0][page]), "data": enc_data})
         except Exception as e:
             Log_model_services.Log_Model_Service.update_response(logid, str({"data_length": len(
@@ -499,9 +514,10 @@ class paymentEnc(APIView):
                         'mode': rec.mode
                     }
                 enc = res
-                if const.merchant_check and role.role_name!="test":
+                print("roleName :: "+role.role_name)
+                if const.test_merchants and role.role_name!="test":
                  enc = str(auth.AESCipher(authKey,authIV).encrypt(str(res)))[2:].replace("'","")
-                elif not const.merchant_check:
+                elif not const.test_merchants:
                     enc = str(auth.AESCipher(authKey,authIV).encrypt(str(res)))[2:].replace("'","")
                 return Response({"message": "data found","resData": enc,"responseCode": "1"})
             else:
