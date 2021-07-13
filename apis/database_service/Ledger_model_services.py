@@ -2,11 +2,10 @@ from requests.api import request
 from apis import const
 import string
 import random
-import uuid
 from rest_framework import status
 from sabpaisa import auth
 from datetime import datetime
-
+from apis.Utils.generater import *
 from ..database_service import Client_model_service
 from rest_framework.permissions import AND
 from ..models import LedgerModel,ModeModel
@@ -258,7 +257,7 @@ class Ledger_Model_Service:
             return True
         return False
 
-    def addBal(decResp, client_ip_address):
+    def addBal(decResp, client_ip_address,merchant,clientCode):
         log_service = Log_model_services.Log_Model_Service(log_type="create", table_name="apis_ledgermodel", remarks="saving records in apis_ledgermodel table",
                                                            client_ip_address=client_ip_address, server_ip_address=const.server_ip, created_by=decResp.get("created_by"))
         ledgermodel = LedgerModel()
@@ -266,38 +265,31 @@ class Ledger_Model_Service:
         modeOfTrans = decResp.get("mode")
         m = ModeModel.objects.filter(mode = modeOfTrans)
         ledgermodel.mode = m[0].id
-        ledgermodel.bank_ref_no = decResp.get("bank_ref_no")
+        ledgermodel.bank_ref_no = const.bank_ref_no
         ledgermodel.trans_amount_type = "credited"
         ledgermodel.trans_type = "payin"
         ledgermodel.type_status = "Generated"
-        ledgermodel.request_header = decResp.get("request_header")
+        ledgermodel.request_header = "request header"
         bankResp = "NULL"
-        ledgermodel.remarks = decResp.get("remarks")
-        ledgermodel.merchant = decResp.get("merchant")
-        ledgermodel.client_code = decResp.get("client_code")
+        ledgermodel.remarks = " "
+        ledgermodel.merchant = merchant
+        ledgermodel.client_code = clientCode
         #CR06e65070-dbd6-11eb-9816-507b9d006cb8
-        ledgermodel.customer_ref_no = generate_unique_code()
-        ledgermodel.bank = decResp.get("bank")
+        ledgermodel.customer_ref_no = generate_unique_customerRef()
+        ledgermodel.bank = const.bank
         ledgermodel.trans_time = datetime.now()
-        ledgermodel.van = decResp.get("van")
+        ledgermodel.van = " "
         ledgermodel.bene_account_name = const.bene_account_name
         ledgermodel.bene_account_number = const.bene_account_number
         ledgermodel.bene_ifsc = const.bene_ifsc
-        ledgermodel.createdBy = decResp.get("created_by")
+        ledgermodel.createdBy = "merchantID :: "+str(merchant)
         ledgermodel.created_at = datetime.now()
         ledgermodel.status = True
-        ledgermodel.trans_status = decResp.get("trans_status")
-        ledgermodel.payout_trans_id = decResp.get("payout_trans_id")
-        ledgermodel.charge = decResp.get("charge")
+        ledgermodel.trans_status = "Success"#success
+        ledgermodel.payout_trans_id = generate_token()
+        ledgermodel.charge = 1.0
         ledgermodel.save()  
         log_service.table_id = ledgermodel.id
         log_service.save()
         return str(ledgermodel.id)
         
-def generate_unique_code():
-    resp = str()
-    while True:
-        resp = "CR"+str(uuid.uuid1())
-        if(LedgerModel.objects.filter(customer_ref_no=resp).count() == 0):
-            break
-    return resp

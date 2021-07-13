@@ -34,6 +34,6 @@ paytm_merchant_key = "@B0h97BGQ#YC_lIE"
 email_api = "https://adminapi.sabpaisa.in/REST/Email/sendEmail"
 
 test_merchants=True
-
-
+bank_ref_no = "1986517"
+bank=11
 

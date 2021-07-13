@@ -45,6 +45,13 @@ class BO_User_Service:
         if bouser == None:
             return None
         return bouser.role
+    @staticmethod
+    def fetch_by_id(id):
+        try:
+         bouser = BOUserModel.objects.get(id=id)
+         return bouser
+        except Exception as e:
+            return None
 
     
         

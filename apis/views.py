@@ -19,7 +19,9 @@ from rest_framework.views import APIView
 from rest_framework.response import *
 from rest_framework import status
 from drf_yasg.utils import swagger_auto_schema
-from .API_docs import payout_docs,auth_docs,login_docs,payoutTransactionEnquiry_docs,addBalance_docs,addBeneficiary_docs
+
+from apis.database_service import Beneficiary_model_services
+from .API_docs import payout_docs,auth_docs,login_docs,payoutTransactionEnquiry_docs,addBalance_docs,addBeneficiary_docs,log_docs
 from datetime import datetime
 from .serializersFolder.serializers import LogsSerializer
 #from .serializers import *
@@ -39,6 +41,7 @@ from django.contrib.auth.models import User
 from rest_framework.permissions import IsAuthenticated
 from . import const
 from .Utils import randomstring
+from .database_service import BO_user_services
 
 from .models import MerchantModel,RoleModel
 
@@ -47,12 +50,11 @@ from .models import MerchantModel,RoleModel
 
 
 
-from datetime import datetime
-# class bankApiViewtest(APIView):
-#     @swagger_auto_schema(responses=api_docs.response_schema_dict,request_body=api_docs.val)
-#     def post(self,req):
 
-# from .models import TestModel
+# from .models import MerchantModel,RoleModel
+from sabpaisa import auth
+
+from datetime import datetime
 
 from .bank_services import ICICI_service
 
@@ -84,6 +86,7 @@ from sabpaisa import auth
 #     def get(self,req):
 #         pass
 class AuthAdmin(APIView):
+    @swagger_auto_schema(request_body=auth_docs.request_admin,responses=auth_docs.admin_response_dict)
     def post(self,req):
         request_obj = "path:: "+req.path+" :: headers::"+str(req.headers)+" :: meta_data:: "+str(req.META)+"data::"+str(req.data)
         user = req.data
@@ -129,10 +132,6 @@ class bankApiPaymentView(APIView):
     def post(self,req):
         request_obj = "path::"+req.path+"headers::"+str(req.headers)+"meta_data::"+str(req.META)+"data::"+str(req.data)
         # payment_service=IFDC_service.payment.Payment()
-        
-        
-        
-
         api_key = req.headers['auth_token']
         merchant_id=auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(api_key)
         encrypted_code=req.data["encrypted_code"]
@@ -339,20 +338,26 @@ class decryptJson(APIView):
         return Response({"message": "data", "data": str(encResp), "response_code": "3"}, status=status.HTTP_200_OK)
 
 class GetLogs(APIView):
+    @swagger_auto_schema(responses=log_docs.response_dict)
     def get(self,req,page,length):
         authKey = const.AuthKey
         authIV = const.AuthIV
         resp = req.headers["auth_token"]
+        
         merchant = auth.AESCipher(authKey,authIV).decrypt(resp)
-        clientModel = Client_model_service.Client_Model_Service.fetch_by_id(
-            id=merchant, created_by=str(merchant), client_ip_address=req.META['REMOTE_ADDR'])
+        clientModel=BO_user_services.BO_User_Service.fetch_by_id(id=merchant)
+        print(clientModel,"clientModel")
+        if clientModel == None:
+            return  Response({"message":"client not found"},status=status.HTTP_401_UNAUTHORIZED)
+        # clientModel = Client_model_service.Client_Model_Service.fetch_by_id(
+        #     id=merchant, created_by=str(merchant), client_ip_address=req.META['REMOTE_ADDR'])
         authKey = clientModel.auth_key
         authIV = clientModel.auth_iv
         request_obj = "path:: "+req.path+" :: headers::"+str(req.headers)+" :: meta_data:: "+str(req.META)+"data::"+str(req.data)
         logs = Log_model_services.Log_Model_Service(log_type="get request on "+req.path,client_ip_address=req.META['REMOTE_ADDR'],server_ip_address=const.server_ip,full_request=request_obj,remarks="get request on "+req.path+" for fetching the log records")
         logid=logs.save()
-        merchant=MerchantModel.objects.get(id=merchant)
-        role = RoleModel.objects.get(id=merchant.role)
+        # merchant=MerchantModel.objects.get(id=merchant)
+        role = RoleModel.objects.get(id=clientModel.role)
         try:
             if page=="all" and length != "all":
                 return JsonResponse({"Message":"page and length format does not match"},status=status.HTTP_406_NOT_ACCEPTABLE)
@@ -368,7 +373,7 @@ class GetLogs(APIView):
                 elif not const.test_merchants:
                   enc_data = auth.AESCipher(authKey, authIV).encrypt(str(logsser.data))
                 print(enc_data)
-                
+                print(authKey,authIV,"AUTH KEY , AUTH IV")
                 return Response({"data_length": len(logs), "data": auth.AESCipher(authKey, authIV).encrypt(str(logsser.data))})
             page=int(page)
             if page>logs[1]:
@@ -378,7 +383,7 @@ class GetLogs(APIView):
             Log_model_services.Log_Model_Service.update_response(logid, str({"data_length": len(
                 logs[0][page]), "data": logsser.data}))
             
-            print(merchant.id)
+            # print(merchant.id)
             enc_data=logsser.data
             print(enc_data)
             print(role.role_name)
@@ -389,8 +394,11 @@ class GetLogs(APIView):
                 print("else")
                 enc_data = auth.AESCipher(authKey, authIV).encrypt(str(logsser.data))
             print(enc_data)
+            print(authKey,authIV,"AUTH KEY , AUTH IV")
             return Response({"data_length": len(logs[0][page]), "data": enc_data})
         except Exception as e:
+            import traceback
+            print(traceback.format_exc())
             Log_model_services.Log_Model_Service.update_response(logid, str({"data_length": len(
                 logs[0][page]), "data": logsser.data}))
             return Response({"Message":"some error","Error":e.args})
@@ -492,7 +500,8 @@ class fetch(APIView):
 
 class paymentEnc(APIView):
     @swagger_auto_schema(request_body=payoutTransactionEnquiry_docs.request,responses=payoutTransactionEnquiry_docs.response_schema_dict)
-    def post(self,req):
+
+    def post(self,req):       
 
         try:
             data = req.data["query"]
@@ -501,7 +510,6 @@ class paymentEnc(APIView):
             merchant_id = auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(auth_token)
             print("merchant id :: "+merchant_id)
             clientModel = Client_model_service.Client_Model_Service.fetch_by_id(id=merchant_id, created_by="Merchant :: "+str(merchant_id), client_ip_address=req.META['REMOTE_ADDR'])
-            
             authKey = clientModel.auth_key
             authIV = clientModel.auth_iv
             encResp=data
@@ -510,7 +518,7 @@ class paymentEnc(APIView):
             if const.merchant_check and role.role_name!="test" :
              encResp = auth.AESCipher(authKey, authIV).decrypt(data)
             customer_ref = encResp.split(":")[1].replace('"','')
-            rec =ICICI_service.get_enc(customer_ref,req.META['REMOTE_ADDR'],created_by="Merchant id :: "+str(merchant_id))
+            rec =enquiry_service.get_enc(customer_ref,req.META['REMOTE_ADDR'],created_by="Merchant id :: "+str(merchant_id))
             if rec!=None:
                 res = {
                         'payoutTransactionId':rec.payout_trans_id,
@@ -539,7 +547,6 @@ class paymentEnc(APIView):
             print(traceback.format_exc())
             return Response({"message":e.args})
 
-      
 class tester(APIView):
     def get(self,request):
         authKey = const.AuthKey
@@ -571,15 +578,25 @@ class addBalanceApi(APIView):
             id=decMerchant, created_by=created_by, client_ip_address=request.META['REMOTE_ADDR'])
         authKey = clientModel.auth_key
         authIV = clientModel.auth_iv
+        #start
+        role = RoleModel.objects.get(id=clientModel.role)
+        if role.role_name=="test" :
+            print("hello")
+            decResp = request.data.get("query")
+            res = ast.literal_eval(str(decResp))
+            response = Ledger_Model_Service.addBal(res,client_ip_address=request.META['REMOTE_ADDR'],merchant = decMerchant,clientCode = clientModel.client_code)
+            return Response({"data":str(response),"responseCode":"1"})
+        #end
         decResp = auth.AESCipher(authKey, authIV).decrypt(query)
         res = ast.literal_eval(decResp)
-        response = Ledger_Model_Service.addBal(res,client_ip_address=request.META['REMOTE_ADDR'])
+        response = Ledger_Model_Service.addBal(res,client_ip_address=request.META['REMOTE_ADDR'],merchant = decMerchant,clientCode = clientModel.client_code)
+        print(authKey+" "+authIV)
         encResponse = auth.AESCipher(authKey, authIV).encrypt(response)
         Log_model_services.Log_Model_Service.update_response(
             logid, {"Message": str(encResponse), "response_code": "1"})
         return Response({"message": "data saved succefully", "data": str(encResponse), "response_code": "1"}, status=status.HTTP_200_OK)
 class LoginRequestAdminAPI(APIView):
-    @swagger_auto_schema(request_body=auth_docs.request,responses=auth_docs.response_schema_dict)
+    @swagger_auto_schema(request_body=login_docs.request_admin,responses=login_docs.response_login_request)
     def post(self,req):
         request_obj = "path:: "+req.path+" :: headers::"+str(req.headers)+" :: meta_data:: "+str(req.META)+"data::"+str(req.data)
         logs = Log_model_services.Log_Model_Service(log_type="post request on "+req.path,client_ip_address=req.META['REMOTE_ADDR'],server_ip_address=const.server_ip,full_request=request_obj,remarks="get request on "+req.path+" for fetching the log records")
@@ -593,13 +610,13 @@ class LoginRequestAdminAPI(APIView):
                 return Response({"message":"User Not Found","response_code":"0"},status=status.HTTP_400_BAD_REQUEST)
             else:
                 Log_model_services.Log_Model_Service.update_response(logid,{"message":"OTP sent","verification_token":res,"response_code":"1"})
-                return Response({"message":"OTP sent to mail","verification_token":res,"response_code":"1"},status=status.HTTP_200_OK)
+                return Response({"message":"OTP sent ","verification_token":res,"response_code":"1"},status=status.HTTP_200_OK)
         except Exception as e:
             Log_model_services.Log_Model_Service.update_response(logid,{"message":"Some error occured","Error_Code":e.args,"response_code":"2"})
             return Response({"message":"Some error occured","Error_Code":e.args,"response_code":"2"},status=status.HTTP_409_CONFLICT)
 
 class LoginRequestAPI(APIView):
-    @swagger_auto_schema(request_body=auth_docs.request,responses=auth_docs.response_schema_dict)
+    @swagger_auto_schema(request_body=login_docs.request,responses=login_docs.response_login_request)
     def post(self,req):
         request_obj = "path:: "+req.path+" :: headers::"+str(req.headers)+" :: meta_data:: "+str(req.META)+"data::"+str(req.data)
         logs = Log_model_services.Log_Model_Service(log_type="post request on "+req.path,client_ip_address=req.META['REMOTE_ADDR'],server_ip_address=const.server_ip,full_request=request_obj,remarks="get request on "+req.path+" for fetching the log records")
@@ -613,12 +630,13 @@ class LoginRequestAPI(APIView):
                 return Response({"message":"User Not Found","response_code":"0"},status=status.HTTP_400_BAD_REQUEST)
             else:
                 Log_model_services.Log_Model_Service.update_response(logid,{"message":"OTP sent","verification_token":res,"response_code":"1"})
-                return Response({"message":"OTP sent to mail","verification_token":res,"response_code":"1"},status=status.HTTP_200_OK)
+                return Response({"message":"OTP sent ","verification_token":res,"response_code":"1"},status=status.HTTP_200_OK)
         except Exception as e:
             Log_model_services.Log_Model_Service.update_response(logid,{"message":"Some error occured","Error_Code":e.args,"response_code":"2"})
             return Response({"message":"Some error occured","Error_Code":e.args,"response_code":"2"},status=status.HTTP_409_CONFLICT)
 
 class LoginVerificationAPI(APIView):
+    @swagger_auto_schema(request_body=login_docs.verification,responses=login_docs.response_login_verification)
     def post(self,req):
         request_obj = "path:: "+req.path+" :: headers::"+str(req.headers)+" :: meta_data:: "+str(req.META)+"data::"+str(req.data)
         logs = Log_model_services.Log_Model_Service(log_type="post request on "+req.path,client_ip_address=req.META['REMOTE_ADDR'],server_ip_address=const.server_ip,full_request=request_obj,remarks="get request on "+req.path+" for fetching the log records")
@@ -634,8 +652,8 @@ class LoginVerificationAPI(APIView):
             else:
                 # print(str(login[0]))
                 api_key=auth.AESCipher(const.AuthKey,const.AuthIV).encrypt(str(login["user_id"]))
-                Log_model_services.Log_Model_Service.update_response(logid,{"api_key":str(api_key)[2:].replace("'",""),"response_code":"1"})
-                return Response({"api_key":str(api_key)[2:].replace("'",""),"jwt_token":login["jwt_token"],"user_token":login['user_token'],"response_code":"1"},status=status.HTTP_200_OK)
+                Log_model_services.Log_Model_Service.update_response(logid,{"auth_token":str(api_key)[2:].replace("'",""),"response_code":"1"})
+                return Response({"auth_token":str(api_key)[2:].replace("'",""),"jwt_token":login["jwt_token"],"user_token":login['user_token'],"response_code":"1"},status=status.HTTP_200_OK)
         except Exception as e:
             import traceback
             print(traceback.format_exc())
@@ -658,9 +676,41 @@ class ResendLoginOTP(APIView):
             return Response({"Error":e.args,"response_code":'2'},status=status.HTTP_400_BAD_REQUEST)
         
 class fetchBeneficiary(APIView):
-    def get(self,request):
-        
-        return Response({"msg":"done","data":list(BeneficiaryModel.objects.filter().all().values()),"response_code":'1'},status=status.HTTP_200_OK)
+    @swagger_auto_schema(request_body=addBeneficiary_docs.fetch_request,responses=addBeneficiary_docs.fetch_response)
+    def post(self,request):
+        auth_token = request.headers["auth_token"]
+        merchantId = auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(auth_token)
+        clientModel = Client_model_service.Client_Model_Service.fetch_by_id(
+            id=merchantId, created_by="merchantid :: "+merchantId, client_ip_address=request.META['REMOTE_ADDR'])
+        authKey = clientModel.auth_key
+        authIV = clientModel.auth_iv
+        query = request.data.get("query")
+        role = RoleModel.objects.get(id=clientModel.role)
+        decResp = str(request.data.get("query"))
+        account_number=None
+        ifsc_code=None
+        merchant_id=None
+        #"query":"CARw8RxXinePTv1Chqa/r5EFTapOpkhtv1MrYXrgalG/X2UIFH8XCek14Bn7uv/Wkq/uf3VlWgLoA4F1oY6RXv7A6qFYNQzdac5nS8oylt0="
+        role = RoleModel.objects.get(id=clientModel.role)
+        if role.role_name=="test" :
+            account_number = request.data.get("account_number")
+            ifsc_code = request.data.get("ifsc_code")
+            merchant_id = request.data.get("merchant_id")
+            service = Beneficiary_Model_Services(account_number=account_number,ifsc_code=ifsc_code,merchant_id=merchant_id)
+            response= list(service.fetchBeneficiaryByParams())
+            return Response({"data":str(response),"responseCode":"1"})
+        decQuery = auth.AESCipher(authKey,authIV).decrypt(query).split("'")
+        print(".......... ",decQuery)
+        if(decQuery[1] == "account_number"):
+            account_number = decQuery[3]
+        if(decQuery[5]=="ifsc_code"):
+            ifsc_code=decQuery[7]
+        if(decQuery[9]=="merchant_id"):
+            merchant_id=decQuery[11]
+        service = Beneficiary_Model_Services(account_number=account_number,ifsc_code=ifsc_code,merchant_id=merchant_id)
+        response= list(service.fetchBeneficiaryByParams())
+        encResponse = auth.AESCipher(authKey,authIV).encrypt(str(response))
+        return Response({"data":str(encResponse),"responseCode":"1"})
 
 class updateBeneficiary(APIView):
     def put(self,request):
@@ -689,7 +739,25 @@ class deleteBeneficiary(APIView):
         BeneficiaryModel.objects.filter(id=id).delete()
         return Response({"msg":"done","response_code":'1'},status=status.HTTP_200_OK)
 
-
+class addSingleBeneficiary(APIView):
+    @swagger_auto_schema(request_body=addBeneficiary_docs.single_bene,responses=addBeneficiary_docs.single_bene_response)
+    def post(self, request):
+        auth_token = request.headers.get("auth_token")
+        merchantId = auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(auth_token)
+        clientModel = Client_model_service.Client_Model_Service.fetch_by_id(
+            id=merchantId, created_by="merchantid :: "+merchantId, client_ip_address=request.META['REMOTE_ADDR'])
+        authKey = clientModel.auth_key
+        authIV = clientModel.auth_iv
+        role = RoleModel.objects.get(id=clientModel.role)
+        decResp = str(request.data.get("query"))
+        if role.role_name!="test" :
+            decResp = auth.AESCipher(authKey, authIV).decrypt(decResp)
+        res = ast.literal_eval(decResp)
+        print(res.get("full_name"))
+        service = Beneficiary_Model_Services(full_name=res.get("full_name"),account_number=res.get("account_number"),ifsc_code=res.get("ifsc_code"),merchant_id=res.get("merchant_id"))
+        service.save()
+        return Response({"msg":"data saved to database","response_code":'1'},status=status.HTTP_200_OK)
+        
 class saveBeneficiary(APIView):
     @swagger_auto_schema(request_body=addBeneficiary_docs.request,responses=addBeneficiary_docs.response_schema_dict)
     def post(self, request, format=None):
@@ -698,25 +766,27 @@ class saveBeneficiary(APIView):
         try:
             excel_file = request.FILES["files"]
         except MultiValueDictKeyError:
-            return Response({"msg":"not done","response_code":'1'},status=status.HTTP_400_BAD_REQUEST)
-        if (str(excel_file).split(".")[-1] == "xls"):
-            data = xls_get(excel_file, column_limit=4)
-        elif (str(excel_file).split(".")[-1] == "xlsx"):
-            data = xlsx_get(excel_file, column_limit=4)
-        datas = data["Sheet1"]
-        full_name = str()
-        account_number=str()
-        ifsc_code=str()
-        merchant_id=str()
-        for d in datas:
-            if(d[0]!="full_name"):
-                full_name = d[0]
-                account_number = d[1]
-                ifsc_code = d[2]
-                merchant_id = d[3]
-                resultSet = BeneficiaryModel.objects.filter(merchant_id=int(merchantId),account_number=account_number,ifsc_code=ifsc_code)
-                if(len(resultSet)==0 and merchant_id==int(merchantId)):
-                 print("added")
-                 service = Beneficiary_Model_Services(full_name=full_name,account_number=account_number,ifsc_code=ifsc_code,merchant_id=merchant_id)
-                 service.save()
-        return Response({"msg":"data parsed and saved to database","response_code":'1'},status=status.HTTP_200_OK)
+            return Response({"msg":"not done","response_code":'0'},status=status.HTTP_400_BAD_REQUEST)
+        try:
+            if (str(excel_file).split(".")[-1] == "xls"):
+                data = xls_get(excel_file, column_limit=4)
+            elif (str(excel_file).split(".")[-1] == "xlsx"):
+                data = xlsx_get(excel_file, column_limit=4)
+            datas = data["Sheet1"]
+            full_name = str()
+            account_number=str()
+            ifsc_code=str()
+            merchant_id=str()
+            for d in datas:
+                if(d[0]!="full_name"):
+                    full_name = d[0]
+                    account_number = d[1]
+                    ifsc_code = d[2]
+                    merchant_id = d[3]
+                    resultSet = BeneficiaryModel.objects.filter(merchant_id=int(merchantId),account_number=account_number,ifsc_code=ifsc_code)
+                    if(len(resultSet)==0 and merchant_id==int(merchantId)):
+                        service = Beneficiary_Model_Services(full_name=full_name,account_number=account_number,ifsc_code=ifsc_code,merchant_id=merchant_id)
+                        service.save()
+            return Response({"msg":"data parsed and saved to database","response_code":'1'},status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"Message":"some error","Error":e.args})

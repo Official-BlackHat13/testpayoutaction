@@ -7,19 +7,14 @@ response_login_request = {
         description="custom 200 description",
         examples={
             "application/json": {
-    "message": "user created",
-    "merchant_id":"client merchant id",
-    "response_code": "1",
-    "CLIENT_AUTH_KEY": "client auth key",
-    "CLIENT_AUTH_IV": "client auth iv",
-    "token": {
-        "refresh": "refresh token",
-        "access": "access token"
-    }
+    "message": "OTP sent ",
+    "verification_token": "verification-token",
+    "response_code": "1"
+}
 }
             
 
-        }
+        
     ),
     "409": openapi.Response(
         description="custom 402 description",
@@ -39,19 +34,21 @@ response_login_verification = {
         description="custom 200 description",
         examples={
             "application/json": {
-    "message": "user created",
-    "merchant_id":"client merchant id",
-    "response_code": "1",
-    "CLIENT_AUTH_KEY": "client auth key",
-    "CLIENT_AUTH_IV": "client auth iv",
-    "token": {
+    "auth-token": "auth-token",
+    "jwt_token": {
         "refresh": "refresh token",
         "access": "access token"
-    }
+    },
+    "user_token": {
+        "login_token": "login-token",
+        "tab_login": "tab-token"
+    },
+    "response_code": "1"
+}
 }
             
 
-        }
+        
     ),
     "409": openapi.Response(
         description="custom 402 description",
@@ -83,3 +80,23 @@ request_admin=openapi.Schema(
         
     
     })
+verification=openapi.Schema(
+    type=openapi.TYPE_OBJECT, 
+    properties={
+        "otp":openapi.Schema(type=openapi.TYPE_STRING, description='string'),
+    "geo_location":openapi.Schema(type=openapi.TYPE_STRING, description='string'),
+  "verification_code":openapi.Schema(type=openapi.TYPE_STRING, description='string'),
+        
+    
+    })
+
+# verification=openapi.Schema(
+#     type=openapi.TYPE_OBJECT, 
+#     properties={
+#         {
+#     "otp":openapi.Schema(type=openapi.TYPE_STRING, description='string'),
+#     "geo_location":openapi.Schema(type=openapi.TYPE_STRING, description='string'),
+#     "verification_code":openapi.Schema(type=openapi.TYPE_STRING, description='string'),
+# }
+    
+#     })
