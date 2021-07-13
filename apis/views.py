@@ -19,6 +19,8 @@ from rest_framework.views import APIView
 from rest_framework.response import *
 from rest_framework import status
 from drf_yasg.utils import swagger_auto_schema
+
+from apis.database_service import Beneficiary_model_services
 from .API_docs import payout_docs,auth_docs,login_docs,payoutTransactionEnquiry_docs,addBalance_docs,addBeneficiary_docs
 from datetime import datetime
 from .serializersFolder.serializers import LogsSerializer
@@ -39,13 +41,9 @@ from django.contrib.auth.models import User
 from rest_framework.permissions import IsAuthenticated
 from . import const
 from .Utils import randomstring
+from .models import MerchantModel,RoleModel
 from sabpaisa import auth
 from datetime import datetime
-# class bankApiViewtest(APIView):
-#     @swagger_auto_schema(responses=api_docs.response_schema_dict,request_body=api_docs.val)
-#     def post(self,req):
-
-# from .models import TestModel
 
 
 
@@ -107,6 +105,7 @@ class bankApiPaymentView(APIView):
         api_key = req.headers['auth_token']
         merchant_id=auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(api_key)
         encrypted_code=req.data["encrypted_code"]
+        
         log = Log_model_services.Log_Model_Service(log_type="Post request at "+req.path+" slug",client_ip_address=req.META['REMOTE_ADDR'],server_ip_address=const.server_ip,full_request=request_obj)
         logid=log.save()
         client = Client_model_service.Client_Model_Service.fetch_by_id(merchant_id,req.META['REMOTE_ADDR'],"merchant id :: "+merchant_id)
@@ -121,7 +120,13 @@ class bankApiPaymentView(APIView):
         else:
             res = payout.excuteIDFC()
         if(res[0]=="Payout Done"):
-            enc_str=str(auth.AESCipher(client.auth_key,client.auth_iv).encrypt(str(res[1])))[2:].replace("'","")
+            merchant=MerchantModel.objects.get(id=merchant_id)
+            role = RoleModel.objects.get(id=merchant.role)
+            enc_str=res[1]
+            if const.test_merchants and role.role_name!="test":
+             enc_str=str(auth.AESCipher(client.auth_key,client.auth_iv).encrypt(str(res[1])))[2:].replace("'","")
+            elif not const.test_merchants:
+                enc_data = str(auth.AESCipher(client.auth_key, client.auth_iv).encrypt(str(res[1])))[2:].replace("'","")
             Log_model_services.Log_Model_Service.update_response(logid,{"Message":res,"response_code":"1"})
             return Response({"Message":"Payout Done",'resData':enc_str,"response_code":"1"},status=status.HTTP_200_OK)
         elif (res[0]=="Not Sufficent Balance"):
@@ -306,7 +311,7 @@ class GetLogs(APIView):
     def get(self,req,page,length):
         authKey = const.AuthKey
         authIV = const.AuthIV
-        resp = req.headers["merchant"]
+        resp = req.headers["auth_token"]
         merchant = auth.AESCipher(authKey,authIV).decrypt(resp)
         clientModel = Client_model_service.Client_Model_Service.fetch_by_id(
             id=merchant, created_by=str(merchant), client_ip_address=req.META['REMOTE_ADDR'])
@@ -315,6 +320,8 @@ class GetLogs(APIView):
         request_obj = "path:: "+req.path+" :: headers::"+str(req.headers)+" :: meta_data:: "+str(req.META)+"data::"+str(req.data)
         logs = Log_model_services.Log_Model_Service(log_type="get request on "+req.path,client_ip_address=req.META['REMOTE_ADDR'],server_ip_address=const.server_ip,full_request=request_obj,remarks="get request on "+req.path+" for fetching the log records")
         logid=logs.save()
+        merchant=MerchantModel.objects.get(id=merchant)
+        role = RoleModel.objects.get(id=merchant.role)
         try:
             if page=="all" and length != "all":
                 return JsonResponse({"Message":"page and length format does not match"},status=status.HTTP_406_NOT_ACCEPTABLE)
@@ -323,6 +330,14 @@ class GetLogs(APIView):
             print(logs)
             if page == "all":
                 logsser=LogsSerializer(logs,many=True)
+                enc_data=logsser.data
+                print(role.role_name)
+                if const.merchant_check and role.role_name!="test" :
+                  enc_data = auth.AESCipher(authKey, authIV).encrypt(str(logsser.data))
+                elif not const.merchant_check:
+                  enc_data = auth.AESCipher(authKey, authIV).encrypt(str(logsser.data))
+                print(enc_data)
+                
                 return Response({"data_length": len(logs), "data": auth.AESCipher(authKey, authIV).encrypt(str(logsser.data))})
             page=int(page)
             if page>logs[1]:
@@ -331,7 +346,19 @@ class GetLogs(APIView):
             print(logs[0][page])
             Log_model_services.Log_Model_Service.update_response(logid, str({"data_length": len(
                 logs[0][page]), "data": logsser.data}))
-            return Response({"data_length": len(logs[0][page]), "data": auth.AESCipher(authKey, authIV).encrypt(str(logsser.data))})
+            
+            print(merchant.id)
+            enc_data=logsser.data
+            print(enc_data)
+            print(role.role_name)
+            if const.test_merchants and role.role_name!="test" :
+             print("if")
+             enc_data = auth.AESCipher(authKey, authIV).encrypt(str(logsser.data))
+            elif not const.test_merchants:
+                print("else")
+                enc_data = auth.AESCipher(authKey, authIV).encrypt(str(logsser.data))
+            print(enc_data)
+            return Response({"data_length": len(logs[0][page]), "data": enc_data})
         except Exception as e:
             Log_model_services.Log_Model_Service.update_response(logid, str({"data_length": len(
                 logs[0][page]), "data": logsser.data}))
@@ -434,34 +461,50 @@ class fetch(APIView):
 
 class paymentEnc(APIView):
     @swagger_auto_schema(request_body=payoutTransactionEnquiry_docs.request,responses=payoutTransactionEnquiry_docs.response_schema_dict)
-    def post(self,req):
-        data = req.data["query"]
-        auth_token = req.headers["auth_token"]
-        merchant_id = auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(auth_token)
-        clientModel = Client_model_service.Client_Model_Service.fetch_by_id(id=merchant_id, created_by="Merchant :: "+str(merchant_id), client_ip_address=req.META['REMOTE_ADDR'])
-        authKey = clientModel.auth_key
-        authIV = clientModel.auth_iv
-        encResp = auth.AESCipher(authKey, authIV).decrypt(data)
-        customer_ref = encResp.split(":")[1].replace('"','')
-        rec =enquiry_service.get_enc(customer_ref,req.META['REMOTE_ADDR'],created_by="Merchant id :: "+str(merchant_id))
-        if rec!=None:
-            res = {
-                    'payoutTransactionId':rec.payout_trans_id,
-                    'amount': rec.amount,
-                    'transType': rec.trans_type,
-                    'statusType': rec.type_status,
-                    'bankRefNo': rec.bank_ref_no,
-                    'orderId': rec.customer_ref_no,
-                    'beneficiaryAccountName': rec.bene_account_name,
-                    'beneficiaryAccountNumber': rec.bene_account_number,
-                    'beneficiaryIFSC': rec.bene_ifsc,
-                    'transStatus': rec.trans_status,
-                    'mode': rec.mode
-                }
-            enc = str(auth.AESCipher(authKey,authIV).encrypt(str(res)))[2:].replace("'","")
-            return Response({"message": "data found","resData": enc,"responseCode": "1"})
-        else:
-            return Response({"message":"NOT_FOUND","response_code":"0"})
+    def post(self,req):       
+        try:
+            data = req.data["query"]
+            auth_token = req.headers["auth_token"]
+            print("auth token :: "+auth_token)
+            merchant_id = auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(auth_token)
+            print("merchant id :: "+merchant_id)
+            clientModel = Client_model_service.Client_Model_Service.fetch_by_id(id=merchant_id, created_by="Merchant :: "+str(merchant_id), client_ip_address=req.META['REMOTE_ADDR'])
+            authKey = clientModel.auth_key
+            authIV = clientModel.auth_iv
+            encResp=data
+            merchant=MerchantModel.objects.get(id=merchant_id)
+            role = RoleModel.objects.get(id=merchant.role)
+            if const.merchant_check and role.role_name!="test" :
+             encResp = auth.AESCipher(authKey, authIV).decrypt(data)
+            customer_ref = encResp.split(":")[1].replace('"','')
+            rec =enquiry_service.get_enc(customer_ref,req.META['REMOTE_ADDR'],created_by="Merchant id :: "+str(merchant_id))
+            if rec!=None:
+                res = {
+                        'payoutTransactionId':rec.payout_trans_id,
+                        'amount': rec.amount,
+                        'transType': rec.trans_type,
+                        'statusType': rec.type_status,
+                        'bankRefNo': rec.bank_ref_no,
+                        'orderId': rec.customer_ref_no,
+                        'beneficiaryAccountName': rec.bene_account_name,
+                        'beneficiaryAccountNumber': rec.bene_account_number,
+                        'beneficiaryIFSC': rec.bene_ifsc,
+                        'transStatus': rec.trans_status,
+                        'mode': rec.mode
+                    }
+                enc = res
+                print("roleName :: "+role.role_name)
+                if const.test_merchants and role.role_name!="test":
+                 enc = str(auth.AESCipher(authKey,authIV).encrypt(str(res)))[2:].replace("'","")
+                elif not const.test_merchants:
+                    enc = str(auth.AESCipher(authKey,authIV).encrypt(str(res)))[2:].replace("'","")
+                return Response({"message": "data found","resData": enc,"responseCode": "1"})
+            else:
+                return Response({"message":"NOT_FOUND","response_code":"0"})
+        except Exception as e:
+            import traceback
+            print(traceback.format_exc())
+            return Response({"message":e.args})
 class tester(APIView):
     def get(self,request):
         authKey = const.AuthKey
@@ -493,9 +536,19 @@ class addBalanceApi(APIView):
             id=decMerchant, created_by=created_by, client_ip_address=request.META['REMOTE_ADDR'])
         authKey = clientModel.auth_key
         authIV = clientModel.auth_iv
+        #start
+        role = RoleModel.objects.get(id=clientModel.role)
+        if role.role_name=="test" :
+            print("hello")
+            decResp = request.data.get("query")
+            res = ast.literal_eval(str(decResp))
+            response = Ledger_Model_Service.addBal(res,client_ip_address=request.META['REMOTE_ADDR'],merchant = decMerchant,clientCode = clientModel.client_code)
+            return Response({"data":str(response),"responseCode":"1"})
+        #end
         decResp = auth.AESCipher(authKey, authIV).decrypt(query)
         res = ast.literal_eval(decResp)
-        response = Ledger_Model_Service.addBal(res,client_ip_address=request.META['REMOTE_ADDR'])
+        response = Ledger_Model_Service.addBal(res,client_ip_address=request.META['REMOTE_ADDR'],merchant = decMerchant,clientCode = clientModel.client_code)
+        print(authKey+" "+authIV)
         encResponse = auth.AESCipher(authKey, authIV).encrypt(response)
         Log_model_services.Log_Model_Service.update_response(
             logid, {"Message": str(encResponse), "response_code": "1"})
@@ -560,9 +613,40 @@ class ResendLoginOTP(APIView):
             return Response({"Error":e.args,"response_code":'2'},status=status.HTTP_400_BAD_REQUEST)
         
 class fetchBeneficiary(APIView):
-    def get(self,request):
-        
-        return Response({"msg":"done","data":list(BeneficiaryModel.objects.filter().all().values()),"response_code":'1'},status=status.HTTP_200_OK)
+    def post(self,request):
+        auth_token = request.headers["auth_token"]
+        merchantId = auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(auth_token)
+        clientModel = Client_model_service.Client_Model_Service.fetch_by_id(
+            id=merchantId, created_by="merchantid :: "+merchantId, client_ip_address=request.META['REMOTE_ADDR'])
+        authKey = clientModel.auth_key
+        authIV = clientModel.auth_iv
+        query = request.data.get("query")
+        role = RoleModel.objects.get(id=clientModel.role)
+        decResp = str(request.data.get("query"))
+        account_number=None
+        ifsc_code=None
+        merchant_id=None
+        #"query":"CARw8RxXinePTv1Chqa/r5EFTapOpkhtv1MrYXrgalG/X2UIFH8XCek14Bn7uv/Wkq/uf3VlWgLoA4F1oY6RXv7A6qFYNQzdac5nS8oylt0="
+        role = RoleModel.objects.get(id=clientModel.role)
+        if role.role_name=="test" :
+            account_number = request.data.get("account_number")
+            ifsc_code = request.data.get("ifsc_code")
+            merchant_id = request.data.get("merchant_id")
+            service = Beneficiary_Model_Services(account_number=account_number,ifsc_code=ifsc_code,merchant_id=merchant_id)
+            response= list(service.fetchBeneficiaryByParams())
+            return Response({"data":str(response),"responseCode":"1"})
+        decQuery = auth.AESCipher(authKey,authIV).decrypt(query).split("'")
+        print(".......... ",decQuery)
+        if(decQuery[1] == "account_number"):
+            account_number = decQuery[3]
+        if(decQuery[5]=="ifsc_code"):
+            ifsc_code=decQuery[7]
+        if(decQuery[9]=="merchant_id"):
+            merchant_id=decQuery[11]
+        service = Beneficiary_Model_Services(account_number=account_number,ifsc_code=ifsc_code,merchant_id=merchant_id)
+        response= list(service.fetchBeneficiaryByParams())
+        encResponse = auth.AESCipher(authKey,authIV).encrypt(str(response))
+        return Response({"data":str(encResponse),"responseCode":"1"})
 
 class updateBeneficiary(APIView):
     def put(self,request):
@@ -591,7 +675,24 @@ class deleteBeneficiary(APIView):
         BeneficiaryModel.objects.filter(id=id).delete()
         return Response({"msg":"done","response_code":'1'},status=status.HTTP_200_OK)
 
-
+class addSingleBeneficiary(APIView):
+    def post(self, request):
+        auth_token = request.headers.get("auth_token")
+        merchantId = auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(auth_token)
+        clientModel = Client_model_service.Client_Model_Service.fetch_by_id(
+            id=merchantId, created_by="merchantid :: "+merchantId, client_ip_address=request.META['REMOTE_ADDR'])
+        authKey = clientModel.auth_key
+        authIV = clientModel.auth_iv
+        role = RoleModel.objects.get(id=clientModel.role)
+        decResp = str(request.data.get("query"))
+        if role.role_name!="test" :
+            decResp = auth.AESCipher(authKey, authIV).decrypt(decResp)
+        res = ast.literal_eval(decResp)
+        print(res.get("full_name"))
+        service = Beneficiary_Model_Services(full_name=res.get("full_name"),account_number=res.get("account_number"),ifsc_code=res.get("ifsc_code"),merchant_id=res.get("merchant_id"))
+        service.save()
+        return Response({"msg":"data saved to database","response_code":'1'},status=status.HTTP_200_OK)
+        
 class saveBeneficiary(APIView):
     @swagger_auto_schema(request_body=addBeneficiary_docs.request,responses=addBeneficiary_docs.response_schema_dict)
     def post(self, request, format=None):
@@ -600,25 +701,27 @@ class saveBeneficiary(APIView):
         try:
             excel_file = request.FILES["files"]
         except MultiValueDictKeyError:
-            return Response({"msg":"not done","response_code":'1'},status=status.HTTP_400_BAD_REQUEST)
-        if (str(excel_file).split(".")[-1] == "xls"):
-            data = xls_get(excel_file, column_limit=4)
-        elif (str(excel_file).split(".")[-1] == "xlsx"):
-            data = xlsx_get(excel_file, column_limit=4)
-        datas = data["Sheet1"]
-        full_name = str()
-        account_number=str()
-        ifsc_code=str()
-        merchant_id=str()
-        for d in datas:
-            if(d[0]!="full_name"):
-                full_name = d[0]
-                account_number = d[1]
-                ifsc_code = d[2]
-                merchant_id = d[3]
-                resultSet = BeneficiaryModel.objects.filter(merchant_id=int(merchantId),account_number=account_number,ifsc_code=ifsc_code)
-                if(len(resultSet)==0 and merchant_id==int(merchantId)):
-                 print("added")
-                 service = Beneficiary_Model_Services(full_name=full_name,account_number=account_number,ifsc_code=ifsc_code,merchant_id=merchant_id)
-                 service.save()
-        return Response({"msg":"data parsed and saved to database","response_code":'1'},status=status.HTTP_200_OK)
+            return Response({"msg":"not done","response_code":'0'},status=status.HTTP_400_BAD_REQUEST)
+        try:
+            if (str(excel_file).split(".")[-1] == "xls"):
+                data = xls_get(excel_file, column_limit=4)
+            elif (str(excel_file).split(".")[-1] == "xlsx"):
+                data = xlsx_get(excel_file, column_limit=4)
+            datas = data["Sheet1"]
+            full_name = str()
+            account_number=str()
+            ifsc_code=str()
+            merchant_id=str()
+            for d in datas:
+                if(d[0]!="full_name"):
+                    full_name = d[0]
+                    account_number = d[1]
+                    ifsc_code = d[2]
+                    merchant_id = d[3]
+                    resultSet = BeneficiaryModel.objects.filter(merchant_id=int(merchantId),account_number=account_number,ifsc_code=ifsc_code)
+                    if(len(resultSet)==0 and merchant_id==int(merchantId)):
+                        service = Beneficiary_Model_Services(full_name=full_name,account_number=account_number,ifsc_code=ifsc_code,merchant_id=merchant_id)
+                        service.save()
+            return Response({"msg":"data parsed and saved to database","response_code":'1'},status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"Message":"some error","Error":e.args})

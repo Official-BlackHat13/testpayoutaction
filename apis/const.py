@@ -17,4 +17,9 @@ AuthIV = "4OqmI5rR7KOm6RmY"
 paytm_subwalletGuid = "4957c207-dafa-11eb-bbc6-fa163e429e83"
 paytm_merchant_id = "SubPai61513678214850"
 paytm_merchant_key = "@B0h97BGQ#YC_lIE"
+
 email_api = "https://adminapi.sabpaisa.in/REST/Email/sendEmail"
+
+test_merchants=True
+bank_ref_no = "1986517"
+bank=11

@@ -45,11 +45,11 @@ urlpatterns = [
     path("loginrequest/",views.LoginRequestAPI.as_view()),
     path("loginverified/",views.LoginVerificationAPI.as_view()),
     path("resendotp/",views.ResendLoginOTP.as_view()),
-   #  path("saveBeneficiary/",views.saveBeneficiary.as_view()),
+    path("addBeneficiary/",views.addSingleBeneficiary.as_view()),
     path("fetchBeneficiary/",views.fetchBeneficiary.as_view()),
     path("updateBeneficiary/",views.updateBeneficiary.as_view()),
     path("deleteBeneficiary/",views.deleteBeneficiary.as_view()),
-    path("addBeneficiary/",views.saveBeneficiary.as_view())
+    path("addBeneficiaries/",views.saveBeneficiary.as_view())
    #  path("testicic/",)
    #  path("createTest",views.getTest.as_view()),
    #  path("updateTest/<int:id>",views.updateTest.as_view()),

@@ -12,6 +12,7 @@ from ..database_service.Log_model_services import Log_Model_Service
 from ..bank_models.PAYTM_Model import payment_request_model as paytm_request_model
 from ..bank_models.PAYTM_Model import payment_response_model as paytm_response_model
 from ..bank_models.PAYTM_Model import paytm_extra
+from ..models import RoleModel,MerchantModel
 from .. import const
 from ..Utils import generater
 from ..RequestModels.payoutrequestmodel import PayoutRequestModel
@@ -32,7 +33,16 @@ class PayoutService:
             clientModel=clientModelService.fetch_by_id(self.merchant_id,self.client_ip_address,"Merchant_Id ::"+str(self.merchant_id))
             authKey=clientModel.auth_key
             authIV=clientModel.auth_iv
-            query=auth.AESCipher(authKey,authIV).decrypt(self.encrypted_code)
+            # auth_token = req.headers["auth_token"]
+            # merchant_id= auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(auth_token)
+            merchant=MerchantModel.objects.get(id=self.merchant_id)
+            role = RoleModel.objects.get(id=merchant.role)
+            query=self.encrypted_code
+            if const.test_merchants and role.role_name!="test" :
+
+             query=auth.AESCipher(authKey,authIV).decrypt(self.encrypted_code)
+            elif not const.test_merchants:
+                enc_data = auth.AESCipher(authKey, authIV).decrypt(self.encrypted_code)
             map=splitString.StringToMap(query)
             print(str(map))
             # if map["usern"]!=clientModel.client_username and map["pass"]!=clientModel.client_password:
