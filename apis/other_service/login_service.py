@@ -73,35 +73,51 @@ class Login_service:
   "toCc": "",
   "subject": "OTP for Sabpaisa Payout",
   "msg": "Please find the otp for your payout login request "+str(otp)})
-            response_sms=requests.post(const.sms_api(user.phone,str(otp)))
+            response_sms=requests.post(const.sms_api(user.phone,str(otp),user.client_username))
             ExpireOTP().start()
             return otp_service.verification_token
     @staticmethod
-    def login_verification(verification_token,otp,client_ip_address,geo_location):
+    def login_verification(verification_token,otp,client_ip_address,geo_location,type):
         record = Otp_Model_Services.fetch_by_verification_token_with_otp(verification_token,otp)
         # print("record--> :: "+str(record[0].user))
         
-        if record[0]=="OTP Expired" :
+        if len(record)>0 and record[0]=="OTP Expired":
             return record[0]
-        elif len(record)==0 :
+        elif len(record)==0:
             return False
         else:
-            client=Client_Model_Service.fetch_by_id(record[0].user,client_ip_address,created_by="merchant_id::"+str(record[0].user))
+            if type=="back_office":
+                client=BO_User_Service.fetch_by_id(record[0].user)
+                username=client.username
+                password=client.password
+            else:
+             client=Client_Model_Service.fetch_by_id(record[0].user,client_ip_address,created_by="merchant_id::"+str(record[0].user))
+             username=client.client_username
+             password=client.client_password
             print("record--> :: "+str(record[0].user))
-            res = requests.post(const.domain+"api/token/",json={"username":client.client_username,"password":client.client_password})
+            res = requests.post(const.domain+"api/token/",json={"username":username,"password":password})
             val_dic=UserActive_Model_Service(client.id,active_status="active",login_status="active",client_ip_address=client_ip_address,login_time=datetime.now(),login_expire_time=datetime.now()+timedelta(days=3),geo_location=geo_location).save()
             Otp_Model_Services.update_status(record[0].id,"Verified")
             return {"user_id":record[0].user,"jwt_token":res.json(),"user_token":{"login_token":val_dic["login_token"],"tab_login":val_dic["tab_token"]}}
     @staticmethod
-    def resend_otp(verification_token,client_ip_address):
+    def resend_otp(verification_token,client_ip_address,type):
         record = Otp_Model_Services.fetch_by_verification_only(verification_token)
         if(record==None):
             raise Exception("Verfication token not valid")
         print(record.user)
-        user = Client_Model_Service.fetch_by_id(record.user,client_ip_address,"merchant_id :: "+str(record.user))
-        
+        if type=="back_office":
+            user=BO_User_Service.fetch_by_id(record[0].user)
+            username=user.username
+            password=user.password
+        else:
+         user = Client_Model_Service.fetch_by_id(record.user,client_ip_address,"merchant_id :: "+str(record.user))
+         username=user.client_username
+         password=user.client_password
         # print(record[0].user)
-        token=Login_service(username=user.client_username,password=user.client_password,client_ip_address=client_ip_address).login_request()
+        if type=="back_office":
+            token=Login_service(username=username,password=password,client_ip_address=client_ip_address).login_request_admin()
+        else:
+         token=Login_service(username=username,password=password,client_ip_address=client_ip_address).login_request()
         return token
         
         

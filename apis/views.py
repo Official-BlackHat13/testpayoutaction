@@ -642,7 +642,7 @@ class LoginVerificationAPI(APIView):
         logs = Log_model_services.Log_Model_Service(log_type="post request on "+req.path,client_ip_address=req.META['REMOTE_ADDR'],server_ip_address=const.server_ip,full_request=request_obj,remarks="get request on "+req.path+" for fetching the log records")
         logid=logs.save()
         try:
-            login=login_service.Login_service.login_verification(req.data['verification_code'],req.data["otp"],req.META['REMOTE_ADDR'],req.data['geo_location'])
+            login=login_service.Login_service.login_verification(req.data['verification_code'],req.data["otp"],req.META['REMOTE_ADDR'],req.data['geo_location'],req.data["type"])
             if(login=="OTP Expired"):
                 Log_model_services.Log_Model_Service.update_response(logid,{"message":"OTP Expired","response_code":"0"})
                 return Response({"message":"OTP Expired","response_code":"0"},status=status.HTTP_400_BAD_REQUEST)
@@ -660,12 +660,13 @@ class LoginVerificationAPI(APIView):
             Log_model_services.Log_Model_Service.update_response(logid,{"Error_Code":e.args,"response_code":"2"})
             return Response({"Error_Code":e.args,"response_code":"2"},status=status.HTTP_400_BAD_REQUEST)
 class ResendLoginOTP(APIView):
+    @swagger_auto_schema(request_body=login_docs.resend_otp_request,responses=login_docs.response_login_request)
     def post(self,req):
         request_obj = "path:: "+req.path+" :: headers::"+str(req.headers)+" :: meta_data:: "+str(req.META)+"data::"+str(req.data)
         logs = Log_model_services.Log_Model_Service(log_type="post request on "+req.path,client_ip_address=req.META['REMOTE_ADDR'],server_ip_address=const.server_ip,full_request=request_obj,remarks="get request on "+req.path+" for fetching the log records")
         logid=logs.save()
         try:
-         login=login_service.Login_service.resend_otp(req.data["verification_code"],req.META['REMOTE_ADDR'])
+         login=login_service.Login_service.resend_otp(req.data["verification_code"],req.META['REMOTE_ADDR'],req.data["type"])
         #  api_key=auth.AESCipher(const.AuthKey,const.AuthIV).encrypt(login)
          Log_model_services.Log_Model_Service.update_response(logid,{"verification_token":login,"response_code":"1"})
          return Response({"verification_token":login,"response_code":"1"},status=status.HTTP_200_OK)

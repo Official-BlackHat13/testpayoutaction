@@ -86,10 +86,19 @@ verification=openapi.Schema(
         "otp":openapi.Schema(type=openapi.TYPE_STRING, description='string'),
     "geo_location":openapi.Schema(type=openapi.TYPE_STRING, description='string'),
   "verification_code":openapi.Schema(type=openapi.TYPE_STRING, description='string'),
+  "type":openapi.Schema(type=openapi.TYPE_STRING, description='string'),
         
     
     })
-
+resend_otp_request=openapi.Schema(
+    type=openapi.TYPE_OBJECT, 
+    properties={
+       
+  "verification_code":openapi.Schema(type=openapi.TYPE_STRING, description='string'),
+  "type":openapi.Schema(type=openapi.TYPE_STRING, description='string'),
+        
+    
+    })
 # verification=openapi.Schema(
 #     type=openapi.TYPE_OBJECT, 
 #     properties={

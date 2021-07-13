@@ -28,8 +28,11 @@ class Otp_Model_Services:
     def fetch_by_verification_token_with_otp(verification_token,otp):
         otp_model = OtpModel.objects.filter(verification_token=verification_token,otp_status="pending",otp=otp)
         dt=datetime.now()
+        print("time")
         dt = dt.replace(tzinfo=timezone.utc)
+        print(otp_model)
         if(len(otp_model)>0 and otp_model[0].expire_datetime<dt):
+            print("if")
             Otp_Model_Services.update_status(otp_model[0].id,"Expired")
             return ["OTP Expired"]
         return otp_model
