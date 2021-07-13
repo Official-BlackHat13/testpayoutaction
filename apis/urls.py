@@ -49,7 +49,9 @@ urlpatterns = [
     path("fetchBeneficiary/",views.fetchBeneficiary.as_view()),
     path("updateBeneficiary/",views.updateBeneficiary.as_view()),
     path("deleteBeneficiary/",views.deleteBeneficiary.as_view()),
-    path("addBeneficiary/",views.saveBeneficiary.as_view())
+    path("addBeneficiary/",views.saveBeneficiary.as_view()),
+    path("adminSignup/",views.AuthAdmin.as_view()),
+   path("adminLogin/",views.LoginRequestAdminAPI.as_view()),
    #  path("testicic/",)
    #  path("createTest",views.getTest.as_view()),
    #  path("updateTest/<int:id>",views.updateTest.as_view()),

@@ -83,6 +83,24 @@ from sabpaisa import auth
 # class GetRoles(APIView):
 #     def get(self,req):
 #         pass
+class AuthAdmin(APIView):
+    def post(self,req):
+        request_obj = "path:: "+req.path+" :: headers::"+str(req.headers)+" :: meta_data:: "+str(req.META)+"data::"+str(req.data)
+        user = req.data
+        print("req data::"+str(req.data))
+        log = Log_model_services.Log_Model_Service(log_type="Post request at "+req.path+" slug",client_ip_address=req.META['REMOTE_ADDR'],server_ip_address=const.server_ip,full_request=request_obj)
+        logid=log.save()
+        print("log::"+str(logid))
+        try:
+            val=signup_service.Signup_Service(user=user,client_ip_address=req.META['REMOTE_ADDR']).AdminSignup()
+            Log_model_services.Log_Model_Service.update_response(logid,{"Message":"user created","user_id":val['merchant_id'],"response_code":"1","CLIENT_AUTH_KEY":val['client'].auth_key,"CLIENT_AUTH_IV":val['client'].auth_iv,"token":val['token'].json()})
+            return Response({"Message":"user created","response_code":"1","user_id":val['merchant_id'],"CLIENT_AUTH_KEY":val['client'].auth_key,"CLIENT_AUTH_IV":val['client'].auth_iv,"token":val['token'].json()},status=status.HTTP_200_OK)
+        except Exception as e:
+            import traceback
+            print(traceback.format_exc())
+            Log_model_services.Log_Model_Service.update_response(logid,{"Message":"some error","error":e.args,"trace_back":e.with_traceback(e.__traceback__)})
+            
+            return Response({"Message":"some error","error":e.args},status=status.HTTP_400_BAD_REQUEST)
 class Auth(APIView):
     @swagger_auto_schema(request_body=auth_docs.request,responses=auth_docs.response_schema_dict)
     def post(self,req):
@@ -345,9 +363,9 @@ class GetLogs(APIView):
                 logsser=LogsSerializer(logs,many=True)
                 enc_data=logsser.data
                 print(role.role_name)
-                if const.merchant_check and role.role_name!="test" :
+                if const.test_merchants and role.role_name!="test" :
                   enc_data = auth.AESCipher(authKey, authIV).encrypt(str(logsser.data))
-                elif not const.merchant_check:
+                elif not const.test_merchants:
                   enc_data = auth.AESCipher(authKey, authIV).encrypt(str(logsser.data))
                 print(enc_data)
                 
@@ -560,6 +578,25 @@ class addBalanceApi(APIView):
         Log_model_services.Log_Model_Service.update_response(
             logid, {"Message": str(encResponse), "response_code": "1"})
         return Response({"message": "data saved succefully", "data": str(encResponse), "response_code": "1"}, status=status.HTTP_200_OK)
+class LoginRequestAdminAPI(APIView):
+    @swagger_auto_schema(request_body=auth_docs.request,responses=auth_docs.response_schema_dict)
+    def post(self,req):
+        request_obj = "path:: "+req.path+" :: headers::"+str(req.headers)+" :: meta_data:: "+str(req.META)+"data::"+str(req.data)
+        logs = Log_model_services.Log_Model_Service(log_type="post request on "+req.path,client_ip_address=req.META['REMOTE_ADDR'],server_ip_address=const.server_ip,full_request=request_obj,remarks="get request on "+req.path+" for fetching the log records")
+        logid=logs.save()
+        try:
+            print(req.data)
+            login=login_service.Login_service(username=req.data["username"],password=req.data["password"],client_ip_address=req.META['REMOTE_ADDR'])
+            res = login.login_request_admin()
+            if(res==False):
+                Log_model_services.Log_Model_Service.update_response(logid,{"message":"User Not Found","response_code":"0"})
+                return Response({"message":"User Not Found","response_code":"0"},status=status.HTTP_400_BAD_REQUEST)
+            else:
+                Log_model_services.Log_Model_Service.update_response(logid,{"message":"OTP sent","verification_token":res,"response_code":"1"})
+                return Response({"message":"OTP sent to mail","verification_token":res,"response_code":"1"},status=status.HTTP_200_OK)
+        except Exception as e:
+            Log_model_services.Log_Model_Service.update_response(logid,{"message":"Some error occured","Error_Code":e.args,"response_code":"2"})
+            return Response({"message":"Some error occured","Error_Code":e.args,"response_code":"2"},status=status.HTTP_409_CONFLICT)
 
 class LoginRequestAPI(APIView):
     @swagger_auto_schema(request_body=auth_docs.request,responses=auth_docs.response_schema_dict)
@@ -575,11 +612,12 @@ class LoginRequestAPI(APIView):
                 Log_model_services.Log_Model_Service.update_response(logid,{"message":"User Not Found","response_code":"0"})
                 return Response({"message":"User Not Found","response_code":"0"},status=status.HTTP_400_BAD_REQUEST)
             else:
-                Log_model_services.Log_Model_Service.update_response(logid,{"message":"OTP sent to mail","verification_token":res,"response_code":"1"})
+                Log_model_services.Log_Model_Service.update_response(logid,{"message":"OTP sent","verification_token":res,"response_code":"1"})
                 return Response({"message":"OTP sent to mail","verification_token":res,"response_code":"1"},status=status.HTTP_200_OK)
         except Exception as e:
             Log_model_services.Log_Model_Service.update_response(logid,{"message":"Some error occured","Error_Code":e.args,"response_code":"2"})
             return Response({"message":"Some error occured","Error_Code":e.args,"response_code":"2"},status=status.HTTP_409_CONFLICT)
+
 class LoginVerificationAPI(APIView):
     def post(self,req):
         request_obj = "path:: "+req.path+" :: headers::"+str(req.headers)+" :: meta_data:: "+str(req.META)+"data::"+str(req.data)

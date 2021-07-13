@@ -3,7 +3,7 @@ from . import Log_model_services
 from .. import const
 from django.db import connection
 class Client_Model_Service:
-    def __init__(self,email=None,client_id=None,client_code=None,role_id=None,auth_key=None,user=None,auth_iv=None,bank_id=None,client_username=None,client_password=None):
+    def __init__(self,email=None,client_id=None,phone_number=None,client_code=None,role_id=None,auth_key=None,user=None,auth_iv=None,bank_id=None,client_username=None,client_password=None):
         self.client_id=client_id
         self.client_code=client_code
         self.auth_key=auth_key
@@ -12,6 +12,7 @@ class Client_Model_Service:
         self.bank_id=bank_id
         self.client_username=client_username
         self.role_id=role_id
+        self.phone_number=phone_number
         self.client_password=client_password
         self.email=email
     def save(self,client_ip_address,created_by)->int:
@@ -24,6 +25,7 @@ class Client_Model_Service:
         clientmodel.role=self.role_id
         clientmodel.auth_iv=self.auth_iv
         clientmodel.bank=self.bank_id
+        clientmodel.phone=self.phone_number
         clientmodel.client_username=self.client_username
         clientmodel.client_password=self.client_password
         clientmodel.user = self.user

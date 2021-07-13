@@ -16,5 +16,6 @@ admin.site.register(models.LogModel)
 admin.site.register(models.OtpModel)
 
 admin.site.register(models.UserActiveModel)
+admin.site.register(models.BOUserModel)
 # admin.site.register(models.SlabModel)
 

@@ -3,6 +3,7 @@ from django.http import response
 from ..database_service.Client_model_service import Client_Model_Service
 from ..database_service.Otp_model_services import Otp_Model_Services
 from ..database_service.UserActive_model_service import UserActive_Model_Service
+from ..database_service.BO_user_services import BO_User_Service
 from ..Utils import randomstring
 import requests
 import threading
@@ -13,6 +14,39 @@ class Login_service:
         self.username=username
         self.password=password
         self.client_ip_address=client_ip_address
+    def login_request_admin(self):
+        client_model = BO_User_Service.fetch_by_username_password(self.username,self.password,client_ip_address=self.client_ip_address,created_by="api call")
+        print(client_model)
+        if len(client_model)==0:
+            print('if')
+            return False
+        else:
+            print("else")
+            user = client_model[0]
+            type=BO_User_Service.fetch_user_type(user.id)
+            if type == None:
+                return None
+            # print(rec[0][0])
+            otp = int(randomstring.randomNumber(6))
+            print(user.id)
+            otp_service = Otp_Model_Services(mobile=user.mobile,user_id=user.id,user_type=type,email=user.email,otp=otp,otp_status="pending",verification_token=randomstring.randomString(30))
+            id=otp_service.save()
+            class ExpireOTP(threading.Thread):
+                def run(self):
+                    print("service_running")
+                    time.sleep(5*60)
+                    print("service_init")
+                    Otp_Model_Services.update_status(id,"Expired")
+                    print("service_done")
+            
+            response = requests.post(const.email_api,headers={"user-agent":"Application","Accept":"*/*","Content-Type":"application/json; charset=utf-8"},json={"toEmail": user.email,
+  "toCc": "",
+  "subject": "OTP for Sabpaisa Payout",
+  "msg": "Please find the otp for your payout login request "+str(otp)})
+            response_sms=requests.post(const.sms_api(user.mobile,str(otp),user.name))
+            print(response_sms.text,"response sms")
+            ExpireOTP().start()
+            return otp_service.verification_token
     def login_request(self):
         client_model = Client_Model_Service.fetch_by_username_password(self.username,self.password,client_ip_address=self.client_ip_address,created_by="api call")
         print(client_model)
@@ -39,6 +73,7 @@ class Login_service:
   "toCc": "",
   "subject": "OTP for Sabpaisa Payout",
   "msg": "Please find the otp for your payout login request "+str(otp)})
+            response_sms=requests.post(const.sms_api(user.phone,str(otp)))
             ExpireOTP().start()
             return otp_service.verification_token
     @staticmethod
