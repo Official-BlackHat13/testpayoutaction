@@ -106,7 +106,7 @@ class Login_service:
             raise Exception("Verfication token not valid")
         print(record.user)
         if type=="back_office":
-            user=BO_User_Service.fetch_by_id(record[0].user)
+            user=BO_User_Service.fetch_by_id(record.user)
             username=user.username
             password=user.password
         else:
