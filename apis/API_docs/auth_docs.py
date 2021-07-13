@@ -43,3 +43,13 @@ request=openapi.Schema(
         "role_id":openapi.Schema(type=openapi.TYPE_INTEGER, description='integer'),
     
     })
+
+request_admin=openapi.Schema(
+    type=openapi.TYPE_OBJECT, 
+    properties={
+        'username': openapi.Schema(type=openapi.TYPE_STRING, description='string'),
+        'password': openapi.Schema(type=openapi.TYPE_STRING, description='string'),
+        "email":openapi.Schema(type=openapi.TYPE_STRING, description='string'),
+        "role_id":openapi.Schema(type=openapi.TYPE_INTEGER, description='integer'),
+    
+    })

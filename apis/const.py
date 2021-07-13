@@ -1,8 +1,9 @@
 import abc
 import socket
 import ifaddr
+from variables import domain
 ipwhitelisting=False
-domain = "http://localhost:80/"
+
 server_ip = socket.gethostbyname(socket.gethostname())
 bene_account_name = "SRS"
 bene_account_number="98765"
