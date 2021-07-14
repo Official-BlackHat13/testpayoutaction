@@ -161,7 +161,7 @@ class bankApiPaymentView(APIView):
             return Response({"Message":"Payout Done",'resData':enc_str,"response_code":"1"},status=status.HTTP_200_OK)
         elif res[2]:
             Log_model_services.Log_Model_Service.update_response(logid,{"Message":res,"response_code":"0"})
-            return Response({"Message":res[1],"response_code":"0"},status=status.HTTP_402_PAYMENT_REQUIRED)
+            return Response({"Message":res[0],"response_code":"0"},status=status.HTTP_400_BAD_REQUEST)
         elif res[0]==False:
             Log_model_services.Log_Model_Service.update_response(logid,{"Message":"credential not matched","response_code":"3"})
             return Response({"Message":"credential not matched","response_code":"3"},status=status.HTTP_401_UNAUTHORIZED)

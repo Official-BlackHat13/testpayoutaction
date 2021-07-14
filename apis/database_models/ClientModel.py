@@ -23,5 +23,6 @@ class MerchantModel(models.Model):
     is_ip_checking = models.BooleanField(default=True)
     email = models.EmailField(default=None,null=True)
     phone = models.CharField(default=None,null=True,max_length=300)
+    is_charge=models.BooleanField(default=True)
     def __str__(self):
         return str(self.id)

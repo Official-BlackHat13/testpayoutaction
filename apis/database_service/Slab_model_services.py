@@ -16,8 +16,8 @@ class Slab_Model_Service:
     def fetch_by_id(id=None):
         slabmodel=SlabModel.objects.get(id=id)
         return slabmodel
-    def check_slab(amount):
-        slabmodel=SlabModel.objects.filter(max_amount__gt=amount,min_amount__lt=amount)
+    def check_slab(merchant_id,amount):
+        slabmodel=SlabModel.objects.filter(merchant_id=merchant_id,max_amount__gte=amount,min_amount__lte=amount)
         if len(slabmodel)==0:
             return False
         return True
