@@ -1,4 +1,5 @@
-from ..models import ChargeModel
+from datetime import datetime
+from ..models import ChargeModel,ModeModel
 from . import Log_model_services
 from .. import const
 
@@ -12,6 +13,7 @@ class charge_model_service:
         self.deleted_at=deleted_at
         self.updated_at = updated_at
         self.merchant_id = merchant_id
+        self.mode=mode
     def save(self,client_ip_address):
         log_service=Log_model_services.Log_Model_Service(log_type="create",table_name="apis_chargemodel",remarks="saving records in apis_chargemodel table",client_ip_address=client_ip_address,server_ip_address=const.server_ip,created_by="mechant id :: "+self.merchant_id)
         chargeModel = ChargeModel()
@@ -23,6 +25,9 @@ class charge_model_service:
         chargeModel.deleted_at = self.deleted_at
         chargeModel.updated_at = self.updated_at
         chargeModel.merchant_id= self.merchant_id
+        modeid = ModeModel.objects.filter(mode=self.mode)
+        chargeModel.mode=modeid[0].id
+        chargeModel.created_at = datetime.now()
         chargeModel.save()
         log_service.table_id=chargeModel.id
         log_service.save()
@@ -30,17 +35,12 @@ class charge_model_service:
     @staticmethod
     def fetch_by_id(id,client_ip_address,created_by,merchant_id):
         log_service=Log_model_services.Log_Model_Service(log_type="fetch",table_name="apis_chargemodel",remarks="fetching records from apis_chargemodel by primary key in the record",client_ip_address=client_ip_address,server_ip_address=const.server_ip,created_by=created_by)
-        chargeModel=ChargeModel.objects.get(id=id,merchant_id=merchant_id)
-        log_service.table_id=chargeModel.id
+        chargeModel=ChargeModel.objects.filter(id=id,merchant_id=merchant_id).values()
+        if(len(chargeModel)==0):
+            return "-1"
+        print(chargeModel[0].get("id"))
+        log_service.table_id=chargeModel[0].get("id")
         log_service.save()
-        return chargeModel
-    # @staticmethod
-    # def delete(id,client_ip_address,merchantId):
-    #     log_service = Log_model_services.Log_Model_Service(log_type="delete", table_name="apis_chargemodel", remarks="deleting records in apis_chargemodel table",
-    #                                                         client_ip_address=client_ip_address, server_ip_address=const.server_ip, created_by="merchant id :: "+merchantId)
-    #     charge = ChargeModel.objects.filter(id=id,merchant=merchantId)
-    #     if(len(charge) > 0):     
-    #         chargermodel = ChargeModel()
-    #         chargermodel = charge[0]  
+        return chargeModel[0]
 
         

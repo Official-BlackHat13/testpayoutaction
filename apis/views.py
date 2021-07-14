@@ -2,6 +2,7 @@
 # Create your views here.
 
 
+from apis.database_service.charge_model_service import charge_model_service
 from django.db.models import query
 
 
@@ -791,3 +792,44 @@ class saveBeneficiary(APIView):
             return Response({"msg":"data parsed and saved to database","response_code":'1'},status=status.HTTP_200_OK)
         except Exception as e:
             return Response({"Message":"some error","Error":e.args})
+
+
+class addCharge(APIView):
+    def post(self,request):
+        query = request.headers.get("auth_token")
+        merchantId = auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(query)
+        mode = request.data.get("mode")
+        min_amount = request.data.get("min_amount")
+        max_amount = request.data.get("max_amount")
+        charge_percentage_or_fix = request.data.get("charge_percentage_or_fix")
+        charge = request.data.get("charge")
+        service = charge_model_service(merchant_id=merchantId,mode=mode,min_amount=min_amount,max_amount=max_amount,charge_percentage_or_fix=charge_percentage_or_fix,charge=charge)
+        resp = service.save(client_ip_address=request.META['REMOTE_ADDR'])
+        return Response({"message":"data saved","data":str(resp)},status=status.HTTP_200_OK)
+
+
+class fetchCharges(APIView):
+    def post(self,request):
+        query = request.headers.get("auth_token")
+        if(query==""):
+            return Response({"message":"merchant id required"})
+        id = request.data.get("chargeId")
+        merchantId = auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(query)
+        service = charge_model_service()
+        resp = service.fetch_by_id(id = id,client_ip_address=request.META['REMOTE_ADDR'],created_by="merchant id :: "+merchantId,merchant_id=merchantId)
+        if(resp=="-1"):
+            return Response({"message":"no data found","response_code":"1"},status=status.HTTP_404_NOT_FOUND)
+        response = {
+            "id":resp.get("id"),
+            "mode id":resp.get("mode"),
+            "min_amount":resp.get("min_amount"),
+            "max_amount":resp.get("max_amount"),
+            "charge_percentage_or_fix":resp.get("charge_percentage_or_fix"),
+            "charge":resp.get("charge")
+        }
+        clientModel = Client_model_service.Client_Model_Service.fetch_by_id(
+            id=merchantId, created_by="merchantid :: "+merchantId, client_ip_address=request.META['REMOTE_ADDR'])
+        authKey = clientModel.auth_key
+        authIV = clientModel.auth_iv
+        encResp = auth.AESCipher(authKey,authIV).encrypt(str(response))
+        return Response({"message":"data found","data":str(encResp),"response_code":"1"},status=status.HTTP_200_OK)
