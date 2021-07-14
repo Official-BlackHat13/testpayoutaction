@@ -48,6 +48,7 @@ class PayoutService:
             # if map["usern"]!=clientModel.client_username and map["pass"]!=clientModel.client_password:
             #     return [False,{}]
             payoutrequestmodel,valid,message=PayoutRequestModel.from_json(map)
+            print("valid :: "+str(valid))
             # print(payoutrequestmodel.clientPaymode)
             mode=Mode_model_services.Mode_Model_Service.fetch_by_mode("IMPS")
             if(valid):
@@ -60,7 +61,7 @@ class PayoutService:
              bene=Beneficiary_model_services.Beneficiary_Model_Services.fetch_by_account_number_ifsc(self.merchant_id,payoutrequestmodel.beneficiaryAccount,payoutrequestmodel.beneficiaryIFSC)
              if bene==None:
                  return ["Beneficiary Not Added",{},False]
-             if Slab_model_services.Slab_Model_Service.check_slab(payoutrequestmodel.amount):
+             if not Slab_model_services.Slab_Model_Service.check_slab(self.merchant_id,payoutrequestmodel.amount):
                  return ["Cannot proccess this volume of amount",{},False]
              ledgerModelService = Ledger_model_services.Ledger_Model_Service() 
              clientModelService=Client_model_service.Client_Model_Service()
@@ -81,7 +82,7 @@ class PayoutService:
              ledgerModelService.trans_type="payout"
             #  order_id=paytm_extra.generate_order_id()
             #  ledgerModelService.customer_ref_no=order_id
-             charge=Ledger_model_services.Ledger_Model_Service.calculate_charge("IMPS",payoutrequestmodel.amount,self.client_ip_address)
+             charge=Ledger_model_services.Ledger_Model_Service.calculate_charge(self.merchant_id,"IMPS",payoutrequestmodel.amount,self.client_ip_address)
              print(charge)
              ledgerModelService.charge=charge
              ledgerModelService.van="null"
@@ -113,23 +114,31 @@ class PayoutService:
                          print(response.json())
                          if response.json()['status']=="SUCCESS":
                              ledgerModelService.update_status(id,"Success",client_ip_address_temp,"Merchant :: "+str(merchant_id_temp))
-                             ledgerModelService.client_id=clientModel.id
-                             ledgerModelService.client_code=clientModel.client_code
-                             ledgerModelService.amount=charge
-                             ledgerModelService.bank_id=clientmodel.bank
-                             ledgerModelService.bank_ref_no="waiting"
-                             ledgerModelService.customer_ref_no=payoutrequestmodel.orderId
-                             ledgerModelService.trans_status="Success"
-                             ledgerModelService.bene_account_name=payoutrequestmodel.beneficiaryName
-                             ledgerModelService.bene_account_number=payoutrequestmodel.beneficiaryAccount
-                             ledgerModelService.bene_ifsc=payoutrequestmodel.beneficiaryIFSC
-                             ledgerModelService.type_status="Generated"
-                             ledgerModelService.trans_type="charge"
-                             ledgerModelService.mode=mode.id
-                             ledgerModelService.van=""
-                             ledgerModelService.trans_amount_type = "debited"
-                             ledgerModelService.trans_time=datetime.now()
-                             ledgerModelService.save("Merchant Id :: "+str(merchant_id_temp),client_ip_address_temp)
+                             if clientModel.is_charge:
+                                charge_ledger=Ledger_model_services.Ledger_Model_Service()
+                                charge_ledger.client_id=clientModel.id
+                                charge_ledger.merchant=merchant_id_temp
+                                charge_ledger.client_code=clientModel.client_code
+                                charge_ledger.amount=charge
+                                charge_ledger.bank_id=clientmodel.bank
+                                charge_ledger.bank_ref_no="waiting"
+                                charge_ledger.customer_ref_no=payoutrequestmodel.orderId
+                                charge_ledger.trans_status="Success"
+                                charge_ledger.bene_account_name=payoutrequestmodel.beneficiaryName
+                                charge_ledger.bene_account_number=payoutrequestmodel.beneficiaryAccount
+                                charge_ledger.bene_ifsc=payoutrequestmodel.beneficiaryIFSC
+                                charge_ledger.type_status="Generated"
+                                charge_ledger.trans_type="charge"
+                                charge_ledger.request_header="null"
+                                charge_ledger.mode=mode.id
+                                charge_ledger.van=""
+                                charge_ledger.charge=0
+                                charge_ledger.linked_ledger_id=id
+                                charge_ledger.payout_trans_id=generater.generate_token()
+                                charge_ledger.trans_amount_type = "debited"
+                                #  ledgerModelService.
+                                charge_ledger.trans_time=datetime.now()
+                                charge_ledger.save("Merchant Id :: "+str(merchant_id_temp),client_ip_address_temp)
                          elif response.json()["status"]=="PENDING":
                              ledgerModelService.update_status(id,"Pending",client_ip_address_temp,"Merchant :: "+str(merchant_id_temp))
                              
@@ -145,10 +154,11 @@ class PayoutService:
              return ["Payout Done",{"orderId":ledgerModelService.customer_ref_no,"amount":ledgerModelService.amount,"status": "PROCESSING","requestedDatetime": str(datetime.now()).split(".")[0]},True]
              
             else:
-             return message
+             return [message,{},False]
         except Exception as e:
               import traceback
               print(traceback.format_exc())
+              print(e.args)
               return [e.args,{},False]
     def excuteICICI(self):
         log = Log_Model_Service(log_type="excuting ICICI service",client_ip_address=self.client_ip_address,server_ip_address=const.server_ip,created_by=self.client_code)

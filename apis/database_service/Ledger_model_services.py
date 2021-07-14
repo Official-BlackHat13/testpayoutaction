@@ -17,7 +17,7 @@ from . import Log_model_services
 from django.db import connection
 from sabpaisa import main
 class Ledger_Model_Service:
-    def __init__(self,id=None, merchant=None, client_code=None, payout_trans_id=None,trans_amount_type=None, type_status=None, amount=None, van=None, trans_type=None, trans_status=None, bank_ref_no=None, customer_ref_no=None, bank_id=None, trans_time=None, bene_account_name=None, bene_account_number=None, bene_ifsc=None, request_header=None, createdBy=None, updatedBy=None, deletedBy=None, created_at=None, deleted_at=None, updated_at=None, status=True, mode=None, charge=None):
+    def __init__(self,id=None, merchant=None,client_code=None,linked_ledger_id=None,payout_trans_id=None,trans_amount_type=None, type_status=None, amount=None, van=None, trans_type=None, trans_status=None, bank_ref_no=None, customer_ref_no=None, bank_id=None, trans_time=None, bene_account_name=None, bene_account_number=None, bene_ifsc=None, request_header=None, createdBy=None, updatedBy=None, deletedBy=None, created_at=None, deleted_at=None, updated_at=None, status=True, mode=None, charge=None):
         self.id = id
         self.merchant=merchant
         self.client_code=client_code
@@ -29,6 +29,7 @@ class Ledger_Model_Service:
         self.trans_amount_type = trans_amount_type
         self.bank_id=bank_id
         self.trans_time=trans_time
+        self.linked_ledger_id=linked_ledger_id
         self.type_status=type_status
         self.bene_account_name=bene_account_name
         self.bene_account_number=bene_account_number
@@ -69,6 +70,7 @@ class Ledger_Model_Service:
         ledgermodel.request_header=self.request_header
         ledgermodel.createdBy=self.createdBy
         ledgermodel.updatedBy = self.updatedBy
+        ledgermodel.linked_ledger_id=self.linked_ledger_id
         ledgermodel.deletedBy=self.deletedBy
         # ledgermodel.created_at = self.created_at
         ledgermodel.deleted_at = self.deleted_at
@@ -177,11 +179,11 @@ class Ledger_Model_Service:
         log_service.save()
         return int(value[0][0])
     @staticmethod
-    def calculate_charge(mode,amount,client_ip_address):
+    def calculate_charge(merchant_id,mode,amount,client_ip_address):
         mode = ModeModel.objects.filter(mode=mode)
         print(mode[0].id)
-        charge=ChargeModel.objects.filter(mode=mode[0].id,min_amount__lt=amount,max_amount__gt=amount)
-        print(charge[0].charge_percentage_or_fix)
+        charge=ChargeModel.objects.filter(mode=mode[0].id,min_amount__lt=amount,max_amount__gt=amount,merchant_id=merchant_id)
+        # print(charge[0].charge_percentage_or_fix)
         charge_amount=0
         if(len(charge)>0 and charge[0].charge_percentage_or_fix=="percentage"):
             charge_amount=(amount/100)*charge[0].charge
@@ -190,7 +192,7 @@ class Ledger_Model_Service:
             print(charge[0].charge)
             return charge[0].charge
         else:
-            return None
+            return 0
             
 
 

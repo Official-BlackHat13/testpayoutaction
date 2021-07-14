@@ -3,7 +3,7 @@ from . import Log_model_services
 from .. import const
 from django.db import connection
 class Client_Model_Service:
-    def __init__(self,email=None,client_id=None,phone_number=None,client_code=None,role_id=None,auth_key=None,user=None,auth_iv=None,bank_id=None,client_username=None,client_password=None):
+    def __init__(self,email=None,client_id=None,is_charge=None,phone_number=None,client_code=None,role_id=None,auth_key=None,user=None,auth_iv=None,bank_id=None,client_username=None,client_password=None):
         self.client_id=client_id
         self.client_code=client_code
         self.auth_key=auth_key
@@ -13,6 +13,7 @@ class Client_Model_Service:
         self.client_username=client_username
         self.role_id=role_id
         self.phone_number=phone_number
+        self.is_charge=is_charge
         self.client_password=client_password
         self.email=email
     def save(self,client_ip_address,created_by)->int:
@@ -30,10 +31,12 @@ class Client_Model_Service:
         clientmodel.client_password=self.client_password
         clientmodel.user = self.user
         clientmodel.email=self.email
+        clientmodel.is_charge=self.is_charge
         clientmodel.save()
         log_service.table_id=clientmodel.id
         log_service.save()
         return clientmodel.id
+    
     @staticmethod
     def fetch_by_id(id,client_ip_address,created_by)->ClientModel:
         log_service=Log_model_services.Log_Model_Service(log_type="fetch",table_name="apis_clientmodel",remarks="fetching records in apis_clientmodel table by primary key id",client_ip_address=client_ip_address,server_ip_address=const.server_ip,created_by=created_by)
