@@ -13,5 +13,6 @@ class SlabModel(models.Model):
     created_by=models.DateTimeField(default=None,null=True)
     deleted_by=models.DateTimeField(default=None,null=True)
     updated_by=models.DateTimeField(default=None,null=True)
+    status=models.BooleanField(default=True)
     def __str__(self):
         return str(self.id)

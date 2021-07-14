@@ -3,7 +3,7 @@ import time
 from sabpaisa import auth
 
 import bank_api
-from ..database_service import Client_model_service,Ledger_model_services,Mode_model_services,Beneficiary_model_services
+from ..database_service import Client_model_service,Ledger_model_services,Mode_model_services,Beneficiary_model_services,Slab_model_services
 from ..Utils import splitString
 from ..bank_models.IDFC_Model import payment_request_model
 from ..bank_models.ICICI_Model import payment_request_model as icic_payment_model
@@ -56,11 +56,12 @@ class PayoutService:
              print("balance ::"+str(bal))
              if bal<int(payoutrequestmodel.amount):
                  
-                 return ["Not Sufficent Balance",{}]
+                 return ["Not Sufficent Balance",{},False]
              bene=Beneficiary_model_services.Beneficiary_Model_Services.fetch_by_account_number_ifsc(self.merchant_id,payoutrequestmodel.beneficiaryAccount,payoutrequestmodel.beneficiaryIFSC)
              if bene==None:
-                 return ["Beneficiary Not Added",{}]
-
+                 return ["Beneficiary Not Added",{},False]
+             if Slab_model_services.Slab_Model_Service.check_slab(payoutrequestmodel.amount):
+                 return ["Cannot proccess this volume of amount",{},False]
              ledgerModelService = Ledger_model_services.Ledger_Model_Service() 
              clientModelService=Client_model_service.Client_Model_Service()
              clientmodel=clientModelService.fetch_by_id(self.merchant_id,self.client_ip_address,"Merchant Id ::"+str(self.merchant_id))
@@ -141,14 +142,14 @@ class PayoutService:
                  ledgerModelService.update_status(id,"Failed",self.client_ip_address,"Merchant :: "+str(self.merchant_id))
                              
                  
-             return ["Payout Done",{"orderId":ledgerModelService.customer_ref_no,"amount":ledgerModelService.amount,"status": "PROCESSING","requestedDatetime": str(datetime.now()).split(".")[0]}]
+             return ["Payout Done",{"orderId":ledgerModelService.customer_ref_no,"amount":ledgerModelService.amount,"status": "PROCESSING","requestedDatetime": str(datetime.now()).split(".")[0]},True]
              
             else:
              return message
         except Exception as e:
               import traceback
               print(traceback.format_exc())
-              return [e.args,{}]
+              return [e.args,{},False]
     def excuteICICI(self):
         log = Log_Model_Service(log_type="excuting ICICI service",client_ip_address=self.client_ip_address,server_ip_address=const.server_ip,created_by=self.client_code)
         log.save()

@@ -15,5 +15,5 @@ from .database_models.OtpModel import OtpModel
 from .database_models.UserActiveModel import UserActiveModel
 from .database_models.BOUserModel import BOUserModel
 from .database_models.BeneficiaryModel import BeneficiaryModel
-# from .database_models.SlabModel import SlabModel
+from .database_models.SlabModel import SlabModel
 # from .database_models.Test import TestModel
