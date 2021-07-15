@@ -1,3 +1,4 @@
+from apis.view_api import payout
 from django.urls import path
 from drf_yasg import views
 from rest_framework import permissions
@@ -22,7 +23,7 @@ urlpatterns = [
    #  path("test/",views.bankApiViewtest.as_view()),
     path('token/',jwt_views.TokenObtainPairView.as_view(),name ='token_obtain_pair'),
     path('token/refresh/',jwt_views.TokenRefreshView.as_view(), name ='token_refresh'),
-    path("PayoutTransactionRequest/",views.bankApiPaymentView.as_view()),
+    path("PayoutTransactionRequest/",views.payout.bankApiPaymentView.as_view()),
     #path("addBalance/",lambda a:a),
    #  path("enquiry/",views.bankApiEnquiryView.as_view()),
    #  path("fetchAllLedgers/", views.getLedgers.as_view()),
@@ -34,27 +35,27 @@ urlpatterns = [
    #  path("decrypt/", views.decryptJson.as_view()),
    #  path("enc/",views.encryptJSON.as_view()),
    #  path("decrypt/", views.decryptJson.as_view()),
-    path("getLogs/<slug:page>/<slug:length>",views.GetLogs.as_view()),
-    path("PayoutTransactionEnquiry/", views.paymentEnc.as_view()),
+    path("getLogs/<slug:page>/<slug:length>",views.logs.GetLogs.as_view()),
+    path("PayoutTransactionEnquiry/", views.payout.paymentEnc.as_view()),
    #  path("head/",views.tester.as_view()),
    #  path("encHeader/",views.encHeader.as_view()),
-    path("addBalance/",views.addBalanceApi.as_view()),
+    path("addBalance/",views.payout.addBalanceApi.as_view()),
    #  path("fetch/<slug:page>/<slug:length>",views.fetch.as_view()),
-    path("signup/",views.Auth.as_view()),
-    path("getLogs/<slug:page>/<slug:length>",views.GetLogs.as_view()),
-    path("loginrequest/",views.LoginRequestAPI.as_view()),
-    path("loginverified/",views.LoginVerificationAPI.as_view()),
-    path("resendotp/",views.ResendLoginOTP.as_view()),
-    path("addBeneficiary/",views.addSingleBeneficiary.as_view()),
-    path("fetchBeneficiary/",views.fetchBeneficiary.as_view()),
+    path("signup/",views.auth.Auth.as_view()),
+    path("getLogs/<slug:page>/<slug:length>",views.logs.GetLogs.as_view()),
+    path("loginrequest/",views.login.LoginRequestAPI.as_view()),
+    path("loginverified/",views.login.LoginVerificationAPI.as_view()),
+    path("resendotp/",views.login.ResendLoginOTP.as_view()),
+    path("addBeneficiary/",views.beneficiary.addSingleBeneficiary.as_view()),
+    path("fetchBeneficiary/",views.beneficiary.fetchBeneficiary.as_view()),
    #  path("updateBeneficiary/",views.updateBeneficiary.as_view()),
    #  path("deleteBeneficiary/",views.deleteBeneficiary.as_view()),
 
    #  path("addBeneficiary/",views.saveBeneficiary.as_view()),
-    path("adminSignup/",views.AuthAdmin.as_view()),
-   path("adminLogin/",views.LoginRequestAdminAPI.as_view()),
+    path("adminSignup/",views.auth.AuthAdmin.as_view()),
+   path("adminLogin/",views.login.LoginRequestAdminAPI.as_view()),
 
-    path("addBeneficiaries/",views.saveBeneficiary.as_view())
+    path("addBeneficiaries/",views.beneficiary.saveBeneficiary.as_view())
 
    #  path("testicic/",)
    #  path("createTest",views.getTest.as_view()),
