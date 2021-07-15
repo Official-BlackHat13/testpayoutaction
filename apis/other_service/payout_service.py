@@ -49,7 +49,7 @@ class PayoutService:
             payoutrequestmodel,valid,message=PayoutRequestModel.from_json(map)
             print("valid :: "+str(valid))
             # print(payoutrequestmodel.clientPaymode)
-            mode=Mode_model_services.Mode_Model_Service.fetch_by_mode("IMPS")
+            mode=Mode_model_services.Mode_Model_Service.fetch_by_mode(payoutrequestmodel.mode)
             if(valid):
              bal = Ledger_model_services.Ledger_Model_Service.getBalance(self.merchant_id,self.client_ip_address,"Merchant_ID :: "+str(self.merchant_id))
              print("amount :: "+payoutrequestmodel.amount)
@@ -92,7 +92,7 @@ class PayoutService:
              id=ledgerModelService.save(client_ip_address=self.client_ip_address,createdBy="Merchant Id :: "+ str(self.merchant_id))
              ledgerModelService.update_status(id,'Requested',client_ip_address=self.client_ip_address,created_by="Merchant_Id :: "+str(self.merchant_id))
              
-             request_model=paytm_request_model.Payment_Request_Model(subwalletGuid=const.paytm_subwalletGuid,orderId=payoutrequestmodel.orderId,beneficiaryAccount=payoutrequestmodel.beneficiaryAccount,beneficiaryIFSC=payoutrequestmodel.beneficiaryIFSC,amount=payoutrequestmodel.amount,purpose=payoutrequestmodel.purpose)
+             request_model=paytm_request_model.Payment_Request_Model(transfer_mode=payoutrequestmodel.mode,subwalletGuid=const.paytm_subwalletGuid,orderId=payoutrequestmodel.orderId,beneficiaryAccount=payoutrequestmodel.beneficiaryAccount,beneficiaryIFSC=payoutrequestmodel.beneficiaryIFSC,amount=payoutrequestmodel.amount,purpose=payoutrequestmodel.purpose)
              post_data = json.dumps(request_model.to_json())
              checksum = paytmchecksum.generateSignature(post_data, const.paytm_merchant_key)
              

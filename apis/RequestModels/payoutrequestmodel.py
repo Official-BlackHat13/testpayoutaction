@@ -1,11 +1,12 @@
 class PayoutRequestModel:
-    def __init__(self,orderId=None,beneficiaryName=None,beneficiaryAccount=None,beneficiaryIFSC=None,amount=None,purpose=None):
+    def __init__(self,orderId=None,beneficiaryName=None,mode=None,beneficiaryAccount=None,beneficiaryIFSC=None,amount=None,purpose=None):
         self.orderId=orderId
         self.beneficiaryName=beneficiaryName
         self.beneficiaryAccount=beneficiaryAccount
         self.beneficiaryIFSC=beneficiaryIFSC
         self.amount=amount
         self.purpose=purpose
+        self.mode=mode
         # self.userName=userName
         # self.password=password
         # self.payeeFirstName=payeeFirstName
@@ -61,6 +62,10 @@ class PayoutRequestModel:
              return [None,False,"purpose is missing"]
             else:
                 requestModel.purpose=json["purpose"]
+            if json['mode']=="":
+                return [None,False,"mode is missing"]
+            else:
+                requestModel.mode=json["mode"]
             # if json['txnAmount']=="":
             #     return [None,False,"Transaction amount is missing"]
             # else:

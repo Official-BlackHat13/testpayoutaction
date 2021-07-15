@@ -64,6 +64,7 @@ CORS_ALLOW_HEADERS = [
     "auth-token",
     "auth_token",
     "Auth_token",
+    
 ]
 CORS_ALLOW_METHODS = [
     'DELETE',
