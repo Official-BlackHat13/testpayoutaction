@@ -53,7 +53,7 @@ urlpatterns = [
    #  path("addBeneficiary/",views.saveBeneficiary.as_view()),
 
     path("adminSignup/",views.auth.AuthAdmin.as_view()),
-   path("adminLogin/",views.login.LoginRequestAdminAPI.as_view()),
+    path("adminLogin/",views.login.LoginRequestAdminAPI.as_view()),
 
     path("addBeneficiaries/",views.beneficiary.saveBeneficiary.as_view()),
 

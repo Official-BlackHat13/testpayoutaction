@@ -8,6 +8,7 @@ from django.db.models import query
 from pyexcel_xls import get_data as xls_get
 from pyexcel_xlsx import get_data as xlsx_get
 from django.utils.datastructures import MultiValueDictKeyError
+from rest_framework import permissions
 # from apis.database_models.Test import TestModel
 
 from rest_framework.exceptions import server_error
@@ -74,7 +75,7 @@ class addCharge(APIView):
         charge = request.data.get("charge")
         service = charge_model_service(merchant_id=merchantId,mode=mode,min_amount=min_amount,max_amount=max_amount,charge_percentage_or_fix=charge_percentage_or_fix,charge=charge)
         resp = service.save(client_ip_address=request.META['REMOTE_ADDR'])
-        return Response({"message":"data saved","data":str(resp)},status=status.HTTP_200_OK)
+        return Response({"message":"data saved"},status=status.HTTP_200_OK)
 
 
 class fetchCharges(APIView):
@@ -98,6 +99,9 @@ class fetchCharges(APIView):
         }
         clientModel = Client_model_service.Client_Model_Service.fetch_by_id(
             id=merchantId, created_by="merchantid :: "+merchantId, client_ip_address=request.META['REMOTE_ADDR'])
+        print("....... ",clientModel.is_encrypt)
+        if(clientModel.is_encrypt==False):
+            return Response({"message":"data found","data":str(response),"response_code":"1"},status=status.HTTP_200_OK)
         authKey = clientModel.auth_key
         authIV = clientModel.auth_iv
         encResp = auth.AESCipher(authKey,authIV).encrypt(str(response))

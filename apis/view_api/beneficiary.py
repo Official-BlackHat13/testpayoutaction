@@ -143,7 +143,7 @@ class addSingleBeneficiary(APIView):
             decResp = auth.AESCipher(authKey, authIV).decrypt(decResp)
         res = ast.literal_eval(decResp)
         print(res.get("full_name"))
-        service = Beneficiary_Model_Services(full_name=res.get("full_name"),account_number=res.get("account_number"),ifsc_code=res.get("ifsc_code"),merchant_id=res.get("merchant_id"))
+        service = Beneficiary_Model_Services(full_name=res.get("full_name"),account_number=res.get("account_number"),ifsc_code=res.get("ifsc_code"),merchant_id=merchantId)
         service.save()
         return Response({"msg":"data saved to database","response_code":'1'},status=status.HTTP_200_OK)
         
