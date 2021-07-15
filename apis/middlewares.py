@@ -34,6 +34,8 @@ def IpWhiteListed(get_response):
                     pass
                 if not clientmodel.is_ip_checking:
                     response=get_response(request)
+                    # response["Access-Control-Allow-Origin"] = "*"
+                    # response["Access-Control-Allow-Headers"] = "*"
                     return response
                 ipWhiteListedModel=models.IpWhiteListedModel.objects.filter(ip_address=ip,status=True,merchant=merchant_id)
             else:
@@ -61,6 +63,9 @@ def IpWhiteListed(get_response):
         # iprecords.save()
         
         response=get_response(request)
+        # response["Access-Control-Allow-Origin"] = "*"
+        # response["Access-Control-Allow-Headers"] = "*"
+        # print(response)
         return response
     return middleware
 # def Logs(get_response):
@@ -131,8 +136,13 @@ def MultiTabsRestriction(get_response):
             
             UserActive_Model_Service.update_tab_exipre(user_active.id,datetime.now()+timedelta(hours=1))
             res=get_response(req)
+            # res["Access-Control-Allow-Origin"] = "*"
+            # res["Access-Control-Allow-Headers"] = "*"
+        
             return res
         res=get_response(req)
+        # res["Access-Control-Allow-Origin"] = "*"
+        # res["Access-Control-Allow-Headers"] = "*"
         return res
         
            

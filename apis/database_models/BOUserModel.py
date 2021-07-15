@@ -18,5 +18,6 @@ class BOUserModel(models.Model):
     created_by=models.CharField(max_length=300,null=True,default=None)
     updated_by=models.CharField(null=True,default=None,max_length=300)
     deleted_by=models.CharField(null=True,default=None,max_length=300)
+    is_encrypt=models.BooleanField(default=True)
     def __str__(self):
         return str(self.id)

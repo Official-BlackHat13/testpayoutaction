@@ -35,14 +35,13 @@ class PayoutService:
             authIV=clientModel.auth_iv
             # auth_token = req.headers["auth_token"]
             # merchant_id= auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(auth_token)
-            merchant=MerchantModel.objects.get(id=self.merchant_id)
-            role = RoleModel.objects.get(id=merchant.role)
+            # merchant=MerchantModel.objects.get(id=self.merchant_id)
+            # role = RoleModel.objects.get(id=merchant.role)
             query=self.encrypted_code
-            if const.test_merchants and role.role_name!="test":
+            if clientModel.is_encrypt:
 
              query=auth.AESCipher(authKey,authIV).decrypt(self.encrypted_code)
-            elif not const.test_merchants:
-                enc_data = auth.AESCipher(authKey, authIV).decrypt(self.encrypted_code)
+            
             map=splitString.StringToMap(query)
             print(str(map))
             # if map["usern"]!=clientModel.client_username and map["pass"]!=clientModel.client_password:

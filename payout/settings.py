@@ -47,6 +47,32 @@ INSTALLED_APPS = [
 ]
 CORS_ALLOW_ALL_ORIGINS=True
 CORS_ALLOW_CREDENTIALS = True
+# CORS_ALLOWED_ORIGIN_REGEXES=True
+# CORS_ALLOWED_ORIGINS = [
+
+# ]
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+    "auth-token",
+    "auth_token",
+    "Auth_token",
+]
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -108,15 +134,15 @@ DATABASES = {
     #     'PORT': '3306',
     #     # 'socket': '/Applications/XAMPP/xamppfiles/var/mysql/mysql.sock'
     # }
-    #  'default': {
-    #     'ENGINE': 'django.db.backends.mysql',
-    #     'NAME': 'payout_for_development',
-    #     'USER': 'payout_for_development',
-    #     'PASSWORD': 'payout@123',
-    #     'HOST': 'localhost',
-    #     'PORT': '3306',
-    #     # 'socket': '/Applications/XAMPP/xamppfiles/var/mysql/mysql.sock'
-    # }
+     'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'payout_for_development',
+        'USER': 'payout_for_development',
+        'PASSWORD': 'payout@123',
+        'HOST': 'localhost',
+        'PORT': '3306',
+        # 'socket': '/Applications/XAMPP/xamppfiles/var/mysql/mysql.sock'
+    }
     #  'default': {
     #     'ENGINE': 'django.db.backends.mysql',
     #     'NAME': 'stagingPayout',
@@ -147,14 +173,14 @@ DATABASES = {
     #     # 'socket': '/Applications/XAMPP/xamppfiles/var/mysql/mysql.sock'
     # }
     #kunal local db
-    'default': {
-         'ENGINE': 'django.db.backends.mysql',
-         'NAME': 'payout',
-         'USER': 'root',
-         'PASSWORD': "root",
-         'HOST': "127.0.0.1",
-         'PORT': "3306",
-     }
+    # 'default': {
+    #      'ENGINE': 'django.db.backends.mysql',
+    #      'NAME': 'payout',
+    #      'USER': 'root',
+    #      'PASSWORD': "root",
+    #      'HOST': "127.0.0.1",
+    #      'PORT': "3306",
+    #  }
 }
 
 

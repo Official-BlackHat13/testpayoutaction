@@ -46,7 +46,7 @@ class BO_User_Service:
             return None
         return bouser.role
     @staticmethod
-    def fetch_by_id(id):
+    def fetch_by_id(id)->BOUserModel:
         try:
          bouser = BOUserModel.objects.get(id=id)
          return bouser

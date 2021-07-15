@@ -86,13 +86,12 @@ class bankApiPaymentView(APIView):
         else:
             res = payout.excuteIDFC()
         if(res[0]=="Payout Done"):
-            merchant=MerchantModel.objects.get(id=merchant_id)
-            role = RoleModel.objects.get(id=merchant.role)
+            # merchant=MerchantModel.objects.get(id=merchant_id)
+            # role = RoleModel.objects.get(id=merchant.role)
             enc_str=res[1]
-            if const.test_merchants and role.role_name!="test":
+            if client.is_encrypt:
              enc_str=str(auth.AESCipher(client.auth_key,client.auth_iv).encrypt(str(res[1])))[2:].replace("'","")
-            elif not const.test_merchants:
-                enc_data = str(auth.AESCipher(client.auth_key, client.auth_iv).encrypt(str(res[1])))[2:].replace("'","")
+            
             Log_model_services.Log_Model_Service.update_response(logid,{"Message":res,"response_code":"1"})
             return Response({"Message":"Payout Done",'resData':enc_str,"response_code":"1"},status=status.HTTP_200_OK)
         elif res[2]:
@@ -122,9 +121,9 @@ class paymentEnc(APIView):
             authKey = clientModel.auth_key
             authIV = clientModel.auth_iv
             encResp=data
-            merchant=MerchantModel.objects.get(id=merchant_id)
-            role = RoleModel.objects.get(id=merchant.role)
-            if const.merchant_check and role.role_name!="test" :
+            # merchant=MerchantModel.objects.get(id=merchant_id)
+            # role = RoleModel.objects.get(id=merchant.role)
+            if clientModel.is_encrypt :
              encResp = auth.AESCipher(authKey, authIV).decrypt(data)
             customer_ref = encResp.split(":")[1].replace('"','')
             rec =enquiry_service.get_enc(customer_ref,req.META['REMOTE_ADDR'],created_by="Merchant id :: "+str(merchant_id))
@@ -143,11 +142,11 @@ class paymentEnc(APIView):
                         'mode': rec.mode
                     }
                 enc = res
-                print("roleName :: "+role.role_name)
-                if const.test_merchants and role.role_name!="test":
+                # print("roleName :: "+role.role_name)
+                if clientModel.is_encrypt:
                  enc = str(auth.AESCipher(authKey,authIV).encrypt(str(res)))[2:].replace("'","")
-                elif not const.test_merchants:
-                    enc = str(auth.AESCipher(authKey,authIV).encrypt(str(res)))[2:].replace("'","")
+                # elif not const.test_merchants:
+                #     enc = str(auth.AESCipher(authKey,authIV).encrypt(str(res)))[2:].replace("'","")
                 return Response({"message": "data found","resData": enc,"responseCode": "1"})
             else:
                 return Response({"message":"NOT_FOUND","response_code":"0"})
@@ -181,7 +180,7 @@ class addBalanceApi(APIView):
         authIV = clientModel.auth_iv
         #start
         role = RoleModel.objects.get(id=clientModel.role)
-        if role.role_name=="test" :
+        if clientModel.is_encrypt :
             print("hello")
             decResp = request.data.get("query")
             res = ast.literal_eval(str(decResp))
