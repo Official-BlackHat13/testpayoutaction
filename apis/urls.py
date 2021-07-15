@@ -31,7 +31,7 @@ urlpatterns = [
    #  path("deleteLedger/", views.DeleteLedger.as_view()),
    #  path("update/", views.UpdateLedger.as_view()),
    #  path("auth/",views.Auth.as_view()),
-    path("enc/",views.extras.encryptJSON.as_view()),
+   #  path("enc/",views.extras.encryptJSON.as_view()),
    #  path("decrypt/", views.decryptJson.as_view()),
    #  path("enc/",views.encryptJSON.as_view()),
    #  path("decrypt/", views.decryptJson.as_view()),
@@ -41,8 +41,8 @@ urlpatterns = [
    #  path("encHeader/",views.encHeader.as_view()),
     path("addBalance/",views.payout.addBalanceApi.as_view()),
 
-    path("fetch/<slug:page>/<slug:length>",views.extras.fetch.as_view()),
-
+   #  path("fetch/<slug:page>/<slug:length>",views.extras.fetch.as_view()),
+   path("FetchLedgers/<slug:page>/<slug:length>",views.extras.fetch.as_view()),
    # path("fetch/<slug:page>/<slug:length>",views.extras.fetch.as_view()),
 
     path("signup/",views.auth.Auth.as_view()),

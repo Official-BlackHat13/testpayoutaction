@@ -21,7 +21,7 @@ from rest_framework import status
 from drf_yasg.utils import swagger_auto_schema
 
 from apis.database_service import Beneficiary_model_services
-from ..API_docs import payout_docs,auth_docs,login_docs,payoutTransactionEnquiry_docs,addBalance_docs,addBeneficiary_docs,log_docs
+from ..API_docs import payout_docs,auth_docs,login_docs,payoutTransactionEnquiry_docs,addBalance_docs,addBeneficiary_docs,log_docs,ledgers_docs
 from datetime import datetime
 from ..serializersFolder.serializers import LogsSerializer
 #from .serializers import *
@@ -83,6 +83,7 @@ class decryptJson(APIView):
         return Response({"message": "data", "data": str(encResp), "response_code": "3"}, status=status.HTTP_200_OK)
 class fetch(APIView):
     #permission_classes = (IsAuthenticated, )
+    @swagger_auto_schema(request_body=ledgers_docs.fetch_request,responses=ledgers_docs.fetch_response_dict)
     def post(self,request,page,length):
         request_obj = "path:: "+request.path+" :: headers::" + \
             str(request.headers)+" :: meta_data:: " + \
@@ -115,6 +116,7 @@ class fetch(APIView):
         authKey = clientModel.auth_key
         authIV = clientModel.auth_iv
         query=None
+        print("request :: ",request.data)
         if(request.data.get("query")!=None):
             query = auth.AESCipher(authKey,authIV).decrypt(request.data.get("query")).split("'")
             key = query[1]
@@ -179,7 +181,8 @@ class fetch(APIView):
                         'beneficiaryAccountNumber': r.get("bene_account_number"),
                         'beneficiaryIFSC': r.get("bene_ifsc"),
                         'transStatus': r.get("trans_status"),
-                        'mode': r.get("mode")
+                        'mode': r.get("mode"),
+                        'trans_amount_type':r.get("trans_amount_type")
                     }
                 result.append(res)
         encResp = {
