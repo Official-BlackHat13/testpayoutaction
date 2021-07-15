@@ -115,28 +115,40 @@ class fetch(APIView):
                 id=decMerchant, created_by="merchant id :: "+decMerchant, client_ip_address=request.META['REMOTE_ADDR'])
         authKey = clientModel.auth_key
         authIV = clientModel.auth_iv
-        query = auth.AESCipher(authKey,authIV).decrypt(request.data.get("query")).split("'")
-        key = query[1]
-        value = query[3]
+        query=None
+        if(request.data.get("query")!=None):
+            query = auth.AESCipher(authKey,authIV).decrypt(request.data.get("query")).split("'")
+            key = query[1]
+            value = query[3]
         clientCode = None
         customer_ref_no = None
         trans_type=None
         startTime=None
         endTime = None
-        if(len(query)>5):
-            customer_ref_no=query[3]
-            trans_type=query[7]
-            clientCode=query[11]
-        elif(key=="startTime"):
-            startTime = value
-            if(query[5]=="endTime"):
-                endTime=query[7]
-        elif(key=="clientCode"):
-            clientCode = value
-        elif(key=="orderId"):
-            customer_ref_no = value
-        elif(key=="trans_type"):
-            trans_type = value
+        balance = Ledger_Model_Service.getBalance(decMerchant,request.META['REMOTE_ADDR'],"merchant id :: "+decMerchant)
+        if(clientModel.is_encrypt != True):
+            print("hellllllllllllo")
+            startTime = request.data.get("startTime")
+            endTime= request.data.get("endTime")
+            clientCode=request.data.get("clientCode")
+            customer_ref_no=request.data.get("orderId")
+            trans_type=request.data.get("trans_type")
+        else:
+            print("yoooooo")
+            if(len(query)>5):
+                customer_ref_no=query[3]
+                trans_type=query[7]
+                clientCode=query[11]
+            elif(key=="startTime"):
+                startTime = value
+                if(query[5]=="endTime"):
+                    endTime=query[7]
+            elif(key=="clientCode"):
+                clientCode = value
+            elif(key=="orderId"):
+                customer_ref_no = value
+            elif(key=="trans_type"):
+                trans_type = value
         resp = enquiry_service.fetchLedgerByParams(client_code = clientCode,
         startTime=startTime,endTime=endTime,page=page,length=length,
         merchant = decMerchant,customer_ref_no=customer_ref_no,trans_type=trans_type,created_by="merchant id :: "+decMerchant,client_ip_address=request.META['REMOTE_ADDR'])
@@ -171,11 +183,14 @@ class fetch(APIView):
                         'mode': r.get("mode")
                     }
                 result.append(res)
-        
-        encResult = auth.AESCipher(authKey,authIV).encrypt(str(result))
+        encResp = {
+            "balance":balance,
+            "data":result
+        }
+        encResult = auth.AESCipher(authKey,authIV).encrypt(str(encResp))
         Log_model_services.Log_Model_Service.update_response(
             logid, {"Message": str(resp), "response_code": "1"})
-        return Response({"message": "data found", "data": encResult, "response_code": "1"}, status=status.HTTP_200_OK)
+        return Response({"message": "data found", "data": encResp, "response_code": "1"}, status=status.HTTP_200_OK)
 class tester(APIView):
     def get(self,request):
         authKey = const.AuthKey

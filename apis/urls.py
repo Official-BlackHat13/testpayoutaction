@@ -31,7 +31,7 @@ urlpatterns = [
    #  path("deleteLedger/", views.DeleteLedger.as_view()),
    #  path("update/", views.UpdateLedger.as_view()),
    #  path("auth/",views.Auth.as_view()),
-   #  path("enc/",views.encryptJSON.as_view()),
+    path("enc/",views.extras.encryptJSON.as_view()),
    #  path("decrypt/", views.decryptJson.as_view()),
    #  path("enc/",views.encryptJSON.as_view()),
    #  path("decrypt/", views.decryptJson.as_view()),
@@ -40,7 +40,7 @@ urlpatterns = [
    #  path("head/",views.tester.as_view()),
    #  path("encHeader/",views.encHeader.as_view()),
     path("addBalance/",views.payout.addBalanceApi.as_view()),
-   #  path("fetch/<slug:page>/<slug:length>",views.fetch.as_view()),
+   path("fetch/<slug:page>/<slug:length>",views.extras.fetch.as_view()),
     path("signup/",views.auth.Auth.as_view()),
     path("getLogs/<slug:page>/<slug:length>",views.logs.GetLogs.as_view()),
     path("loginrequest/",views.login.LoginRequestAPI.as_view()),
@@ -51,17 +51,11 @@ urlpatterns = [
    #  path("updateBeneficiary/",views.updateBeneficiary.as_view()),
    #  path("deleteBeneficiary/",views.deleteBeneficiary.as_view()),
    #  path("addBeneficiary/",views.saveBeneficiary.as_view()),
-
     path("adminSignup/",views.auth.AuthAdmin.as_view()),
     path("adminLogin/",views.login.LoginRequestAdminAPI.as_view()),
-
     path("addBeneficiaries/",views.beneficiary.saveBeneficiary.as_view()),
-
-    
     path("addCharge/",views.charge.addCharge.as_view()),
     path("fetchCharges/",views.charge.fetchCharges.as_view())
-
-
    #  path("testicic/",)
    #  path("createTest",views.getTest.as_view()),
    #  path("updateTest/<int:id>",views.updateTest.as_view()),

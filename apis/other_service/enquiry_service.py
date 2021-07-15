@@ -120,8 +120,8 @@ class enquiry_service:
                             hour=endHours, minute=endMinute, second=0, microsecond=0)
             resp = LedgerModel.objects.filter(merchant,trans_time__range=[start, end]).values()
         elif(merchant!=None):
-            print("merchant if")
             resp = LedgerModel.objects.filter(merchant=merchant).values()
+            
         #start
         if(len(resp) == 0):
             return "0"
