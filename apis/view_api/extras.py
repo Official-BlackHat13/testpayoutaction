@@ -81,7 +81,6 @@ class decryptJson(APIView):
         authIV = request.data.get("authiv")
         encResp = auth.AESCipher(authKey,authIV).decrypt(query)
         return Response({"message": "data", "data": str(encResp), "response_code": "3"}, status=status.HTTP_200_OK)
-
 class fetch(APIView):
     #permission_classes = (IsAuthenticated, )
     def post(self,request,page,length):

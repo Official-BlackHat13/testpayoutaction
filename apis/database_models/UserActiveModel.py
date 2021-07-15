@@ -1,7 +1,7 @@
 from django.db import models
 
 from datetime import datetime
-
+import pytz
 
 class UserActiveModel(models.Model):
     id=models.AutoField
@@ -14,7 +14,7 @@ class UserActiveModel(models.Model):
     geo_location=models.CharField(max_length=3000)
     login_time=models.DateTimeField()
     login_expire_time=models.DateTimeField(null=True)
-    created_at=models.DateTimeField(default=datetime.now())
+    created_at=models.DateTimeField(default=datetime.now(pytz.timezone('Asia/Kolkata')))
     deleted_at=models.DateTimeField(default=None,null=True)
     updated_at=models.DateTimeField(default=None,null=True)
     created_by=models.DateTimeField(default=None,null=True)

@@ -1,5 +1,5 @@
 from django.db import models
-
+import pytz
 class IpHittingRecordModel(models.Model):
     id=models.AutoField
     ip_address=models.CharField(max_length=300)

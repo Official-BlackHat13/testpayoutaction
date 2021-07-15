@@ -16,6 +16,7 @@ from ..models import ChargeModel
 from . import Log_model_services
 from django.db import connection
 from sabpaisa import main
+import pytz
 class Ledger_Model_Service:
     def __init__(self,id=None, merchant=None,client_code=None,linked_ledger_id=None,payout_trans_id=None,trans_amount_type=None, type_status=None, amount=None, van=None, trans_type=None, trans_status=None, bank_ref_no=None, customer_ref_no=None, bank_id=None, trans_time=None, bene_account_name=None, bene_account_number=None, bene_ifsc=None, request_header=None, createdBy=None, updatedBy=None, deletedBy=None, created_at=None, deleted_at=None, updated_at=None, status=True, mode=None, charge=None):
         self.id = id
@@ -56,7 +57,7 @@ class Ledger_Model_Service:
         ledgermodel.trans_type=self.trans_type
         ledgermodel.type_status=self.type_status
         ledgermodel.trans_status=self.trans_status
-        ledgermodel.created_at=datetime.now()
+        ledgermodel.created_at=datetime.now(pytz.timezone('Asia/Kolkata'))
         ledgermodel.bank_ref_no=self.bank_ref_no
         ledgermodel.customer_ref_no=self.customer_ref_no
         ledgermodel.bank=self.bank_id
@@ -131,7 +132,7 @@ class Ledger_Model_Service:
 
         ledgerModel=LedgerModel.objects.get(id=id)
         ledgerModel.trans_status=status
-        ledgerModel.updated_at=datetime.now()
+        ledgerModel.updated_at=datetime.now(pytz.timezone('Asia/Kolkata'))
         ledgerModel.save()
         log_service.table_id=ledgerModel.id
         

@@ -1,7 +1,7 @@
 from django.db import models
 from datetime import datetime
 
-
+import pytz
 class BOUserModel(models.Model):
     id=models.AutoField
     role=models.IntegerField()
@@ -12,7 +12,7 @@ class BOUserModel(models.Model):
     mobile=models.CharField(max_length=300)
     auth_key=models.CharField(max_length=300)
     auth_iv=models.CharField(max_length=300)
-    created_at=models.DateTimeField(default=datetime.now())
+    created_at=models.DateTimeField(default=datetime.now(pytz.timezone('Asia/Kolkata')))
     updated_at=models.DateTimeField(default=None,null=True)
     deleted_at=models.DateTimeField(default=None,null=True)
     created_by=models.CharField(max_length=300,null=True,default=None)

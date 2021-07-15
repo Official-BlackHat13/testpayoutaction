@@ -1,5 +1,6 @@
 from django.db import models
 from datetime import datetime
+import pytz
 class MerchantModel(models.Model):
     id=models.AutoField
     role=models.IntegerField(null=True)
@@ -13,7 +14,7 @@ class MerchantModel(models.Model):
     is_payout = models.BooleanField(null=True)
     is_merchant=models.BooleanField(null=True)
     status = models.BooleanField(default=True)
-    created_at=models.DateTimeField(default=datetime.now())
+    created_at=models.DateTimeField(default=datetime.now(pytz.timezone('Asia/Kolkata')))
     deleted_at=models.DateTimeField(default=None,null=True)
     updated_at=models.DateTimeField(default=None,null=True)
     user = models.IntegerField()

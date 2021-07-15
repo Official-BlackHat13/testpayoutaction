@@ -1,5 +1,6 @@
 from django.db import models
 from datetime import datetime
+import pytz
 class BankPartnerModel(models.Model):
     id=models.AutoField
     bank_name=models.CharField(max_length=100)
@@ -7,7 +8,7 @@ class BankPartnerModel(models.Model):
     nodal_account_number=models.CharField(max_length=300)
     nodal_ifsc=models.CharField(max_length=300)
     nodal_account_name=models.CharField(max_length=300)
-    created_at=models.DateTimeField(default=datetime.now())
+    created_at=models.DateTimeField(default=datetime.now(pytz.timezone('Asia/Kolkata')))
     deleted_at=models.DateTimeField(default=None,null=True)
     updated_at=models.DateTimeField(default=None,null=True)
     created_by=models.CharField(max_length=100,null=True)

@@ -71,6 +71,8 @@ request=openapi.Schema(
         "client_code":openapi.Schema(type=openapi.TYPE_STRING, description='client code'),
         "bank_code":openapi.Schema(type=openapi.TYPE_INTEGER, description='string'),
         "role_id":openapi.Schema(type=openapi.TYPE_INTEGER, description='integer'),
+        "ip_addresses":openapi.Schema(type=openapi.TYPE_ARRAY, description='array',items="string"),
+        "phone_number":openapi.Schema(type=openapi.TYPE_INTEGER, description='string')
     
     })
 

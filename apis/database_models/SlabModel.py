@@ -1,13 +1,13 @@
 from django.db import models
 
 from datetime import datetime
-
+import pytz
 class SlabModel(models.Model):
     id=models.AutoField
     merchant_id=models.CharField(max_length=3000)
     min_amount=models.IntegerField()
     max_amount=models.IntegerField()
-    created_at=models.DateTimeField(default=datetime.now())
+    created_at=models.DateTimeField(default=datetime.now(pytz.timezone('Asia/Kolkata')))
     deleted_at=models.DateTimeField(default=None,null=True)
     updated_at=models.DateTimeField(default=None,null=True)
     created_by=models.CharField(max_length=400,default=None,null=True)

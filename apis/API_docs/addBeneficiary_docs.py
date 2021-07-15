@@ -31,7 +31,7 @@ single_bene=openapi.Schema(
     type=openapi.TYPE_OBJECT, 
     properties={
         'auth-token(header)': openapi.Schema(type=openapi.TYPE_STRING, description='string'),
-        'files': openapi.Schema(type=openapi.TYPE_STRING, description='excelfile'),
+        'query': openapi.Schema(type=openapi.TYPE_STRING, description='excelfile'),
     })
 single_bene_response={
 

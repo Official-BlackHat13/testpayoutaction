@@ -1,6 +1,6 @@
 from django.db import models
 from datetime import date, datetime
-
+import pytz
 class LogModel(models.Model):
     id=models.AutoField
     log_type=models.CharField(max_length=300)
@@ -12,7 +12,7 @@ class LogModel(models.Model):
     
     full_request = models.TextField(null=True)
     full_response= models.TextField(null=True)
-    created_at = models.DateTimeField(default=datetime.now())
+    created_at = models.DateTimeField(default=datetime.now(pytz.timezone('Asia/Kolkata')))
     deleted_at = models.DateTimeField(default=None,null=True)
     updated_at = models.DateTimeField(default=None,null=True)
     created_by = models.CharField(max_length=100,null=True)
