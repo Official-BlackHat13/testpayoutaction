@@ -81,10 +81,11 @@ class fetchBeneficiary(APIView):
         merchant_id=None
         #"query":"CARw8RxXinePTv1Chqa/r5EFTapOpkhtv1MrYXrgalG/X2UIFH8XCek14Bn7uv/Wkq/uf3VlWgLoA4F1oY6RXv7A6qFYNQzdac5nS8oylt0="
         role = RoleModel.objects.get(id=clientModel.role)
-        if role.role_name=="test" :
+        if  not clientModel.is_encrypt :
+            print("yooooooooooooooooooooooooooooooo")
             account_number = request.data.get("account_number")
             ifsc_code = request.data.get("ifsc_code")
-            merchant_id = request.data.get("merchant_id")
+            merchant_id = merchantId
             service = Beneficiary_Model_Services(account_number=account_number,ifsc_code=ifsc_code,merchant_id=merchant_id)
             response= list(service.fetchBeneficiaryByParams())
             return Response({"data":str(response),"responseCode":"1"})
@@ -139,7 +140,7 @@ class addSingleBeneficiary(APIView):
         authIV = clientModel.auth_iv
         role = RoleModel.objects.get(id=clientModel.role)
         decResp = str(request.data.get("query"))
-        if role.role_name!="test" :
+        if  clientModel.is_encrypt :
             decResp = auth.AESCipher(authKey, authIV).decrypt(decResp)
         res = ast.literal_eval(decResp)
         print(res.get("full_name"))

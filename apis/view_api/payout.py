@@ -180,14 +180,15 @@ class addBalanceApi(APIView):
         authIV = clientModel.auth_iv
         #start
         role = RoleModel.objects.get(id=clientModel.role)
-        if clientModel.is_encrypt :
+        if clientModel.is_encrypt==False :
             print("hello")
             decResp = request.data.get("query")
+            print(decResp)
             res = ast.literal_eval(str(decResp))
             response = Ledger_Model_Service.addBal(res,client_ip_address=request.META['REMOTE_ADDR'],merchant = decMerchant,clientCode = clientModel.client_code)
             return Response({"data":str(response),"responseCode":"1"})
         #end
-        decResp = auth.AESCipher(authKey, authIV).decrypt(query)
+        decResp = auth.AESCipher(authKey, authIV).decrypt(str(query))
         res = ast.literal_eval(decResp)
         response = Ledger_Model_Service.addBal(res,client_ip_address=request.META['REMOTE_ADDR'],merchant = decMerchant,clientCode = clientModel.client_code)
         print(authKey+" "+authIV)
