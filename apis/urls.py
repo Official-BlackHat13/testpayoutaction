@@ -58,8 +58,8 @@ urlpatterns = [
     path("addBeneficiaries/",views.beneficiary.saveBeneficiary.as_view()),
 
     
-    path("addCharge/",views.addCharge.as_view()),
-    path("fetchCharges/",views.fetchCharges.as_view())
+    path("addCharge/",views.charge.addCharge.as_view()),
+    path("fetchCharges/",views.charge.fetchCharges.as_view())
 
 
    #  path("testicic/",)

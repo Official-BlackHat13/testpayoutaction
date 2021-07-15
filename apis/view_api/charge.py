@@ -67,6 +67,11 @@ class addCharge(APIView):
     def post(self,request):
         query = request.headers.get("auth_token")
         merchantId = auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(query)
+        mode = None
+        min_amount = None
+        max_amount = None
+        charge_percentage_or_fix = None
+        charge = None
         mode = request.data.get("mode")
         min_amount = request.data.get("min_amount")
         max_amount = request.data.get("max_amount")
