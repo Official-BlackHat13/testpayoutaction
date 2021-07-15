@@ -95,10 +95,9 @@ class GetLogs(APIView):
                 logsser=LogsSerializer(logs,many=True)
                 enc_data=logsser.data
                 print(role.role_name)
-                if const.test_merchants and role.role_name!="test" :
+                if clientModel.is_encrypt :
                   enc_data = auth.AESCipher(authKey, authIV).encrypt(str(logsser.data))
-                elif not const.test_merchants:
-                  enc_data = auth.AESCipher(authKey, authIV).encrypt(str(logsser.data))
+                
                 print(enc_data)
                 print(authKey,authIV,"AUTH KEY , AUTH IV")
                 return Response({"data_length": len(logs), "data": auth.AESCipher(authKey, authIV).encrypt(str(logsser.data))})
@@ -114,12 +113,10 @@ class GetLogs(APIView):
             enc_data=logsser.data
             print(enc_data)
             print(role.role_name)
-            if const.test_merchants and role.role_name!="test" :
+            if clientModel.is_encrypt :
              print("if")
              enc_data = auth.AESCipher(authKey, authIV).encrypt(str(logsser.data))
-            elif not const.test_merchants:
-                print("else")
-                enc_data = auth.AESCipher(authKey, authIV).encrypt(str(logsser.data))
+            
             print(enc_data)
             print(authKey,authIV,"AUTH KEY , AUTH IV")
             return Response({"data_length": len(logs[0][page]), "data": enc_data})

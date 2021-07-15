@@ -47,6 +47,32 @@ INSTALLED_APPS = [
 ]
 CORS_ALLOW_ALL_ORIGINS=True
 CORS_ALLOW_CREDENTIALS = True
+# CORS_ALLOWED_ORIGIN_REGEXES=True
+# CORS_ALLOWED_ORIGINS = [
+
+# ]
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+    "auth-token",
+    "auth_token",
+    "Auth_token",
+]
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
