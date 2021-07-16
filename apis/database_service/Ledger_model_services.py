@@ -57,7 +57,7 @@ class Ledger_Model_Service:
         ledgermodel.trans_type=self.trans_type
         ledgermodel.type_status=self.type_status
         ledgermodel.trans_status=self.trans_status
-        ledgermodel.created_at=datetime.now(pytz.timezone('Asia/Kolkata'))
+        ledgermodel.created_at=datetime.now()
         ledgermodel.bank_ref_no=self.bank_ref_no
         ledgermodel.customer_ref_no=self.customer_ref_no
         ledgermodel.bank=self.bank_id

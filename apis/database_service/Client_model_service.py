@@ -37,21 +37,26 @@ class Client_Model_Service:
         log_service.save()
         return clientmodel.id
     
+    # @staticmethod
+    # def fetch_by_id_filter(id,client_ip_address,created_by)->ClientModel:
+    #     log_service=Log_model_services.Log_Model_Service(log_type="fetch",table_name="apis_clientmodel",remarks="fetching records in apis_clientmodel table by primary key id",client_ip_address=client_ip_address,server_ip_address=const.server_ip,created_by=created_by)
+        
+    #     clientModel=ClientModel.objects.filter(id=id,status=True)
+    #     model=clientModel
+    #     return model
     @staticmethod
     def fetch_by_id(id,client_ip_address,created_by)->ClientModel:
         log_service=Log_model_services.Log_Model_Service(log_type="fetch",table_name="apis_clientmodel",remarks="fetching records in apis_clientmodel table by primary key id",client_ip_address=client_ip_address,server_ip_address=const.server_ip,created_by=created_by)
-        
-        clientModel=ClientModel.objects.get(id=id,status=True)
-        model=clientModel
-    @staticmethod
-    def fetch_by_id(id,client_ip_address,created_by)->ClientModel:
-        log_service=Log_model_services.Log_Model_Service(log_type="fetch",table_name="apis_clientmodel",remarks="fetching records in apis_clientmodel table by primary key id",client_ip_address=client_ip_address,server_ip_address=const.server_ip,created_by=created_by)
-        
-        clientModel=ClientModel.objects.get(id=id,status=True)
-        model=clientModel
-        log_service.table_id=model.id
-        log_service.save()
-        return model
+        try:
+            clientModel=ClientModel.objects.get(id=id,status=True)
+            print(clientModel,"client_model")
+            model=clientModel
+            if clientModel:
+                log_service.table_id=model.id
+            log_service.save()
+            return model
+        except Exception as e:
+            return None
     @staticmethod
     def fetch_by_clientid(client_id,client_ip_address,created_by)->ClientModel:
         log_service=Log_model_services.Log_Model_Service(log_type="fetch",table_name="apis_clientmodel",remarks="fetching records in apis_clientmodel table by client id",client_ip_address=client_ip_address,server_ip_address=const.server_ip,created_by=created_by)

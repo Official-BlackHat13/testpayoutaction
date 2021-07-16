@@ -2,6 +2,7 @@ from apis.database_models.ClientModel import MerchantModel
 import requests
 from apis.database_models.IpWhiteListedModel import IpWhiteListedModel
 from apis.database_service.Client_model_service import Client_Model_Service
+from apis.database_service.BO_user_services import BO_User_Service
 from apis.database_service.UserActive_model_service import UserActive_Model_Service
 from apis.models import RoleModel
 from . import models
@@ -10,6 +11,7 @@ from django.shortcuts import HttpResponse
 from datetime import datetime,timedelta,timezone
 from sabpaisa import auth
 
+import pytz
 # from .database_service.Log_model_services import Log_Model_Service
 from . import const
 def IpWhiteListed(get_response):
@@ -17,7 +19,7 @@ def IpWhiteListed(get_response):
         print(request.headers)
         ip=request.META['REMOTE_ADDR']
         try:
-            if(request.path!="/api/" and request.path!="/" and "/admin/" not in request.path and request.path!="/api/auth/" and request.path not in "/api/token/" and request.path!="/api/loginrequest/" and request.path!="/api/loginverified/" and request.path!="/api/resendotp/" and const.merchant_check):
+            if(request.path!="/api/" and request.path!="/" and "/admin/" not in request.path and request.path!="/api/signup/" and request.path not in "/api/token/" and request.path!="/api/loginrequest/" and request.path!="/api/loginverified/" and request.path!="/api/resendotp/" and request.path!="/api/adminLogin/" and request.path!="/api/adminSignup/" and const.merchant_check):
                 if "api_key" not in request.headers:
                     print("not condition")
                     error_res=HttpResponse(str({"message":"APIKEY not provided"}))
@@ -28,8 +30,11 @@ def IpWhiteListed(get_response):
                 merchant_id=auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(merchant_id)
                 print(merchant_id)
                 clientmodel=Client_Model_Service.fetch_by_id(int(merchant_id),request.META['REMOTE_ADDR'],merchant_id)
-                # if not clientmodel:
-                #     raise Exception("Merchant id not valid")
+                bomodel=BO_User_Service.fetch_by_id(merchant_id)
+                if not (clientmodel or bomodel):
+                    error_res=HttpResponse(str({"message":"user not valid"}))
+                    error_res['Content-Type'] = 'application/json'
+                    return error_res
                 if "/api/getLogs/" in  request.path:
                     pass
                 if not clientmodel.is_ip_checking:
@@ -81,7 +86,7 @@ def IpWhiteListed(get_response):
 def MultiTabsRestriction(get_response):
     def middleware(req):
 
-        if req.path!="/api/" and req.path!="/" and "/admin/" not in req.path and req.path!="/api/auth/" and req.path not in "/api/token/" and req.path!="/api/loginrequest/" and req.path!="/api/loginverified/" and req.path!="/api/resendotp/" and const.multitabs:
+        if req.path!="/api/" and req.path!="/" and "/admin/" not in req.path and req.path!="/api/signup/" and req.path not in "/api/token/" and req.path!="/api/loginrequest/" and req.path!="/api/loginverified/" and req.path!="/api/resendotp/" and req.path!="/api/adminLogin/" and req.path!="/api/adminSignup/" and const.multitabs:
             
             merchant_id = req.headers["auth_token"]
             tab_token=req.headers["tab_token"]
@@ -96,8 +101,8 @@ def MultiTabsRestriction(get_response):
             user_active=UserActive_Model_Service.fetch_by_merchant_id(merchant_id)
             # last_login_time=user_active.last_server_call_time
             # login_expire = user_active.login_expire_time
-            now = datetime.now()
-            now.replace(tzinfo=timezone.utc)
+            now = datetime.now(pytz.timezone('Asia/Kolkata'))
+            # now.replace(tzinfo=timezone.utc)
             if user_active.client_ip_address!=ip and user_active.login_status=="active":
                 res=HttpResponse(str({"message":"ip does not matched"}))
                 res['Content-Type'] = 'application/json'
@@ -148,4 +153,28 @@ def MultiTabsRestriction(get_response):
            
 
 
+    return middleware
+
+
+def checkClientStatus(get_response):
+    def middleware(req):
+        if req.path!="/api/" and req.path!="/" and "/admin/" not in req.path and req.path!="/api/signup/" and req.path not in "/api/token/" and req.path!="/api/loginrequest/" and req.path!="/api/loginverified/" and req.path!="/api/resendotp/" and req.path!="/api/adminLogin/" and req.path!="/api/adminSignup/":
+            try:
+                merchant_id = req.headers["auth_token"]
+                merchant_id=auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(merchant_id)
+                clientmodel=Client_Model_Service.fetch_by_id(int(merchant_id),req.META['REMOTE_ADDR'],merchant_id)
+                bomodel=BO_User_Service.fetch_by_id(int(merchant_id))
+                if clientmodel==None or bomodel==None:
+                            print('enter if')
+                            error_res=HttpResponse(str({"message":"user not valid"}))
+                            error_res['Content-Type'] = 'application/json'
+                            return error_res
+            except Exception as e:
+                 import traceback
+                 print(traceback.format_exc())
+                 error_res=HttpResponse(str({"message":e.args}))
+                 error_res['Content-Type'] = 'application/json'
+                 return error_res
+        res = get_response(req)
+        return res
     return middleware

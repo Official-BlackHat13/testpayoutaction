@@ -27,32 +27,33 @@ class BO_User_Service:
         return bouser.id
     @staticmethod
     def fetch_by_name(name,client_ip_address,created_by):
-        bouser=BOUserModel.objects.filter(name=name)
+        bouser=BOUserModel.objects.filter(name=name,status=True)
         
         return bouser
     @staticmethod
     def fetch_by_name(email,client_ip_address,created_by):
-        bouser=BOUserModel.objects.filter(email=email)
+        bouser=BOUserModel.objects.filter(email=email,status=True)
         
         return bouser
     @staticmethod
     def fetch_by_username_password(username,password,client_ip_address,created_by):
-        bouser = BOUserModel.objects.filter(username=username,password=password)
+        bouser = BOUserModel.objects.filter(username=username,password=password,status=True)
         
         return bouser
     @staticmethod
     def fetch_user_type(id):
-        bouser = BOUserModel.objects.get(id=id)
+        bouser = BOUserModel.objects.get(id=id,status=True)
         if bouser == None:
             return None
         return bouser.role
     @staticmethod
     def fetch_by_id(id)->BOUserModel:
         try:
-         bouser = BOUserModel.objects.get(id=id)
+         bouser = BOUserModel.objects.get(id=id,status=True)
          return bouser
         except Exception as e:
             return None
+    
 
     
         

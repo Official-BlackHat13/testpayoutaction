@@ -26,5 +26,6 @@ class MerchantModel(models.Model):
     phone = models.CharField(default=None,null=True,max_length=300)
     is_charge=models.BooleanField(default=True)
     is_encrypt=models.BooleanField(default=True)
+    # status=models.BooleanField(default=True)
     def __str__(self):
         return str(self.id)

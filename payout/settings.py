@@ -85,6 +85,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     "apis.middlewares.IpWhiteListed",
     "apis.middlewares.MultiTabsRestriction",
+    "apis.middlewares.checkClientStatus"
 ]
 
 ROOT_URLCONF = 'payout.urls'

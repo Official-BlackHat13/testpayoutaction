@@ -18,6 +18,7 @@ class OtpModel(models.Model):
     created_by=models.DateTimeField(default=None,null=True)
     deleted_by=models.DateTimeField(default=None,null=True)
     updated_by=models.DateTimeField(default=None,null=True)
+    type=models.CharField(default=None,null=True,max_length=300)
     def __str__(self):
         return str(self.id)
     

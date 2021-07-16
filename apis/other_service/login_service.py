@@ -29,7 +29,7 @@ class Login_service:
             # print(rec[0][0])
             otp = int(randomstring.randomNumber(length=6))
             print(user.id)
-            otp_service = Otp_Model_Services(mobile=user.mobile,user_id=user.id,user_type=type,email=user.email,otp=otp,otp_status="pending",verification_token=randomstring.randomString(30))
+            otp_service = Otp_Model_Services(mobile=user.mobile,user_id=user.id,user_type=type,type="back_office",email=user.email,otp=otp,otp_status="pending",verification_token=randomstring.randomString(30))
             id=otp_service.save()
             class ExpireOTP(threading.Thread):
                 def run(self):
@@ -59,7 +59,7 @@ class Login_service:
             rec=Client_Model_Service.get_user_type(user.id)
             # print(rec[0][0])
             otp = int(randomstring.randomNumber(length=6))
-            otp_service = Otp_Model_Services(user_id=user.id,user_type=rec[0][0],email=user.email,otp=otp,otp_status="pending",verification_token=randomstring.randomString(30))
+            otp_service = Otp_Model_Services(user_id=user.id,user_type=rec[0][0],email=user.email,otp=otp,otp_status="pending",type="merchant",verification_token=randomstring.randomString(30))
             id=otp_service.save()
             class ExpireOTP(threading.Thread):
                 def run(self):
@@ -78,7 +78,7 @@ class Login_service:
             return otp_service.verification_token
     @staticmethod
     def login_verification(verification_token,otp,client_ip_address,geo_location,type):
-        record = Otp_Model_Services.fetch_by_verification_token_with_otp(verification_token,otp)
+        record = Otp_Model_Services.fetch_by_verification_token_with_otp(verification_token,otp,type)
         # print("record--> :: "+str(record[0].user))
         
         if len(record)>0 and record[0]=="OTP Expired":

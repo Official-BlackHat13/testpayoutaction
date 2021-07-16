@@ -107,7 +107,7 @@ class bankApiPaymentView(APIView):
         except Exception as e:
          import traceback
          print(traceback.format_exc())
-         Log_model_services.Log_Model_Service.update_response(logid,{"Message":res,"response_code":"2"})
+         Log_model_services.Log_Model_Service.update_response(logid,{"Message":e.args,"response_code":"2"})
          return Response({"Message":"Some Technical error","response_code":"2"},status=status.HTTP_204_NO_CONTENT)
 
 
