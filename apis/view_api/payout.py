@@ -34,7 +34,7 @@ from django.http.response import JsonResponse
 from apis.other_service.enquiry_service import *
 from apis.database_service.Beneficiary_model_services import *
 from ..database_service import Client_model_service,Bank_model_services
-from rest_framework.parsers import JSONParser
+# from rest_framework.parsers import JSONParser
 from ..database_service import Client_model_service,Bank_model_services,IpWhitelisting_model_service
 from django.contrib.auth.models import User
 # from .database_service import Client_model_service,Ledger_model_services

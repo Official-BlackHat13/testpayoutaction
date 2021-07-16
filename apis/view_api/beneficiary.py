@@ -142,9 +142,14 @@ class addSingleBeneficiary(APIView):
         # role = RoleModel.objects.get(id=clientModel.role)
         decResp = str(request.data.get("query"))
         if  clientModel.is_encrypt :
+            
             decResp = auth.AESCipher(authKey, authIV).decrypt(decResp)
+        print("dec_query :: "+str(decResp))
+        # print(decResp["full_name"])
+        
         res = ast.literal_eval(decResp)
         print(res.get("full_name"))
+        print(res,"dic form of res")
         service = Beneficiary_Model_Services(full_name=res.get("full_name"),account_number=res.get("account_number"),ifsc_code=res.get("ifsc_code"),merchant_id=merchantId)
         service.save()
         return Response({"msg":"data saved to database","response_code":'1'},status=status.HTTP_200_OK)
