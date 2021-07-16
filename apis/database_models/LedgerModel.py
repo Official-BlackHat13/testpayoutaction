@@ -1,6 +1,6 @@
 from django.db import models
 from datetime import datetime
-import pytz
+
 class LedgerModel(models.Model):
     id=models.AutoField
     merchant=models.IntegerField()
@@ -18,9 +18,9 @@ class LedgerModel(models.Model):
     mode=models.IntegerField()
     request_header=models.CharField(max_length=400)
     charge=models.FloatField()
-    trans_time = models.DateTimeField(default=datetime.now(pytz.timezone('Asia/Kolkata')))
+    trans_time = models.DateTimeField(default=datetime.now())
     van=models.CharField(max_length=200)
-    created_at=models.DateTimeField(default=datetime.now(pytz.timezone('Asia/Kolkata')))
+    created_at=models.DateTimeField(default=datetime.now())
     deleted_at = models.DateTimeField(default=None, null=True)
     updated_at = models.DateTimeField(default=None, null=True)
     createdBy= models.CharField(max_length=20,default=None,null=True)
