@@ -143,6 +143,7 @@ class deleteBeneficiary(APIView):
 class addSingleBeneficiary(APIView):
     @swagger_auto_schema(request_body=addBeneficiary_docs.single_bene,responses=addBeneficiary_docs.single_bene_response)
     def post(self, request):
+        print("yooooyoyoyooyoyyoyooyoy")
         request_obj = "path:: "+request.path+" :: headers::" + \
             str(request.headers)+" :: meta_data:: " + \
             str(request.META)+"data::"+str(request.data)
@@ -150,6 +151,7 @@ class addSingleBeneficiary(APIView):
                                                    client_ip_address=request.META['REMOTE_ADDR'], server_ip_address=const.server_ip, full_request=request_obj)
         logid = log.save()
         try:
+            print("yooooyoyoyooyoyyoyooyoy")
             auth_token = request.headers.get("auth_token")
             merchantId = auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(auth_token)
             clientModel = Client_model_service.Client_Model_Service.fetch_by_id(
