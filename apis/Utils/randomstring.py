@@ -12,7 +12,7 @@ def randomNumber(length=16):
     count=0
     for i in range(length):
       if count ==0:
-        no = random(1,9)
+        no = random.randint(1,9)
       else:
        no=random.randint(0,9)
       s=s+str(no)

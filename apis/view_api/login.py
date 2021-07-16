@@ -81,6 +81,8 @@ class LoginRequestAdminAPI(APIView):
                 Log_model_services.Log_Model_Service.update_response(logid,{"message":"OTP sent","verification_token":res,"response_code":"1"})
                 return Response({"message":"OTP sent ","verification_token":res,"response_code":"1"},status=status.HTTP_200_OK)
         except Exception as e:
+            import traceback
+            print(traceback.format_exc())
             Log_model_services.Log_Model_Service.update_response(logid,{"message":"Some error occured","Error_Code":e.args,"response_code":"2"})
             return Response({"message":"Some error occured","Error_Code":e.args,"response_code":"2"},status=status.HTTP_409_CONFLICT)
 
@@ -101,6 +103,8 @@ class LoginRequestAPI(APIView):
                 Log_model_services.Log_Model_Service.update_response(logid,{"message":"OTP sent","verification_token":res,"response_code":"1"})
                 return Response({"message":"OTP sent ","verification_token":res,"response_code":"1"},status=status.HTTP_200_OK)
         except Exception as e:
+            import traceback
+            print(traceback.format_exc())
             Log_model_services.Log_Model_Service.update_response(logid,{"message":"Some error occured","Error_Code":e.args,"response_code":"2"})
             return Response({"message":"Some error occured","Error_Code":e.args,"response_code":"2"},status=status.HTTP_409_CONFLICT)
 
