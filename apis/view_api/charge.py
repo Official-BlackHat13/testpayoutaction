@@ -46,12 +46,6 @@ from ..database_service import BO_user_services
 
 from ..models import MerchantModel,RoleModel
 
-
-
-
-
-
-
 # from .models import MerchantModel,RoleModel
 from sabpaisa import auth
 
@@ -66,44 +60,69 @@ from sabpaisa import auth
 from ..database_service.charge_model_service import charge_model_service
 class addCharge(APIView):
     def post(self,request):
-        query = request.headers.get("auth_token")
-        merchantId = auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(query)
-        mode = request.data.get("mode")
-        min_amount = request.data.get("min_amount")
-        max_amount = request.data.get("max_amount")
-        charge_percentage_or_fix = request.data.get("charge_percentage_or_fix")
-        charge = request.data.get("charge")
-        service = charge_model_service(merchant_id=merchantId,mode=mode,min_amount=min_amount,max_amount=max_amount,charge_percentage_or_fix=charge_percentage_or_fix,charge=charge)
-        resp = service.save(client_ip_address=request.META['REMOTE_ADDR'])
-        return Response({"message":"data saved"},status=status.HTTP_200_OK)
+        request_obj = "path:: "+request.path+" :: headers::" + \
+            str(request.headers)+" :: meta_data:: " + \
+            str(request.META)+"data::"+str(request.data)
+
+        log = Log_model_services.Log_Model_Service(log_type="addCharge request at "+request.path+" slug",
+                                                   client_ip_address=request.META['REMOTE_ADDR'], server_ip_address=const.server_ip, full_request=request_obj)
+        logid = log.save()
+        try:
+            query = request.headers.get("auth_token")
+            merchantId = auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(query)
+            mode = request.data.get("mode")
+            min_amount = request.data.get("min_amount")
+            max_amount = request.data.get("max_amount")
+            charge_percentage_or_fix = request.data.get("charge_percentage_or_fix")
+            charge = request.data.get("charge")
+            service = charge_model_service(merchant_id=merchantId,mode=mode,min_amount=min_amount,max_amount=max_amount,charge_percentage_or_fix=charge_percentage_or_fix,charge=charge)
+            resp = service.save(client_ip_address=request.META['REMOTE_ADDR'])
+            return Response({"message":"data saved"},status=status.HTTP_200_OK)
+        except Exception as e:
+            import traceback
+            print(traceback.format_exc())
+            Log_model_services.Log_Model_Service.update_response(logid,{"message":"Some error occured","Error_Code":e.args,"response_code":"2"})
+            return Response({"Message":"some error","Error":e.args})
 
 
 class fetchCharges(APIView):
     def post(self,request):
-        query = request.headers.get("auth_token")
-        if(query==""):
-            return Response({"message":"merchant id required"})
-        id = request.data.get("chargeId")
-        merchantId = auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(query)
-        service = charge_model_service()
-        resp = service.fetch_by_id(id = id,client_ip_address=request.META['REMOTE_ADDR'],created_by="merchant id :: "+merchantId,merchant_id=merchantId)
-        if(resp=="-1"):
-            return Response({"message":"no data found","response_code":"1"},status=status.HTTP_404_NOT_FOUND)
-        response = {
-            "id":resp.get("id"),
-            "mode id":resp.get("mode"),
-            "min_amount":resp.get("min_amount"),
-            "max_amount":resp.get("max_amount"),
-            "charge_percentage_or_fix":resp.get("charge_percentage_or_fix"),
-            "charge":resp.get("charge")
-        }
-        clientModel = Client_model_service.Client_Model_Service.fetch_by_id(
-            id=merchantId, created_by="merchantid :: "+merchantId, client_ip_address=request.META['REMOTE_ADDR'])
-        print("....... ",clientModel.is_encrypt)
-        if(clientModel.is_encrypt==False):
-            return Response({"message":"data found","data":str(response),"response_code":"1"},status=status.HTTP_200_OK)
-        authKey = clientModel.auth_key
-        authIV = clientModel.auth_iv
-        encResp = auth.AESCipher(authKey,authIV).encrypt(str(response))
-        return Response({"message":"data found","data":str(encResp),"response_code":"1"},status=status.HTTP_200_OK)
+        request_obj = "path:: "+request.path+" :: headers::" + \
+            str(request.headers)+" :: meta_data:: " + \
+            str(request.META)+"data::"+str(request.data)
+        log = Log_model_services.Log_Model_Service(log_type="fetchCharges request at "+request.path+" slug",
+                                                   client_ip_address=request.META['REMOTE_ADDR'], server_ip_address=const.server_ip, full_request=request_obj)
+        logid = log.save()
+        try:
+            query = request.headers.get("auth_token")
+            if(query==""):
+                return Response({"message":"merchant id required"})
+            id = request.data.get("chargeId")
+            merchantId = auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(query)
+            service = charge_model_service()
+            resp = service.fetch_by_id(id = id,client_ip_address=request.META['REMOTE_ADDR'],created_by="merchant id :: "+merchantId,merchant_id=merchantId)
+            if(resp=="-1"):
+                return Response({"message":"no data found","response_code":"1"},status=status.HTTP_404_NOT_FOUND)
+            response = {
+                "id":resp.get("id"),
+                "mode id":resp.get("mode"),
+                "min_amount":resp.get("min_amount"),
+                "max_amount":resp.get("max_amount"),
+                "charge_percentage_or_fix":resp.get("charge_percentage_or_fix"),
+                "charge":resp.get("charge")
+            }
+            clientModel = Client_model_service.Client_Model_Service.fetch_by_id(
+                id=merchantId, created_by="merchantid :: "+merchantId, client_ip_address=request.META['REMOTE_ADDR'])
+            print("....... ",clientModel.is_encrypt)
+            if(clientModel.is_encrypt==False):
+                return Response({"message":"data found","data":str(response),"response_code":"1"},status=status.HTTP_200_OK)
+            authKey = clientModel.auth_key
+            authIV = clientModel.auth_iv
+            encResp = auth.AESCipher(authKey,authIV).encrypt(str(response))
+            return Response({"message":"data found","data":str(encResp),"response_code":"1"},status=status.HTTP_200_OK)
+        except Exception as e:
+            import traceback
+            print(traceback.format_exc())
+            Log_model_services.Log_Model_Service.update_response(logid,{"message":"Some error occured","Error_Code":e.args,"response_code":"2"})
+            return Response({"Message":"some error","Error":e.args})
 
