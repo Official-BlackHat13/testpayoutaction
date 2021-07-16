@@ -67,8 +67,14 @@ from sabpaisa import auth
 class fetchBeneficiary(APIView):
     @swagger_auto_schema(request_body=addBeneficiary_docs.fetch_request,responses=addBeneficiary_docs.fetch_response)
     def post(self,request):
+        request_obj = "path:: "+request.path+" :: headers::" + \
+            str(request.headers)+" :: meta_data:: " + \
+            str(request.META)+"data::"+str(request.data)
         auth_token = request.headers["auth_token"]
         merchantId = auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(auth_token)
+        log = Log_model_services.Log_Model_Service(log_type="fetchBeneficiary request at "+request.path+" slug",
+                                                   client_ip_address=request.META['REMOTE_ADDR'], server_ip_address=const.server_ip, full_request=request_obj)
+        logid = log.save()
         clientModel = Client_model_service.Client_Model_Service.fetch_by_id(
             id=merchantId, created_by="merchantid :: "+merchantId, client_ip_address=request.META['REMOTE_ADDR'])
         authKey = clientModel.auth_key
@@ -79,28 +85,33 @@ class fetchBeneficiary(APIView):
         account_number=None
         ifsc_code=None
         merchant_id=None
-        #"query":"CARw8RxXinePTv1Chqa/r5EFTapOpkhtv1MrYXrgalG/X2UIFH8XCek14Bn7uv/Wkq/uf3VlWgLoA4F1oY6RXv7A6qFYNQzdac5nS8oylt0="
-        role = RoleModel.objects.get(id=clientModel.role)
-        if  not clientModel.is_encrypt :
-            print("yooooooooooooooooooooooooooooooo")
-            account_number = request.data.get("account_number")
-            ifsc_code = request.data.get("ifsc_code")
-            merchant_id = merchantId
+        try:
+            role = RoleModel.objects.get(id=clientModel.role)
+            if  not clientModel.is_encrypt :
+                print("yooooooooooooooooooooooooooooooo")
+                account_number = request.data.get("account_number")
+                ifsc_code = request.data.get("ifsc_code")
+                merchant_id = merchantId
+                service = Beneficiary_Model_Services(account_number=account_number,ifsc_code=ifsc_code,merchant_id=merchant_id)
+                response= list(service.fetchBeneficiaryByParams())
+                return Response({"data":str(response),"responseCode":"1"})
+            decQuery = auth.AESCipher(authKey,authIV).decrypt(query).split("'")
+            print(".......... ",decQuery)
+            if(decQuery[1] == "account_number"):
+                account_number = decQuery[3]
+            if(decQuery[5]=="ifsc_code"):
+                ifsc_code=decQuery[7]
+            if(decQuery[9]=="merchant_id"):
+                merchant_id=decQuery[11]
             service = Beneficiary_Model_Services(account_number=account_number,ifsc_code=ifsc_code,merchant_id=merchant_id)
             response= list(service.fetchBeneficiaryByParams())
-            return Response({"data":str(response),"responseCode":"1"})
-        decQuery = auth.AESCipher(authKey,authIV).decrypt(query).split("'")
-        print(".......... ",decQuery)
-        if(decQuery[1] == "account_number"):
-            account_number = decQuery[3]
-        if(decQuery[5]=="ifsc_code"):
-            ifsc_code=decQuery[7]
-        if(decQuery[9]=="merchant_id"):
-            merchant_id=decQuery[11]
-        service = Beneficiary_Model_Services(account_number=account_number,ifsc_code=ifsc_code,merchant_id=merchant_id)
-        response= list(service.fetchBeneficiaryByParams())
-        encResponse = auth.AESCipher(authKey,authIV).encrypt(str(response))
-        return Response({"data":str(encResponse),"responseCode":"1"})
+            encResponse = auth.AESCipher(authKey,authIV).encrypt(str(response))
+            return Response({"data":str(encResponse),"responseCode":"1"})
+        except Exception as e:
+            import traceback
+            print(traceback.format_exc())
+            Log_model_services.Log_Model_Service.update_response(logid,{"message":"Some error occured","Error_Code":e.args,"response_code":"2"})
+            return Response({"Message":"some error","Error":e.args})
 
 class updateBeneficiary(APIView):
     def put(self,request):
@@ -132,25 +143,44 @@ class deleteBeneficiary(APIView):
 class addSingleBeneficiary(APIView):
     @swagger_auto_schema(request_body=addBeneficiary_docs.single_bene,responses=addBeneficiary_docs.single_bene_response)
     def post(self, request):
-        auth_token = request.headers.get("auth_token")
-        merchantId = auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(auth_token)
-        clientModel = Client_model_service.Client_Model_Service.fetch_by_id(
-            id=merchantId, created_by="merchantid :: "+merchantId, client_ip_address=request.META['REMOTE_ADDR'])
-        authKey = clientModel.auth_key
-        authIV = clientModel.auth_iv
-        role = RoleModel.objects.get(id=clientModel.role)
-        decResp = str(request.data.get("query"))
-        if  clientModel.is_encrypt :
-            decResp = auth.AESCipher(authKey, authIV).decrypt(decResp)
-        res = ast.literal_eval(decResp)
-        print(res.get("full_name"))
-        service = Beneficiary_Model_Services(full_name=res.get("full_name"),account_number=res.get("account_number"),ifsc_code=res.get("ifsc_code"),merchant_id=merchantId)
-        service.save()
-        return Response({"msg":"data saved to database","response_code":'1'},status=status.HTTP_200_OK)
-        
+        request_obj = "path:: "+request.path+" :: headers::" + \
+            str(request.headers)+" :: meta_data:: " + \
+            str(request.META)+"data::"+str(request.data)
+        log = Log_model_services.Log_Model_Service(log_type="addSingleBeneficiary request at "+request.path+" slug",
+                                                   client_ip_address=request.META['REMOTE_ADDR'], server_ip_address=const.server_ip, full_request=request_obj)
+        logid = log.save()
+        try:
+            auth_token = request.headers.get("auth_token")
+            merchantId = auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(auth_token)
+            clientModel = Client_model_service.Client_Model_Service.fetch_by_id(
+                id=merchantId, created_by="merchantid :: "+merchantId, client_ip_address=request.META['REMOTE_ADDR'])
+            authKey = clientModel.auth_key
+            authIV = clientModel.auth_iv
+            role = RoleModel.objects.get(id=clientModel.role)
+            decResp = str(request.data.get("query"))
+            if  clientModel.is_encrypt :
+                decResp = auth.AESCipher(authKey, authIV).decrypt(decResp)
+            res = ast.literal_eval(decResp)
+            print(res.get("full_name"))
+            service = Beneficiary_Model_Services(full_name=res.get("full_name"),account_number=res.get("account_number"),ifsc_code=res.get("ifsc_code"),merchant_id=merchantId)
+            service.save()
+            return Response({"msg":"data saved to database","response_code":'1'},status=status.HTTP_200_OK)
+        except Exception as e:
+            import traceback
+            print(traceback.format_exc())
+            Log_model_services.Log_Model_Service.update_response(logid,{"message":"Some error occured","Error_Code":e.args,"response_code":"2"})
+            return Response({"Message":"some error","Error":e.args})
+            
 class saveBeneficiary(APIView):
     @swagger_auto_schema(request_body=addBeneficiary_docs.request,responses=addBeneficiary_docs.response_schema_dict)
     def post(self, request, format=None):
+        request_obj = "path:: "+request.path+" :: headers::" + \
+            str(request.headers)+" :: meta_data:: " + \
+            str(request.META)+"data::"+str(request.data)
+        log = Log_model_services.Log_Model_Service(log_type="saveBeneficiary request at "+request.path+" slug",
+                                                   client_ip_address=request.META['REMOTE_ADDR'], server_ip_address=const.server_ip, full_request=request_obj)
+        logid = log.save()
+
         api_key = str(request.headers['auth_token'])
         merchantId =auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(api_key)
         try:
@@ -179,4 +209,7 @@ class saveBeneficiary(APIView):
                         service.save()
             return Response({"msg":"data parsed and saved to database","response_code":'1'},status=status.HTTP_200_OK)
         except Exception as e:
+            import traceback
+            print(traceback.format_exc())
+            Log_model_services.Log_Model_Service.update_response(logid,{"message":"Some error occured","Error_Code":e.args,"response_code":"2"})
             return Response({"Message":"some error","Error":e.args})
