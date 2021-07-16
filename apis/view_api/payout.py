@@ -34,7 +34,7 @@ from django.http.response import JsonResponse
 from apis.other_service.enquiry_service import *
 from apis.database_service.Beneficiary_model_services import *
 from ..database_service import Client_model_service,Bank_model_services
-from rest_framework.parsers import JSONParser
+# from rest_framework.parsers import JSONParser
 from ..database_service import Client_model_service,Bank_model_services,IpWhitelisting_model_service
 from django.contrib.auth.models import User
 # from .database_service import Client_model_service,Ledger_model_services
@@ -66,43 +66,49 @@ class bankApiPaymentView(APIView):
     # permission_classes = (IsAuthenticated, )
     @swagger_auto_schema(request_body=payout_docs.request,responses=payout_docs.response_schema_dict)
     def post(self,req):
-        request_obj = "path::"+req.path+"headers::"+str(req.headers)+"meta_data::"+str(req.META)+"data::"+str(req.data)
-        # payment_service=IFDC_service.payment.Payment()
-        api_key = req.headers['auth_token']
-        merchant_id=auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(api_key)
-        encrypted_code=req.data["encrypted_code"]
-        
-        log = Log_model_services.Log_Model_Service(log_type="Post request at "+req.path+" slug",client_ip_address=req.META['REMOTE_ADDR'],server_ip_address=const.server_ip,full_request=request_obj)
-        logid=log.save()
-        client = Client_model_service.Client_Model_Service.fetch_by_id(merchant_id,req.META['REMOTE_ADDR'],"merchant id :: "+merchant_id)
-        print("client bank::"+str(client.bank))
-        bank = Bank_model_services.Bank_model_services.fetch_by_id(client.bank,req.META['REMOTE_ADDR'],"merchant id :: "+merchant_id)
-        # print("bank::"+str(bank))
-        payout=payout_service.PayoutService(merchant_id=merchant_id,encrypted_code=encrypted_code,client_ip_address=req.META['REMOTE_ADDR'])
-        if(bank.bank_name=="ICICI"):
-         res = payout.excuteICICI()
-        elif bank.bank_name=="PAYTM":
-            res = payout.excutePAYTM()
-        else:
-            res = payout.excuteIDFC()
-        if(res[0]=="Payout Done"):
-            # merchant=MerchantModel.objects.get(id=merchant_id)
-            # role = RoleModel.objects.get(id=merchant.role)
-            enc_str=res[1]
-            if client.is_encrypt:
-             enc_str=str(auth.AESCipher(client.auth_key,client.auth_iv).encrypt(str(res[1])))[2:].replace("'","")
+        try:
+            request_obj = "path::"+req.path+"headers::"+str(req.headers)+"meta_data::"+str(req.META)+"data::"+str(req.data)
+            # payment_service=IFDC_service.payment.Payment()
+            api_key = req.headers['auth_token']
+            merchant_id=auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(api_key)
+            encrypted_code=req.data["encrypted_code"]
             
-            Log_model_services.Log_Model_Service.update_response(logid,{"Message":res,"response_code":"1"})
-            return Response({"Message":"Payout Done",'resData':enc_str,"response_code":"1"},status=status.HTTP_200_OK)
-        elif res[2]:
-            Log_model_services.Log_Model_Service.update_response(logid,{"Message":res,"response_code":"0"})
-            return Response({"Message":res[0],"response_code":"0"},status=status.HTTP_400_BAD_REQUEST)
-        elif res[0]==False:
-            Log_model_services.Log_Model_Service.update_response(logid,{"Message":"credential not matched","response_code":"3"})
-            return Response({"Message":"credential not matched","response_code":"3"},status=status.HTTP_401_UNAUTHORIZED)
-        else:
-            Log_model_services.Log_Model_Service.update_response(logid,{"Message":res,"response_code":"2"})
-            return Response({"Message":res[0],"response_code":"2"},status=status.HTTP_204_NO_CONTENT)
+            log = Log_model_services.Log_Model_Service(log_type="Post request at "+req.path+" slug",client_ip_address=req.META['REMOTE_ADDR'],server_ip_address=const.server_ip,full_request=request_obj)
+            logid=log.save()
+            client = Client_model_service.Client_Model_Service.fetch_by_id(merchant_id,req.META['REMOTE_ADDR'],"merchant id :: "+merchant_id)
+            print("client bank::"+str(client.bank))
+            bank = Bank_model_services.Bank_model_services.fetch_by_id(client.bank,req.META['REMOTE_ADDR'],"merchant id :: "+merchant_id)
+            # print("bank::"+str(bank))
+            payout=payout_service.PayoutService(merchant_id=merchant_id,encrypted_code=encrypted_code,client_ip_address=req.META['REMOTE_ADDR'])
+            if(bank.bank_name=="ICICI"):
+             res = payout.excuteICICI()
+            elif bank.bank_name=="PAYTM":
+                res = payout.excutePAYTM()
+            else:
+                res = payout.excuteIDFC()
+            if(res[0]=="Payout Done"):
+                # merchant=MerchantModel.objects.get(id=merchant_id)
+                # role = RoleModel.objects.get(id=merchant.role)
+                enc_str=res[1]
+                if client.is_encrypt:
+                 enc_str=str(auth.AESCipher(client.auth_key,client.auth_iv).encrypt(str(res[1])))[2:].replace("'","")
+                
+                Log_model_services.Log_Model_Service.update_response(logid,{"Message":res,"response_code":"1"})
+                return Response({"Message":"Payout Done",'resData':enc_str,"response_code":"1"},status=status.HTTP_200_OK)
+            elif res[2]:
+                Log_model_services.Log_Model_Service.update_response(logid,{"Message":res,"response_code":"0"})
+                return Response({"Message":res[0],"response_code":"0"},status=status.HTTP_400_BAD_REQUEST)
+            elif res[0]==False:
+                Log_model_services.Log_Model_Service.update_response(logid,{"Message":"credential not matched","response_code":"3"})
+                return Response({"Message":"credential not matched","response_code":"3"},status=status.HTTP_401_UNAUTHORIZED)
+            else:
+                Log_model_services.Log_Model_Service.update_response(logid,{"Message":res,"response_code":"2"})
+                return Response({"Message":res,"response_code":"2"},status=status.HTTP_204_NO_CONTENT)
+        except Exception as e:
+         import traceback
+         print(traceback.format_exc())
+         Log_model_services.Log_Model_Service.update_response(logid,{"Message":res,"response_code":"2"})
+         return Response({"Message":"Some Technical error","response_code":"2"},status=status.HTTP_204_NO_CONTENT)
 
 
 
@@ -110,7 +116,7 @@ class paymentEnc(APIView):
     @swagger_auto_schema(request_body=payoutTransactionEnquiry_docs.request,responses=payoutTransactionEnquiry_docs.response_schema_dict)
 
     def post(self,req):       
-
+        
         try:
             data = req.data["query"]
             auth_token = req.headers["auth_token"]

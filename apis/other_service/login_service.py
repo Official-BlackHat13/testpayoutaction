@@ -27,7 +27,7 @@ class Login_service:
             if type == None:
                 return None
             # print(rec[0][0])
-            otp = int(randomstring.randomNumber(6))
+            otp = int(randomstring.randomNumber(length=6))
             print(user.id)
             otp_service = Otp_Model_Services(mobile=user.mobile,user_id=user.id,user_type=type,email=user.email,otp=otp,otp_status="pending",verification_token=randomstring.randomString(30))
             id=otp_service.save()
@@ -58,7 +58,7 @@ class Login_service:
             user = client_model[0]
             rec=Client_Model_Service.get_user_type(user.id)
             # print(rec[0][0])
-            otp = int(randomstring.randomNumber(6))
+            otp = int(randomstring.randomNumber(length=6))
             otp_service = Otp_Model_Services(user_id=user.id,user_type=rec[0][0],email=user.email,otp=otp,otp_status="pending",verification_token=randomstring.randomString(30))
             id=otp_service.save()
             class ExpireOTP(threading.Thread):

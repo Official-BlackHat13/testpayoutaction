@@ -171,6 +171,28 @@ class addSingleBeneficiary(APIView):
             Log_model_services.Log_Model_Service.update_response(logid,{"message":"Some error occured","Error_Code":e.args,"response_code":"2"})
             return Response({"Message":"some error","Error":e.args})
             
+        auth_token = request.headers.get("auth_token")
+        merchantId = auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(auth_token)
+        
+        clientModel = Client_model_service.Client_Model_Service.fetch_by_id(
+            id=merchantId, created_by="merchantid :: "+merchantId, client_ip_address=request.META['REMOTE_ADDR'])
+        authKey = clientModel.auth_key
+        authIV = clientModel.auth_iv
+        # role = RoleModel.objects.get(id=clientModel.role)
+        decResp = str(request.data.get("query"))
+        if  clientModel.is_encrypt :
+            
+            decResp = auth.AESCipher(authKey, authIV).decrypt(decResp)
+        print("dec_query :: "+str(decResp))
+        # print(decResp["full_name"])
+        
+        res = ast.literal_eval(decResp)
+        print(res.get("full_name"))
+        print(res,"dic form of res")
+        service = Beneficiary_Model_Services(full_name=res.get("full_name"),account_number=res.get("account_number"),ifsc_code=res.get("ifsc_code"),merchant_id=merchantId)
+        service.save()
+        return Response({"msg":"data saved to database","response_code":'1'},status=status.HTTP_200_OK)
+ 
 class saveBeneficiary(APIView):
     @swagger_auto_schema(request_body=addBeneficiary_docs.request,responses=addBeneficiary_docs.response_schema_dict)
     def post(self, request, format=None):

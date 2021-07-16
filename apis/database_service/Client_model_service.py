@@ -13,7 +13,7 @@ class Client_Model_Service:
         self.client_username=client_username
         self.role_id=role_id
         self.phone_number=phone_number
-        self.is_charge=is_charge
+        # self.is_charge=is_charge
         self.client_password=client_password
         self.email=email
     def save(self,client_ip_address,created_by)->int:
@@ -31,7 +31,7 @@ class Client_Model_Service:
         clientmodel.client_password=self.client_password
         clientmodel.user = self.user
         clientmodel.email=self.email
-        clientmodel.is_charge=self.is_charge
+        # clientmodel.is_charge=self.is_charge
         clientmodel.save()
         log_service.table_id=clientmodel.id
         log_service.save()
