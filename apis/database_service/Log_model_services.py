@@ -1,3 +1,4 @@
+from logging import log
 from ..models import LogModel
 from datetime import datetime
 import math
@@ -38,9 +39,14 @@ class Log_Model_Service:
         logmodel.save()
         return logmodel
     @staticmethod
-    def fetch_all_logs_in_parts(length)->list:
-        logmodel= LogModel.objects.all()
+    def fetch_all_logs_in_parts(length,start,end)->list:
+        if start=="all" or end=="all":
+         logmodel= LogModel.objects.all()
+        else:
+            logmodel=LogModel.objects.filter(created_at__range=[start,end])
         if length=="all":
+            return logmodel
+        if len(logmodel)==0:
             return logmodel
         length=int(length)
         splitlen = math.ceil(len(logmodel)/length)

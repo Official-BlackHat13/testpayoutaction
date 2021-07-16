@@ -38,6 +38,7 @@ class BO_User_Service:
     @staticmethod
     def fetch_by_username_password(username,password,client_ip_address,created_by):
         bouser = BOUserModel.objects.filter(username=username,password=password)
+        
         return bouser
     @staticmethod
     def fetch_user_type(id):

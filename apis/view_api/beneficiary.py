@@ -134,11 +134,12 @@ class addSingleBeneficiary(APIView):
     def post(self, request):
         auth_token = request.headers.get("auth_token")
         merchantId = auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(auth_token)
+        
         clientModel = Client_model_service.Client_Model_Service.fetch_by_id(
             id=merchantId, created_by="merchantid :: "+merchantId, client_ip_address=request.META['REMOTE_ADDR'])
         authKey = clientModel.auth_key
         authIV = clientModel.auth_iv
-        role = RoleModel.objects.get(id=clientModel.role)
+        # role = RoleModel.objects.get(id=clientModel.role)
         decResp = str(request.data.get("query"))
         if  clientModel.is_encrypt :
             decResp = auth.AESCipher(authKey, authIV).decrypt(decResp)
