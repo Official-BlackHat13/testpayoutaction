@@ -16,3 +16,11 @@ response_dict={
     
    
 }
+
+request=openapi.Schema(
+    # items=["trans_type","clientCode","orderId","startTime","endTime"],
+    type=openapi.TYPE_OBJECT, 
+    properties={
+        "start":openapi.Schema(type=openapi.TYPE_STRING, description='string'),
+    "end":openapi.Schema(type=openapi.TYPE_STRING, description='string')
+    })

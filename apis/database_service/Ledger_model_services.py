@@ -47,6 +47,19 @@ class Ledger_Model_Service:
         # self.status = status
         self.mode = mode
         self.charge = charge
+    def to_json(self):
+        json  = {}
+        json["amount"]=self.amount
+        json['customer_ref_no']=self.customer_ref_no
+        json["trans_time"]=self.trans_time
+        json['payout_trans_id']=self.payout_trans_id
+        json['charge']=self.charge
+        json['mode']=self.mode
+        json["bene_account_name"]=self.bene_account_name
+        json['bene_account_number']=self.bene_account_number
+        json['bene_ifsc']=self.bene_ifsc
+        json["trans_status"]=self.trans_status
+        return json
 
     def save(self,createdBy, client_ip_address=None):
         #log_service = Log_model_services.Log_Model_Service(log_type="create",table_name="apis_ledgermodel",client_ip_address=client_ip_address,server_ip_address=const.server_ip,created_by=self.client_code)

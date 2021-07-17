@@ -7,12 +7,16 @@ class Slab_Model_Service:
         self.merchant_id=merchant_id
         self.min_amount=min_amount
         self.max_amount=max_amount
-    def save(self):
+    def save(self)->int:
+        slabmodel = SlabModel.objects.filter(merchant_id=self.merchant_id)
+        if len(slabmodel)!=0:
+            return None
         slabmodel = SlabModel()
         slabmodel.merchant_id=self.merchant_id
         slabmodel.min_amount=self.min_amount
         slabmodel.max_amount=self.max_amount
         slabmodel.save()
+        return slabmodel.id
     def fetch_by_id(id=None):
         slabmodel=SlabModel.objects.get(id=id)
         return slabmodel

@@ -1,4 +1,4 @@
-from apis.view_api import payout
+from apis.view_api import payout, slab
 from django.urls import path
 from drf_yasg import views
 from rest_framework import permissions
@@ -59,6 +59,7 @@ urlpatterns = [
     path("adminLogin/",views.login.LoginRequestAdminAPI.as_view()),
     path("addBeneficiaries/",views.beneficiary.saveBeneficiary.as_view()),
     path("addCharge/",views.charge.addCharge.as_view()),
+    path("addSlab/",views.slab.SlabView.as_view()),
     path("fetchCharges/",views.charge.fetchCharges.as_view())
    #  path("testicic/",)
    #  path("createTest",views.getTest.as_view()),
