@@ -164,7 +164,7 @@ def checkClientStatus(get_response):
                 merchant_id=auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(merchant_id)
                 clientmodel=Client_Model_Service.fetch_by_id(int(merchant_id),req.META['REMOTE_ADDR'],merchant_id)
                 bomodel=BO_User_Service.fetch_by_id(int(merchant_id))
-                if clientmodel==None or bomodel==None:
+                if clientmodel==None and bomodel==None:
                             print('enter if')
                             error_res=HttpResponse(str({"message":"user not valid"}))
                             error_res['Content-Type'] = 'application/json'
