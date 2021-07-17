@@ -163,12 +163,36 @@ def checkClientStatus(get_response):
                 merchant_id = req.headers["auth_token"]
                 merchant_id=auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(merchant_id)
                 clientmodel=Client_Model_Service.fetch_by_id(int(merchant_id),req.META['REMOTE_ADDR'],merchant_id)
-                bomodel=BO_User_Service.fetch_by_id(int(merchant_id))
-                if clientmodel==None and bomodel==None:
+                
+                if clientmodel==None :
                             print('enter if')
                             error_res=HttpResponse(str({"message":"user not valid"}))
                             error_res['Content-Type'] = 'application/json'
                             return error_res
+            except Exception as e:
+                 import traceback
+                 print(traceback.format_exc())
+                 error_res=HttpResponse(str({"message":e.args}))
+                 error_res['Content-Type'] = 'application/json'
+                 return error_res
+        res = get_response(req)
+        return res
+    return middleware
+
+def checkBackofficeStatus(get_response):
+    def middleware(req):
+        if req.path!="/api/" and req.path!="/" and "/admin/" not in req.path and req.path!="/api/signup/" and req.path not in "/api/token/" and req.path!="/api/loginrequest/" and req.path!="/api/loginverified/" and req.path!="/api/resendotp/" and req.path!="/api/adminLogin/" and req.path!="/api/adminSignup/" and req.path!="/api/addSlab/":
+            try:
+                merchant_id = req.headers["auth_token"]
+                merchant_id=auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(merchant_id)
+                
+                bomodel=BO_User_Service.fetch_by_id(int(merchant_id))
+                if bomodel==None:
+                            print('enter if')
+                            error_res=HttpResponse(str({"message":"user not valid"}))
+                            error_res['Content-Type'] = 'application/json'
+                            return error_res
+                
             except Exception as e:
                  import traceback
                  print(traceback.format_exc())
