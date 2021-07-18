@@ -11,7 +11,7 @@ class BeneficiaryModel(models.Model):
     created_at=models.DateTimeField(default=datetime.now())
     deleted_at=models.DateTimeField(default=None,null=True)
     updated_at=models.DateTimeField(default=None,null=True)
-    created_by=models.DateTimeField(default=None,null=True)
+    created_by=models.CharField(max_length=30,default="merchant")
     deleted_by=models.DateTimeField(default=None,null=True)
     updated_by=models.CharField(max_length=20,null=True)
     def __str__(self):
