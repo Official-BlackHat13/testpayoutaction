@@ -65,16 +65,10 @@ class enquiry_service:
         start = dt.replace(year=startYear, day=startDay, month=startMonth, hour=startHours, minute=startMinute, second=0, microsecond=0)
         end = dt.replace(year=endYear, day=endDay, month=endMonth,hour=endHours, minute=endMinute, second=0, microsecond=0)
         Ledger = LedgerModel.objects.filter(trans_time__range=[start, end])
-
-        clientModel = Client_model_service.Client_Model_Service.fetch_by_id(
-            id=merchant, created_by=created_by, client_ip_address=client_ip_address)
-        authKey = clientModel.auth_key
-        authIV = clientModel.auth_iv
         if(len(Ledger) == 0):
                 return "0"
         resp = str(list(Ledger.values()))
-        encResp = auth.AESCipher(authKey, authIV).encrypt(resp)
-        return encResp
+        return resp
 
     @staticmethod
     def get_enc(customer_ref,client_ip_address,created_by):
@@ -84,22 +78,14 @@ class enquiry_service:
             return None
         return rec
     @staticmethod
-    def fetchLedgerByParams(merchant, created_by,client_ip_address, page,length,client_code=None, customer_ref_no=None, startTime=None, endTime=None, trans_type=None):
+    def fetchLedgerByParams(merchant, created_by,client_ip_address, page,length,startTime=None, endTime=None, payment_mode=None,trans_status=None):
         log_service = Log_model_services.Log_Model_Service(log_type="fetch", table_name="apis_ledgermodel", remarks="fetching records in apis_ledgermodel table",
                                                             client_ip_address=client_ip_address, server_ip_address=const.server_ip, created_by=created_by)
         log_service.save()
         resp = list()
         if(merchant==None):
             return "-1"
-        if(client_code != None and merchant != None and customer_ref_no!=None and trans_type != None):
-            resp = LedgerModel.objects.filter(merchant=merchant,client_code=client_code,customer_ref_no=customer_ref_no,trans_type=trans_type).values()
-        elif(client_code != None and merchant != None):
-            resp = LedgerModel.objects.filter(merchant=merchant,client_code=client_code).values()
-        elif(customer_ref_no != None and merchant != None):
-            resp = LedgerModel.objects.filter(merchant=merchant,customer_ref_no=customer_ref_no).values()
-        elif(trans_type != None and merchant != None):
-            resp = LedgerModel.objects.filter(merchant=merchant,trans_type=trans_type).values()
-        elif(startTime!=None and endTime!=None  and merchant!=None):
+        if(startTime!="all" and endTime!="all"and trans_status!="all"and payment_mode!="all"):
             print("start time and end time if")
             startYear = int(startTime[0:4])
             startMonth = int(startTime[5:7])
@@ -118,28 +104,5 @@ class enquiry_service:
                             hour=startHours, minute=startMinute, second=0, microsecond=0)
             end = dt.replace(year=endYear, day=endDay, month=endMonth,
                             hour=endHours, minute=endMinute, second=0, microsecond=0)
-            resp = LedgerModel.objects.filter(merchant,trans_time__range=[start, end]).values()
-        elif(merchant!=None):
-            resp = LedgerModel.objects.filter(merchant=merchant).values()
-            
-        #start
-        if(len(resp) == 0):
-            return "0"
-        if(length == "all"):
-            return str(resp)
-        if(int(length) > len(resp)):
-            return str(resp)
-        if(int(length)>=len(resp) and int(page)>1):
-            return "-2"
-        length = int(length)
-        splitlen = math.ceil(len(resp)/length)
-        split_list = []
-        for i in range(splitlen):
-            split_list.append(resp[length*i:length*(i+1)])
-        json = {
-            "data": str(split_list[int(page)-1]),
-            "splitlen": str(splitlen)
-        }
-        respJson = str(json)
-        return split_list[int(page)-1]    
-        #end
+            resp = LedgerModel.objects.filter(merchant=merchant,trans_status=trans_status,payment_mode=payment_mode,trans_time__range=[start, end]).values()
+            return resp

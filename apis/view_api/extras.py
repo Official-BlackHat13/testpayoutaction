@@ -127,13 +127,12 @@ class fetch(APIView):
         startTime=None
         endTime = None
         balance = Ledger_Model_Service.getBalance(decMerchant,request.META['REMOTE_ADDR'],"merchant id :: "+decMerchant)
-        if(clientModel.is_encrypt != True):
+        if(clientModel.is_encrypt== False):
             print("hellllllllllllo")
             startTime = request.data.get("startTime")
             endTime= request.data.get("endTime")
-            clientCode=request.data.get("clientCode")
-            customer_ref_no=request.data.get("orderId")
-            trans_type=request.data.get("trans_type")
+            trans_status=request.data.get("trans_status")
+            payment_mode=request.data.get("payment_mode")
         else:
             print("yoooooo")
             print(query)
@@ -151,9 +150,9 @@ class fetch(APIView):
                 customer_ref_no = value
             elif(key=="trans_type"):
                 trans_type = value
-        resp = enquiry_service.fetchLedgerByParams(client_code = clientCode,
+        resp = enquiry_service.fetchLedgerByParams(payment_mode = payment_mode,
         startTime=startTime,endTime=endTime,page=page,length=length,
-        merchant = decMerchant,customer_ref_no=customer_ref_no,trans_type=trans_type,created_by="merchant id :: "+decMerchant,client_ip_address=request.META['REMOTE_ADDR'])
+        merchant = decMerchant,trans_status=trans_status,created_by="merchant id :: "+decMerchant,client_ip_address=request.META['REMOTE_ADDR'])
         if(resp=="-2"):
             Log_model_services.Log_Model_Service.update_response(
                 logid, {"Message": "length of page is greater then the result length", "response_code": "2"})
@@ -207,7 +206,6 @@ class bankApiEnquiryView(APIView):
     @swagger_auto_schema()
     def post(self,req):
         pass
-
 
 
 
