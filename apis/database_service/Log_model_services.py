@@ -53,6 +53,7 @@ class Log_Model_Service:
         split_list = []
         for i in range(splitlen):
             split_list.append(logmodel[length*i:length*(i+1)])
+        split_list.reverse()
         # print(split_list,splitlen)
         return [split_list,splitlen]
 

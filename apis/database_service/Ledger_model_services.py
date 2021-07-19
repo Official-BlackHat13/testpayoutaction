@@ -75,7 +75,7 @@ class Ledger_Model_Service:
         ledgermodel.created_at=datetime.now()
         ledgermodel.bank_ref_no=self.bank_ref_no
         ledgermodel.customer_ref_no=self.customer_ref_no
-        ledgermodel.bank=self.bank_id
+        ledgermodel.bank_partner_id=self.bank_id
         ledgermodel.trans_init_time = self.trans_time
         ledgermodel.payout_trans_id=self.payout_trans_id
         ledgermodel.trans_amount_type = self.trans_amount_type
@@ -86,13 +86,13 @@ class Ledger_Model_Service:
         ledgermodel.request_header=self.request_header
         ledgermodel.createdBy=self.createdBy
         ledgermodel.updatedBy = self.updatedBy
-        ledgermodel.linked_ledger_id=self.linked_ledger_id
+        ledgermodel.linked_Txn_id=self.linked_ledger_id
         ledgermodel.deletedBy=self.deletedBy
         # ledgermodel.created_at = self.created_at
         ledgermodel.deleted_at = self.deleted_at
         ledgermodel.updated_at = self.updated_at
         # ledgermodel.status = self.status
-        ledgermodel.mode=self.mode
+        ledgermodel.payment_mode=self.mode
         ledgermodel.charge = self.charge
         ledgermodel.save()
 
@@ -294,7 +294,7 @@ class Ledger_Model_Service:
         ledgermodel.amount = decResp.get("amount")
         modeOfTrans = decResp.get("mode")
         m = ModeModel.objects.filter(mode = modeOfTrans)
-        ledgermodel.mode = m[0].id
+        ledgermodel.payment_mode = m[0].id
         ledgermodel.bank_ref_no = const.bank_ref_no
         ledgermodel.trans_amount_type = "credited"
         ledgermodel.trans_type = "payin"
@@ -306,7 +306,7 @@ class Ledger_Model_Service:
         ledgermodel.client_code = clientCode
         #CR06e65070-dbd6-11eb-9816-507b9d006cb8
         ledgermodel.customer_ref_no = generate_unique_customerRef()
-        ledgermodel.bank = const.bank
+        ledgermodel.bank_partner_id = const.bank
         ledgermodel.trans_time = datetime.now()
         ledgermodel.van = " "
         ledgermodel.bene_account_name = const.bene_account_name
