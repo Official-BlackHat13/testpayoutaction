@@ -132,22 +132,27 @@ class paymentEnc(APIView):
             if clientModel.is_encrypt :
              encResp = auth.AESCipher(authKey, authIV).decrypt(data)
             customer_ref = encResp.split(":")[1].replace('"','')
-            rec =enquiry_service.get_enc(customer_ref,req.META['REMOTE_ADDR'],created_by="Merchant id :: "+str(merchant_id))
-            if rec!=None:
-                res = {
-                        'payoutTransactionId':rec.payout_trans_id,
-                        'amount': rec.amount,
-                        'transType': rec.trans_type,
-                        'statusType': rec.type_status,
-                        'bankRefNo': rec.bank_ref_no,
-                        'orderId': rec.customer_ref_no,
-                        'beneficiaryAccountName': rec.bene_account_name,
-                        'beneficiaryAccountNumber': rec.bene_account_number,
-                        'beneficiaryIFSC': rec.bene_ifsc,
-                        'transStatus': rec.trans_status,
-                        'mode': rec.mode
-                    }
-                enc = res
+            recs =enquiry_service.get_enc(customer_ref,req.META['REMOTE_ADDR'],created_by="Merchant id :: "+str(merchant_id))
+            response = []
+            if recs!=None:
+                for rec in recs:
+                    
+                    res = {
+                            'payoutTransactionId':rec.payout_trans_id,
+                            'amount': rec.amount,
+                            'transType': rec.trans_type,
+                            'statusType': rec.type_status,
+                            'bankRefNo': rec.bank_ref_no,
+                            'orderId': rec.customer_ref_no,
+                            'beneficiaryAccountName': rec.bene_account_name,
+                            'beneficiaryAccountNumber': rec.bene_account_number,
+                            'beneficiaryIFSC': rec.bene_ifsc,
+                            'transStatus': rec.trans_status,
+                            'mode': rec.mode
+                        }
+                    response.append(res)
+                    
+                enc = response
                 # print("roleName :: "+role.role_name)
                 if clientModel.is_encrypt:
                  enc = str(auth.AESCipher(authKey,authIV).encrypt(str(res)))[2:].replace("'","")

@@ -82,7 +82,7 @@ class enquiry_service:
         print(rec)
         if len(rec)==0:
             return None
-        return rec[0]
+        return rec
     @staticmethod
     def fetchLedgerByParams(merchant, created_by,client_ip_address, page,length,client_code=None, customer_ref_no=None, startTime=None, endTime=None, trans_type=None):
         log_service = Log_model_services.Log_Model_Service(log_type="fetch", table_name="apis_ledgermodel", remarks="fetching records in apis_ledgermodel table",
@@ -128,7 +128,7 @@ class enquiry_service:
         if(length == "all"):
             return str(resp)
         if(int(length) > len(resp)):
-            return "-2"
+            return str(resp)
         if(int(length)>=len(resp) and int(page)>1):
             return "-2"
         length = int(length)

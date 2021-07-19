@@ -115,7 +115,7 @@ class fetch(APIView):
                 id=decMerchant, created_by="merchant id :: "+decMerchant, client_ip_address=request.META['REMOTE_ADDR'])
         authKey = clientModel.auth_key
         authIV = clientModel.auth_iv
-        query=None
+        # query=None
         print("request :: ",request.data)
         if(request.data.get("query")!=None):
             query = auth.AESCipher(authKey,authIV).decrypt(request.data.get("query")).split("'")
@@ -136,6 +136,7 @@ class fetch(APIView):
             trans_type=request.data.get("trans_type")
         else:
             print("yoooooo")
+            print(query)
             if(len(query)>5):
                 customer_ref_no=query[3]
                 trans_type=query[7]
