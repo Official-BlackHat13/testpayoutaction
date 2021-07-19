@@ -1,3 +1,5 @@
+from django.db.models import query
+from django.http import response
 from apis.database_service.Ledger_model_services import Ledger_Model_Service
 from apis import const
 from sabpaisa import auth
@@ -78,31 +80,23 @@ class enquiry_service:
             return None
         return rec
     @staticmethod
-    def fetchLedgerByParams(merchant, created_by,client_ip_address, page,length,startTime=None, endTime=None, payment_mode=None,trans_status=None):
+    def fetchLedgerByParams(merchant, created_by,client_ip_address, page,length,client_code=None, customer_ref_no=None, startTime=None, endTime=None, trans_type=None):
         log_service = Log_model_services.Log_Model_Service(log_type="fetch", table_name="apis_ledgermodel", remarks="fetching records in apis_ledgermodel table",
                                                             client_ip_address=client_ip_address, server_ip_address=const.server_ip, created_by=created_by)
         log_service.save()
-        resp = list()
-        if(merchant==None):
-            return "-1"
-        if(startTime!="all" and endTime!="all"and trans_status!="all"and payment_mode!="all"):
-            print("start time and end time if")
-            startYear = int(startTime[0:4])
-            startMonth = int(startTime[5:7])
-            startDay = int(startTime[8:10])
-            startHours = int(startTime[11:13])
-            startMinute = int(startTime[14:16])
-
-            endYear = int(endTime[0:4])
-            endMonth = int(endTime[5:7])
-            endDay = int(endTime[8:10])
-            endHours = int(endTime[11:13])
-            endMinute = int(endTime[14:16])+1
-
-            dt = datetime.now()
-            start = dt.replace(year=startYear, day=startDay, month=startMonth,
-                            hour=startHours, minute=startMinute, second=0, microsecond=0)
-            end = dt.replace(year=endYear, day=endDay, month=endMonth,
-                            hour=endHours, minute=endMinute, second=0, microsecond=0)
-            resp = LedgerModel.objects.filter(merchant=merchant,trans_status=trans_status,payment_mode=payment_mode,trans_time__range=[start, end]).values()
+        resp = LedgerModel.objects.filter(merchant=merchant).values()
+        if(length == "all"):
             return resp
+        if(int(length) > len(resp)):
+            return resp
+        length = int(length)
+        splitlen = math.ceil(len(resp)/length)
+        split_list = []
+        for i in range(splitlen):
+            split_list.append(resp[length*i:length*(i+1)])
+        json = {
+            "data": str(split_list[int(page)-1]),
+            "splitlen": str(splitlen)
+        }
+        respJson = str(json)
+        return split_list[int(page)-1]  
