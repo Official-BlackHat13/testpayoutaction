@@ -128,6 +128,7 @@ class PayoutService:
                          print(response.json())
                          if response.json()['status']=="SUCCESS":
                              ledgerModelService.update_status(id,"Success",client_ip_address_temp,"Merchant :: "+str(merchant_id_temp))
+                             ledgerModelService.update_trans_time(id,datetime.now(),client_ip_address_temp,"Merchant :: "+str(merchant_id_temp))
                              if clientModel.is_charge:
                                 charge_ledger=Ledger_model_services.Ledger_Model_Service()
                                 charge_ledger.client_id=clientModel.id

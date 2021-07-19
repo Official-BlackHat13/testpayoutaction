@@ -1,7 +1,7 @@
 from django.db import models
 
 from .database_models.ClientModel import MerchantModel
-from .database_models.LedgerModel import LedgerModel
+from .database_models.LedgerModel import TransactionHistoryModel
 from .database_models.BankModel import BankPartnerModel
 from .database_models.ModeModel import ModeModel
 from .database_models.RoleFeatureModel import RoleFeatureModel
@@ -17,3 +17,4 @@ from .database_models.BOUserModel import BOUserModel
 from .database_models.BeneficiaryModel import BeneficiaryModel
 from .database_models.SlabModel import SlabModel
 # from .database_models.Test import TestModel
+from .database_models.WebhookModel import WebhookModel

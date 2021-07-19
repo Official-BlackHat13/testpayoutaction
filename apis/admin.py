@@ -4,7 +4,7 @@ from . import models
 
 admin.site.register(models.MerchantModel)
 admin.site.register(models.BankPartnerModel)
-admin.site.register(models.LedgerModel)
+admin.site.register(models.TransactionHistoryModel)
 admin.site.register(models.ChargeModel)
 admin.site.register(models.FeatureModel)
 admin.site.register(models.RoleModel)
@@ -18,4 +18,5 @@ admin.site.register(models.BeneficiaryModel)
 admin.site.register(models.UserActiveModel)
 admin.site.register(models.BOUserModel)
 admin.site.register(models.SlabModel)
+admin.site.register(models.WebhookModel)
 

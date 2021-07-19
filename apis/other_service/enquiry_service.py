@@ -4,7 +4,7 @@ from sabpaisa import auth
 from datetime import datetime
 from apis.database_service import Log_model_services
 from ..database_service import Client_model_service
-from ..models import LedgerModel
+from ..models import TransactionHistoryModel as LedgerModel
 from django.db import connection
 import math
 

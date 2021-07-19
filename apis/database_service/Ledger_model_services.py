@@ -8,7 +8,8 @@ from datetime import datetime
 from apis.Utils.generater import *
 from ..database_service import Client_model_service
 from rest_framework.permissions import AND
-from ..models import LedgerModel,ModeModel
+from ..models import TransactionHistoryModel as LedgerModel
+from ..models import ModeModel
 
 
 from ..models import ChargeModel
@@ -36,6 +37,7 @@ class Ledger_Model_Service:
         self.bene_account_number=bene_account_number
         self.bene_ifsc=bene_ifsc
         self.payout_trans_id=payout_trans_id
+        
         self.request_header=request_header
         self.van=van
         self.createdBy=createdBy
@@ -74,7 +76,7 @@ class Ledger_Model_Service:
         ledgermodel.bank_ref_no=self.bank_ref_no
         ledgermodel.customer_ref_no=self.customer_ref_no
         ledgermodel.bank=self.bank_id
-        ledgermodel.trans_time = self.trans_time
+        ledgermodel.trans_init_time = self.trans_time
         ledgermodel.payout_trans_id=self.payout_trans_id
         ledgermodel.trans_amount_type = self.trans_amount_type
         ledgermodel.van=self.van
@@ -145,12 +147,24 @@ class Ledger_Model_Service:
 
         ledgerModel=LedgerModel.objects.get(id=id)
         ledgerModel.trans_status=status
-        ledgerModel.updated_at=datetime.now(pytz.timezone('Asia/Kolkata'))
+        ledgerModel.updated_at=datetime.now()
         ledgerModel.save()
         log_service.table_id=ledgerModel.id
         
         log_service.save()
         return ledgerModel
+    def update_trans_time(self,id,completion_time,client_ip_address,created_by):
+        log_service=Log_model_services.Log_Model_Service(log_type="update",table_name="apis_ledgermodel",remarks="updating status from ledger table for the record fetched by id ",client_ip_address=client_ip_address,server_ip_address=const.server_ip,created_by=created_by)
+
+        ledgerModel=LedgerModel.objects.get(id=id)
+        ledgerModel.trans_completed_time=datetime.now()
+        ledgerModel.updated_at=datetime.now()
+        ledgerModel.save()
+        log_service.table_id=ledgerModel.id
+        
+        log_service.save()
+        return ledgerModel
+    
 
     def deleteById(id, deletedBy,merchant,client_ip_address,createdBy):
         log_service = Log_model_services.Log_Model_Service(log_type="delete", table_name="apis_ledgermodel", remarks="deleting records in apis_ledgermodel table",

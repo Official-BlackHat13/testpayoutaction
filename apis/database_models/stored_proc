@@ -26,13 +26,13 @@
 -- DELIMITER &&
 -- create PROCEDURE getAmount(in type varchar(20),in merchant_id int,out value int)
 -- begin
--- select sum(amount) into value from apis_ledgermodel where trans_amount_type=type and merchant=merchant_id and trans_status in ("Success","Pending","Requested","Proccesing");
+-- select sum(amount) into value from apis_transactionhistorymodel where trans_amount_type=type and merchant=merchant_id and trans_status in ("Success","Pending","Requested","Proccesing");
 -- end 
 -- && DELIMITER ;
 --DELIMITER $$
 --CREATE DEFINER=`root`@`localhost` PROCEDURE `fet`(IN n varchar(1000), m int(11))
 --BEGIN
---select * from apis_ledgermodel where (customer_ref_no = n OR trans_amount_type = n OR client_code = n) AND (merchant = m) ;
+--select * from apis_transactionhistorymodel where (customer_ref_no = n OR trans_amount_type = n OR client_code = n) AND (merchant = m) ;
 --END$$
 --DELIMITER ;
 
