@@ -41,21 +41,23 @@
 -- begin
 -- select apis_rolemodel.role_name from apis_merchantmodel  inner join apis_rolemodel on apis_merchantmodel.role=apis_rolemodel.id where apis_merchantmodel.id=merchant_id;
 -- end 
--- && DELIMITER ;
+-- DELIMITER &&
 -- create PROCEDURE getLedger()
 -- begin
 
--- DECLARE  balance int;
--- DECLARE  merchants int;
--- DECLARE  totaltrans int;
+-- -- DECLARE  balance int;
+-- -- DECLARE  merchants int;
+-- -- DECLARE  totaltrans int;
 
 
 -- create view tempcredview as select sum(amount) as amount,count(*) as totaltrans,merchant  from apis_transactionhistorymodel where trans_amount_type="credited" group by merchant;
 -- create view tempdebview as select sum(amount) as amount,count(*) as totaltrans,merchant  from apis_transactionhistorymodel where trans_amount_type="debited" group by merchant;
 
--- select tempcredview.amount-ifnull(tempdebview.amount,0) as balance, tempcredview.totaltrans+ifnull(tempdebview.totaltrans,0) as totaltrans,tempcredview.merchant from tempcredview left join tempdebview on tempcredview.merchant=tempdebview.merchant;
+-- create view tempview as select tempcredview.amount-ifnull(tempdebview.amount,0) as balance, tempcredview.totaltrans+ifnull(tempdebview.totaltrans,0) as totaltrans,tempcredview.merchant from tempcredview left join tempdebview on tempcredview.merchant=tempdebview.merchant;
+-- select * from tempview inner join apis_merchantmodel on tempview.merchant=apis_merchantmodel.id;
 -- drop view tempcredview;
 -- drop view tempdebview;
+-- drop view tempview;
 
 -- end 
 -- && DELIMITER ;
