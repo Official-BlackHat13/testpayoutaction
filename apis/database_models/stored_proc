@@ -54,7 +54,7 @@
 -- create view tempdebview as select sum(amount) as amount,count(*) as totaltrans,merchant  from apis_transactionhistorymodel where trans_amount_type="debited" group by merchant;
 
 -- create view tempview as select tempcredview.amount-ifnull(tempdebview.amount,0) as balance, tempcredview.totaltrans+ifnull(tempdebview.totaltrans,0) as totaltrans,tempcredview.merchant from tempcredview left join tempdebview on tempcredview.merchant=tempdebview.merchant;
--- select * from tempview inner join apis_merchantmodel on tempview.merchant=apis_merchantmodel.id;
+-- select * from tempview inner join apis_merchantmodel on tempview.merchant=apis_merchantmodel.id where apis_merchantmodel.status=true;
 -- drop view tempcredview;
 -- drop view tempdebview;
 -- drop view tempview;
