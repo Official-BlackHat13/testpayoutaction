@@ -64,3 +64,8 @@
 -- -- select endpage;
 -- end 
 -- && DELIMITER ;
+
+--CREATE DEFINER=`root`@`localhost` PROCEDURE `fetchMerchants`(in length int, in page int)
+--begin
+--select * from apis_merchantmodel limit length offset page;
+--end

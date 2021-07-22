@@ -1,3 +1,4 @@
+from apis.database_models.BOUserModel import BOUserModel
 from ..models import MerchantModel as ClientModel
 from . import Log_model_services
 from .. import const
@@ -128,4 +129,43 @@ class Client_Model_Service:
         # print(value)
         return value
         # log_service.save()
+    @staticmethod
+    def get_all_merchants(page,length): 
+        print("get_all_merchants")
+        offSet = (int(page)-1)*int(length)
+        query = "call fetchMerchants("+str(length)+","+str(offSet)+");"
+        print(query)
+        resp = list()
+        for b in BOUserModel.objects.raw(query):
+            d={
+                'id ':b.id ,
+                'role': b.role,
+                'client': b.client,
+                'client_code': b.client_code,
+                'auth_key': b.auth_key,
+                'auth_iv': b.auth_iv,
+                'bank': b.bank,
+                'client_username': b.client_username,
+                'client_password': b.client_password,
+                'is_payout': b.is_payout,
+                'is_merchant': b.is_merchant,
+                'status':b.status,
+                'created_at':b.created_at,
+                'deleted_at':b.deleted_at,
+                'updated_at':b.updated_at,
 
+                'user': b.user,
+                'created_by': b.created_by,
+                'updated_by':b.updated_by,
+                'deleted_by':b.deleted_by,
+                'is_ip_checking':b.is_ip_checking,
+                'email':b.email,
+
+                'phone':b.phone,
+                'is_charge':b.is_charge,
+                'is_ip_checking':b.is_ip_checking,
+                'is_encrypt':b.is_encrypt
+
+            }
+            resp.append(d)
+        return resp
