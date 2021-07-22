@@ -212,17 +212,52 @@ class Ledger_Model_Service:
         
         cursors = connection.cursor()
        
-        cursors.execute('Call getAmount("debited","++",@cred)')
+        cursors.execute('Call getAmount("debited",'+merchant_id+',@deb)')
+        cursors.execute('select @deb')
+
         # cursors.execute("select @balance")
         # cursors.execute("Call getAmount("'credited'",5,@cred);")
         # cursors.execute("Call getAmount("'debited'",5,@deb);")
         # cursors.execute("")
-        columns = [col[0] for col in cursors.description]
+        # columns = [col[0] for col in cursors.description]
         # print(columns)
-        return [
-        dict(zip(columns, row))
-        for row in cursors.fetchall()
-        ]
+        return cursors.fetchall()[0][0]
+    @staticmethod
+    def getCreditedAmount(merchant_id,client_ip_address,created_by):
+        log_service=Log_model_services.Log_Model_Service(log_type="get Debited Amount",table_name="apis_transaction_history",remarks="getting transaction_history from getAmount stored procedure",client_ip_address=client_ip_address,server_ip_address=const.server_ip,created_by=created_by)
+        
+        cursors = connection.cursor()
+       
+        cursors.execute('Call getAmount("credited",'+merchant_id+',@cred)')
+        cursors.execute('select @cred')
+
+        # cursors.execute("select @balance")
+        # cursors.execute("Call getAmount("'credited'",5,@cred);")
+        # cursors.execute("Call getAmount("'debited'",5,@deb);")
+        # cursors.execute("")
+        # columns = [col[0] for col in cursors.description]
+        # print(columns)
+      
+        # dict(zip(columns, row))
+        return cursors.fetchall()[0][0]
+    @staticmethod
+    def getTransactionHistory(page,length,start,end,merchant_id):
+        try:
+            if start=="all" and end=="all":
+                print("if")
+                record=LedgerModel.objects.raw("select * from apis_transactionhistorymodel where merchant="+merchant_id+" limit "+(page-1)*length+","+page*length+"")
+                # record=LedgerModel.objects.filter(merchant=merchant_id)
+                # print("record :: ",record)
+                
+            else:
+                record=LedgerModel.objects.raw("select * from apis_transactionhistorymodel where merchant="+merchant_id+" and  created_at between "+str(start)+" "+str(end)+" limit "+(page-1)*length+","+page*length+"")
+            # print("record :: ",record)
+            return record
+        except Exception as e:
+            import traceback
+            print(traceback.format_exc())
+            return None
+
     @staticmethod
     def getLedgers(page,length,client_ip_address,created_by):
         log_service=Log_model_services.Log_Model_Service(log_type="get ledgers",table_name="apis_transaction_history",remarks="getting ledgers from getLedgers stored procedure",client_ip_address=client_ip_address,server_ip_address=const.server_ip,created_by=created_by)

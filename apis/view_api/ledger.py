@@ -2,6 +2,7 @@
 # Create your views here.
 
 
+from apis.other_service.ledger_service import Ledger_service
 from django.db.models import query
 
 
@@ -42,15 +43,7 @@ from rest_framework.permissions import IsAuthenticated
 from .. import const
 from ..Utils import randomstring
 from ..database_service import BO_user_services
-
 from ..models import MerchantModel,RoleModel
-
-
-
-
-
-
-
 # from .models import MerchantModel,RoleModel
 from sabpaisa import auth
 
@@ -64,14 +57,15 @@ from ..database_service.BO_user_services import BO_User_Service
 
 from sabpaisa import auth
 
+
 class GetLedgerForMerchant(APIView):
-    def post(self,req,page,length):
+    def get(self,req):
         try:
             auth_token = req.headers["auth_token"]
             id=auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(auth_token)
-            if BO_User_Service.fetch_by_id(id)==None:
+            if Client_model_service.Client_Model_Service.fetch_by_id(id,req.META['REMOTE_ADDR'],"merchant :: "+str(id))==None:
                 return Response({"message":"user not valid","response_code":"0"})
-            data=Ledger_Model_Service.getLedgers(page,length,req.META['REMOTE_ADDR'],"Admin Id :: "+str(id))
+            data=Ledger_service(id,req.META['REMOTE_ADDR'],"merchant :: "+str(id)).getLedgerForMerchant()
             
             return Response({"message":"date found","data":data,"response_code":"1"})
         except Exception as e:
@@ -95,7 +89,23 @@ class GetLedger(APIView):
          print(traceback.format_exc())
         #  Log_model_services.Log_Model_Service.update_response(logid,{"Message":e.args,"response_code":"2"})
          return Response({"Message":"Some Technical error","response_code":"2"},status=status.HTTP_204_NO_CONTENT)
-
+class GetTransactionHistory(APIView):
+    def post(self,req,page,length):
+        try:
+            auth_token = req.headers["auth_token"]
+            start_date=req.data["start"]
+            end_date=req.data['end']
+            id=auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(auth_token)
+            if Client_model_service.Client_Model_Service.fetch_by_id(id,req.META['REMOTE_ADDR'],"Merchant Id :: "+str(id))==None:
+                return Response({"message":"user not valid","response_code":"0"})
+            # data=Ledger_Model_Service.getLedgers(page,length,req.META['REMOTE_ADDR'],"Admin Id :: "+str(id))
+            data=Ledger_Model_Service.getTransactionHistory(page,length,start_date,end_date,id)
+            return Response({"message":"date found","data":data,"response_code":"1"})
+        except Exception as e:
+         import traceback
+         print(traceback.format_exc())
+         #  Log_model_services.Log_Model_Service.update_response(logid,{"Message":e.args,"response_code":"2"})
+         return Response({"Message":"Some Technical error","response_code":"2"},status=status.HTTP_204_NO_CONTENT)
 class LedgerSaveRequest(APIView):
     #permission_classes = (IsAuthenticated, )
     def post(self,request):
