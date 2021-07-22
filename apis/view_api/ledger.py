@@ -95,6 +95,9 @@ class GetTransactionHistory(APIView):
             auth_token = req.headers["auth_token"]
             start_date=req.data["start"]
             end_date=req.data['end']
+            if start_date!="all" or end_date!='all':
+                start_date=datetime.strptime(start_date, "%Y-%m-%d %H:%M:%S")
+                end_date=datetime.strptime(end_date, "%Y-%m-%d %H:%M:%S")
             id=auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(auth_token)
             if Client_model_service.Client_Model_Service.fetch_by_id(id,req.META['REMOTE_ADDR'],"Merchant Id :: "+str(id))==None:
                 return Response({"message":"user not valid","response_code":"0"})

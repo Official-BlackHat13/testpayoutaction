@@ -243,16 +243,26 @@ class Ledger_Model_Service:
     @staticmethod
     def getTransactionHistory(page,length,start,end,merchant_id):
         try:
+            page = int(page)
+            length=int(length)
+
             if start=="all" and end=="all":
                 print("if")
-                record=LedgerModel.objects.raw("select * from apis_transactionhistorymodel where merchant="+merchant_id+" limit "+(page-1)*length+","+page*length+"")
+                record=LedgerModel.objects.raw("select apis_transactionhistorymodel.*,apis_merchantmodel.client_username from apis_transactionhistorymodel inner join apis_merchantmodel on apis_transactionhistorymodel.merchant=apis_merchantmodel.id where merchant="+str(merchant_id)+" limit "+str((page-1)*length)+","+str(page*length)+"")
+                # print(list(record.iterator()))
+                print(record.columns)
                 # record=LedgerModel.objects.filter(merchant=merchant_id)
                 # print("record :: ",record)
                 
             else:
-                record=LedgerModel.objects.raw("select * from apis_transactionhistorymodel where merchant="+merchant_id+" and  created_at between "+str(start)+" "+str(end)+" limit "+(page-1)*length+","+page*length+"")
+                print("select apis_transactionhistorymodel.*,apis_merchantmodel.client_username from apis_transactionhistorymodel inner join apis_merchantmodel on apis_transactionhistorymodel.merchant=apis_merchantmodel.id where merchant="+str(merchant_id)+" and  created_at between "+str(start)+" and "+str(end)+" limit "+str((page-1)*length)+","+str(page*length)+"")
+                record=LedgerModel.objects.raw("select apis_transactionhistorymodel.*,apis_merchantmodel.client_username from apis_transactionhistorymodel inner join apis_merchantmodel on apis_transactionhistorymodel.merchant=apis_merchantmodel.id where merchant="+str(merchant_id)+" and  apis_transactionhistorymodel.created_at between '"+str(start)+"' and '"+str(end)+"' limit "+str((page-1)*length)+","+str(page*length)+"")
             # print("record :: ",record)
-            return record
+            def rec(rec):
+
+                json = {"customer_ref_no":rec.customer_ref_no,"trans_completed_time":rec.trans_completed_time,"trans_init_time":rec.trans_init_time,"charge":rec.charge,"payment_mode":rec.payment_mode,"bene_account_name":rec.bene_account_name,"bene_account_number":rec.bene_account_number,"bene_ifsc":rec.bene_ifsc,"payout_trans_id":rec.payout_trans_id,"created_at":rec.created_at,"updated_at":rec.updated_at,"deleted_at":rec.deleted_at,"trans_amount_type":rec.trans_amount_type,"merchant_id":rec.merchant,"client_username":rec.client_username,"id":rec.id,"amount":rec.amount,"type_status":rec.type_status,"trans_type":rec.trans_type,}
+                return json
+            return list(map(rec,list(record.iterator()))) 
         except Exception as e:
             import traceback
             print(traceback.format_exc())

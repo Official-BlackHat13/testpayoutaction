@@ -86,6 +86,7 @@ class bankApiPaymentView(APIView):
                 res = payout.excutePAYTM()
             else:
                 res = payout.excuteIDFC()
+            
             if(res[0]=="Payout Done"):
                 # merchant=MerchantModel.objects.get(id=merchant_id)
                 # role = RoleModel.objects.get(id=merchant.role)
@@ -95,7 +96,7 @@ class bankApiPaymentView(APIView):
                 
                 Log_model_services.Log_Model_Service.update_response(logid,{"Message":res,"response_code":"1"})
                 return Response({"Message":"Payout Done",'resData':enc_str,"response_code":"1"},status=status.HTTP_200_OK)
-            elif res[2]:
+            elif not res[2]:
                 Log_model_services.Log_Model_Service.update_response(logid,{"Message":res,"response_code":"0"})
                 return Response({"Message":res[0],"response_code":"0"},status=status.HTTP_400_BAD_REQUEST)
             elif res[0]==False:
