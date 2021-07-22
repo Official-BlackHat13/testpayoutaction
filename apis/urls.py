@@ -31,7 +31,7 @@ urlpatterns = [
    #  path("deleteLedger/", views.DeleteLedger.as_view()),
    #  path("update/", views.UpdateLedger.as_view()),
    #  path("auth/",views.Auth.as_view()),
-   #  path("enc/",views.extras.encryptJSON.as_view()),
+   # path("enc/",views.extras.encryptJSON.as_view()),
    #  path("decrypt/", views.decryptJson.as_view()),
    #  path("enc/",views.encryptJSON.as_view()),
    #  path("decrypt/", views.decryptJson.as_view()),
