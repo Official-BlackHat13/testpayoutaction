@@ -59,10 +59,42 @@ from datetime import datetime
 from ..bank_services import ICICI_service
 
 from ..other_service import login_service,signup_service
-
+from ..database_service.BO_user_services import BO_User_Service
+# from 
 
 from sabpaisa import auth
 
+class GetLedgerForMerchant(APIView):
+    def post(self,req,page,length):
+        try:
+            auth_token = req.headers["auth_token"]
+            id=auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(auth_token)
+            if BO_User_Service.fetch_by_id(id)==None:
+                return Response({"message":"user not valid","response_code":"0"})
+            data=Ledger_Model_Service.getLedgers(page,length,req.META['REMOTE_ADDR'],"Admin Id :: "+str(id))
+            
+            return Response({"message":"date found","data":data,"response_code":"1"})
+        except Exception as e:
+         import traceback
+         print(traceback.format_exc())
+        #  Log_model_services.Log_Model_Service.update_response(logid,{"Message":e.args,"response_code":"2"})
+         return Response({"Message":"Some Technical error","response_code":"2"},status=status.HTTP_204_NO_CONTENT)
+
+class GetLedger(APIView):
+    def post(self,req,page,length):
+        try:
+            auth_token = req.headers["auth_token"]
+            id=auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(auth_token)
+            if BO_User_Service.fetch_by_id(id)==None:
+                return Response({"message":"user not valid","response_code":"0"})
+            data=Ledger_Model_Service.getLedgers(page,length,req.META['REMOTE_ADDR'],"Admin Id :: "+str(id))
+            
+            return Response({"message":"date found","data":data,"response_code":"1"})
+        except Exception as e:
+         import traceback
+         print(traceback.format_exc())
+        #  Log_model_services.Log_Model_Service.update_response(logid,{"Message":e.args,"response_code":"2"})
+         return Response({"Message":"Some Technical error","response_code":"2"},status=status.HTTP_204_NO_CONTENT)
 
 class LedgerSaveRequest(APIView):
     #permission_classes = (IsAuthenticated, )
