@@ -207,6 +207,46 @@ class Ledger_Model_Service:
         log_service.save()
         return int(value[0][0])
     @staticmethod
+    def getDebitedAmount(merchant_id,client_ip_address,created_by):
+        log_service=Log_model_services.Log_Model_Service(log_type="get Debited Amount",table_name="apis_transaction_history",remarks="getting transaction_history from getAmount stored procedure",client_ip_address=client_ip_address,server_ip_address=const.server_ip,created_by=created_by)
+        
+        cursors = connection.cursor()
+       
+        cursors.execute('Call getAmount("debited","++",@cred)')
+        # cursors.execute("select @balance")
+        # cursors.execute("Call getAmount("'credited'",5,@cred);")
+        # cursors.execute("Call getAmount("'debited'",5,@deb);")
+        # cursors.execute("")
+        columns = [col[0] for col in cursors.description]
+        # print(columns)
+        return [
+        dict(zip(columns, row))
+        for row in cursors.fetchall()
+        ]
+    @staticmethod
+    def getLedgers(page,length,client_ip_address,created_by):
+        log_service=Log_model_services.Log_Model_Service(log_type="get ledgers",table_name="apis_transaction_history",remarks="getting ledgers from getLedgers stored procedure",client_ip_address=client_ip_address,server_ip_address=const.server_ip,created_by=created_by)
+        
+        cursors = connection.cursor()
+       
+        cursors.execute("call getLedger("+length+","+page+")")
+        # cursors.execute("select @balance")
+        # cursors.execute("Call getAmount("'credited'",5,@cred);")
+        # cursors.execute("Call getAmount("'debited'",5,@deb);")
+        # cursors.execute("")
+        columns = [col[0] for col in cursors.description]
+        # print(columns)
+        return [
+        dict(zip(columns, row))
+        for row in cursors.fetchall()
+        ]
+        # value = cursors.fetchall()
+        
+        # cursors.close()
+        # print(value)
+        # log_service.save()
+        # return value        
+    @staticmethod
     def calculate_charge(merchant_id,mode,amount,client_ip_address):
         mode = ModeModel.objects.filter(mode=mode)
         print(mode[0].id)

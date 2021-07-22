@@ -60,7 +60,9 @@ urlpatterns = [
     path("addBeneficiaries/",views.beneficiary.saveBeneficiary.as_view()),
     path("addCharge/",views.charge.addCharge.as_view()),
     path("addSlab/",views.slab.SlabView.as_view()),
-    path("fetchCharges/",views.charge.fetchCharges.as_view())
+    path("fetchCharges/",views.charge.fetchCharges.as_view()),
+    path("getLedgers/<slug:page>/<slug:length>/",views.ledger.GetLedger.as_view()),
+    path("getLedgersMerchant/",views.ledger.GetLedgerForMerchant.as_view())
    #  path("testicic/",)
    #  path("createTest",views.getTest.as_view()),
    #  path("updateTest/<int:id>",views.updateTest.as_view()),
