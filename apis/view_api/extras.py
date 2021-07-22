@@ -69,9 +69,8 @@ class encryptJSON(APIView):
         query = str(request.data.get("query"))
         authKey = request.data.get("authkey")
         authIV = request.data.get("authiv")
-        normal=request.data.get("yo")
-        print("..... ",normal)
         encResp = auth.AESCipher(authKey,authIV).encrypt(query)
+        print(".............. ",encResp)
         return Response({"message": "data", "data": str(encResp), "response_code": "3"}, status=status.HTTP_200_OK)
 
 class decryptJson(APIView):

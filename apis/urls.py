@@ -1,4 +1,4 @@
-from apis.view_api import payout, slab
+from apis.view_api import client, payout, slab
 from django.urls import path
 from drf_yasg import views
 from rest_framework import permissions
@@ -31,7 +31,7 @@ urlpatterns = [
    #  path("deleteLedger/", views.DeleteLedger.as_view()),
    #  path("update/", views.UpdateLedger.as_view()),
    #  path("auth/",views.Auth.as_view()),
-   #  path("enc/",views.extras.encryptJSON.as_view()),
+   # path("enc/",views.extras.encryptJSON.as_view()),
    #  path("decrypt/", views.decryptJson.as_view()),
    #  path("enc/",views.encryptJSON.as_view()),
    #  path("decrypt/", views.decryptJson.as_view()),
@@ -63,7 +63,11 @@ urlpatterns = [
     path("fetchCharges/",views.charge.fetchCharges.as_view()),
     path("getLedgers/<slug:page>/<slug:length>/",views.ledger.GetLedger.as_view()),
     path("getLedgersMerchant/",views.ledger.GetLedgerForMerchant.as_view()),
+
     path("getTransactionHistory/<slug:page>/<slug:length>",views.ledger.GetTransactionHistory.as_view()),
+
+
+    path("getAllMerchants/<slug:page>/<slug:length>/",views.client.allMerchants.as_view())
 
    #  path("testicic/",)
    #  path("createTest",views.getTest.as_view()),
