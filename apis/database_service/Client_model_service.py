@@ -3,6 +3,8 @@ from ..models import MerchantModel as ClientModel
 from . import Log_model_services
 from .. import const
 from django.db import connection
+from sabpaisa import auth
+from ..const import *
 class Client_Model_Service:
     def __init__(self,email=None,client_id=None,is_charge=None,phone_number=None,client_code=None,role_id=None,auth_key=None,user=None,auth_iv=None,bank_id=None,client_username=None,client_password=None):
         self.client_id=client_id
@@ -136,7 +138,7 @@ class Client_Model_Service:
         query = "call fetchMerchants("+str(length)+","+str(offSet)+");"
         print(query)
         resp = list()
-        for b in BOUserModel.objects.raw(query):
+        for b in ClientModel.objects.raw(query):
             d={
                 'id ':b.id ,
                 'role': b.role,
@@ -153,14 +155,12 @@ class Client_Model_Service:
                 'created_at':b.created_at,
                 'deleted_at':b.deleted_at,
                 'updated_at':b.updated_at,
-
                 'user': b.user,
                 'created_by': b.created_by,
                 'updated_by':b.updated_by,
                 'deleted_by':b.deleted_by,
                 'is_ip_checking':b.is_ip_checking,
                 'email':b.email,
-
                 'phone':b.phone,
                 'is_charge':b.is_charge,
                 'is_ip_checking':b.is_ip_checking,
@@ -168,4 +168,39 @@ class Client_Model_Service:
 
             }
             resp.append(d)
-        return resp
+            
+        result = list(map(enc,resp))
+        print("..........resi = ",result)
+        return result
+
+def enc(b):
+    encId = str(auth.AESCipher(const.AuthKey,const.AuthIV).encrypt(str(b.get("id"))))
+    d={
+                'auth token':encId[2:].replace("'",""),
+                'role':b.get("role"),
+                'client': b.get("client"),
+                'client_code': b.get("client_code"),
+                'auth_key': b.get("auth_key"),
+                'auth_iv': b.get("auth_iv"),
+                'bank': b.get("bank"),
+                'client_username': b.get("client_username"),
+                'client_password': b.get("client_password"),
+                'is_payout': b.get("is_payout"),
+                'is_merchant': b.get("is_merchant"),
+                'status':b.get("status"),
+                'created_at':b.get("created_at"),
+                'deleted_at':b.get("deleted_at"),
+                'updated_at':b.get("updated_at"),
+                'user': b.get("user"),
+                'created_by': b.get("created_by"),
+                'updated_by':b.get("updated_by"),
+                'deleted_by':b.get("deleted_by"),
+                'is_ip_checking':b.get("is_ip_checking"),
+                'email':b.get("email"),
+                'phone':b.get("phone"),
+                'is_charge':b.get("is_charge"),
+                'is_ip_checking':b.get("is_ip_checking"),
+                'is_encrypt':b.get("is_encrypt"),
+            }
+    
+    return d        

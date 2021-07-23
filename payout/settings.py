@@ -137,6 +137,7 @@ DATABASES = {
     #     'PORT': '3306',
     #     # 'socket': '/Applications/XAMPP/xamppfiles/var/mysql/mysql.sock'
     # }
+    #deployment db
      'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'payout_for_development',

@@ -68,8 +68,16 @@ class allMerchants(APIView):
         admin = BO_user_services.BO_User_Service.fetch_by_id(adminId)
         if(admin==None):
             return Response({"message":"admin id does not exist", "Response code":"0"})
+        request_obj = "path:: "+request.path+" :: headers::" + \
+            str(request.headers)+" :: meta_data:: " + \
+            str(request.META)+"data::"+str(request.data)
+        log = Log_model_services.Log_Model_Service(log_type="fetchBeneficiary request at "+request.path+" slug",
+                                                   client_ip_address=request.META['REMOTE_ADDR'], server_ip_address=const.server_ip, full_request=request_obj)
+        logid = log.save()
         resp = Client_model_service.Client_Model_Service.get_all_merchants(page,length)
+        Log_model_services.Log_Model_Service.update_response(
+            logid, {"Message": str(resp), "response_code": "1"})
         if(admin.is_encrypt==True):
             encResp = auth.AESCipher(admin.auth_key,admin.auth_iv).encrypt(str(resp))
-            return Response({"message":"data found", "Response code":"1","data":str(encResp)})
-        return Response({"message":"data fou    nd", "Response code":"1","data":str(resp)})
+            return Response({"message":"data found", "Response code":"1","data":str(resp)})
+        return Response({"message":"data found", "Response code":"1","data":str(resp)})
