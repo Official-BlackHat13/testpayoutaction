@@ -44,7 +44,6 @@ urlpatterns = [
    #  path("fetch/<slug:page>/<slug:length>",views.extras.fetch.as_view()),
    path("FetchLedgers/<slug:page>/<slug:length>",views.extras.fetch.as_view()),
    # path("fetch/<slug:page>/<slug:length>",views.extras.fetch.as_view()),
-
     path("signup/",views.auth.Auth.as_view()),
    #  path("getLogs/<slug:page>/<slug:length>",views.logs.GetLogs.as_view()),
     path("loginrequest/",views.login.LoginRequestAPI.as_view()),
@@ -63,12 +62,8 @@ urlpatterns = [
     path("fetchCharges/",views.charge.fetchCharges.as_view()),
     path("getLedgers/<slug:page>/<slug:length>/",views.ledger.GetLedger.as_view()),
     path("getLedgersMerchant/",views.ledger.GetLedgerForMerchant.as_view()),
-
     path("getTransactionHistory/<slug:page>/<slug:length>",views.ledger.GetTransactionHistory.as_view()),
-
-
     path("getAllMerchants/<slug:page>/<slug:length>/",views.client.allMerchants.as_view())
-
    #  path("testicic/",)
    #  path("createTest",views.getTest.as_view()),
    #  path("updateTest/<int:id>",views.updateTest.as_view()),

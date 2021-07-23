@@ -133,10 +133,8 @@ class Client_Model_Service:
         # log_service.save()
     @staticmethod
     def get_all_merchants(page,length): 
-        print("get_all_merchants")
         offSet = (int(page)-1)*int(length)
         query = "call fetchMerchants("+str(length)+","+str(offSet)+");"
-        print(query)
         resp = list()
         for b in ClientModel.objects.raw(query):
             d={
@@ -168,7 +166,6 @@ class Client_Model_Service:
 
             }
             resp.append(d)
-            
         result = list(map(enc,resp))
         print("..........resi = ",result)
         return result
@@ -202,5 +199,4 @@ def enc(b):
                 'is_ip_checking':b.get("is_ip_checking"),
                 'is_encrypt':b.get("is_encrypt"),
             }
-    
-    return d        
+    return d

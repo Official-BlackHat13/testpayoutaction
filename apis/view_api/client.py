@@ -59,8 +59,6 @@ from ..other_service import login_service,signup_service
 
 from sabpaisa import auth
 
-
-
 class allMerchants(APIView):
     def post(self,request,page,length):
         authToken = request.headers.get("auth-token")
@@ -78,6 +76,6 @@ class allMerchants(APIView):
         Log_model_services.Log_Model_Service.update_response(
             logid, {"Message": str(resp), "response_code": "1"})
         if(admin.is_encrypt==True):
-            encResp = auth.AESCipher(admin.auth_key,admin.auth_iv).encrypt(str(resp))
-            return Response({"message":"data found", "Response code":"1","data":str(resp)})
+            encResp = str(auth.AESCipher(admin.auth_key,admin.auth_iv).encrypt(str(resp)))[2:].replace("'","")
+            return Response({"message":"data found", "Response code":"1","data":str(encResp)})
         return Response({"message":"data found", "Response code":"1","data":str(resp)})
