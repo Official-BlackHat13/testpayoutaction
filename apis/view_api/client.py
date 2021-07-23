@@ -79,5 +79,5 @@ class allMerchants(APIView):
             logid, {"Message": str(resp), "response_code": "1"})
         if(admin.is_encrypt==True):
             encResp = auth.AESCipher(admin.auth_key,admin.auth_iv).encrypt(str(resp))
-            return Response({"message":"data found", "Response code":"1","data":str(resp)})
+            return Response({"message":"data found", "Response code":"1","data":str(encResp)})
         return Response({"message":"data found", "Response code":"1","data":str(resp)})
