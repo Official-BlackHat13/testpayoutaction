@@ -137,8 +137,9 @@ class Client_Model_Service:
         query = "call fetchMerchants("+str(length)+","+str(offSet)+");"
         resp = list()
         for b in ClientModel.objects.raw(query):
+
             d={
-                'id ':b.id ,
+                'id':b.id ,
                 'role': b.role,
                 'client': b.client,
                 'client_code': b.client_code,
@@ -171,9 +172,10 @@ class Client_Model_Service:
         return result
 
 def enc(b):
-    encId = str(auth.AESCipher(const.AuthKey,const.AuthIV).encrypt(str(b.get("id"))))
+    encId = str(auth.AESCipher(const.AuthKey,const.AuthIV).encrypt(str(b["id"])))
     d={
                 'auth token':encId[2:].replace("'",""),
+                "id":b["id"],
                 'role':b.get("role"),
                 'client': b.get("client"),
                 'client_code': b.get("client_code"),
