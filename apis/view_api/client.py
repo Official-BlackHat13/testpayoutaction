@@ -60,7 +60,7 @@ from ..other_service import login_service,signup_service
 from sabpaisa import auth
 
 class allMerchants(APIView):
-    def post(self,request,page,length):
+    def get(self,request,page,length):
         authToken = request.headers.get("auth-token")
         adminId = auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(authToken)
         admin = BO_user_services.BO_User_Service.fetch_by_id(adminId)

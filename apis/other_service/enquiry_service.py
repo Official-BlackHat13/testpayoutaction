@@ -73,8 +73,8 @@ class enquiry_service:
         return resp
 
     @staticmethod
-    def get_enc(customer_ref,client_ip_address,created_by):
-        rec = Ledger_Model_Service.fetch_customer_ref_no(customer_ref_no=customer_ref,client_ip_address=client_ip_address,created_by=created_by)
+    def get_enc(merchant_id,customer_ref,client_ip_address,created_by):
+        rec = Ledger_Model_Service.fetch_customer_ref_no(merchant=merchant_id,customer_ref_no=customer_ref,client_ip_address=client_ip_address,created_by=created_by)
         print(rec)
         if len(rec)==0:
             return None

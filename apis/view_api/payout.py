@@ -133,7 +133,7 @@ class paymentEnc(APIView):
             if clientModel.is_encrypt :
              encResp = auth.AESCipher(authKey, authIV).decrypt(data)
             customer_ref = encResp.split(":")[1].replace('"','')
-            recs =enquiry_service.get_enc(customer_ref,req.META['REMOTE_ADDR'],created_by="Merchant id :: "+str(merchant_id))
+            recs =enquiry_service.get_enc(merchant_id,customer_ref,req.META['REMOTE_ADDR'],created_by="Merchant id :: "+str(merchant_id))
             response = []
             if recs!=None:
                 for rec in recs:
@@ -149,7 +149,7 @@ class paymentEnc(APIView):
                             'beneficiaryAccountNumber': rec.bene_account_number,
                             'beneficiaryIFSC': rec.bene_ifsc,
                             'transStatus': rec.trans_status,
-                            'mode': rec.mode
+                            'mode': rec.payment_mode
                         }
                     response.append(res)
                     
