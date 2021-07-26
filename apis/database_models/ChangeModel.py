@@ -4,7 +4,7 @@ from datetime import datetime
 class ChargeModel(models.Model):
     id=models.AutoField
     # client=models.IntegerField()
-    mode=models.IntegerField()
+    mode_id=models.IntegerField()
     min_amount=models.IntegerField()
     max_amount=models.IntegerField()
     charge_percentage_or_fix=models.CharField(max_length=300)

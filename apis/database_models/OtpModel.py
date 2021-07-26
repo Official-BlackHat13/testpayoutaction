@@ -4,7 +4,7 @@ from datetime import datetime
 
 class OtpModel(models.Model):
     id=models.AutoField
-    user=models.IntegerField()
+    user_id=models.IntegerField()
     user_type=models.CharField(max_length=1000)
     verification_token=models.CharField(max_length=60)
     mobile=models.CharField(max_length=12,null=True)

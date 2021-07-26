@@ -3,7 +3,7 @@ from datetime import datetime
 
 class IpWhiteListedModel(models.Model):
     id=models.AutoField
-    merchant=models.IntegerField()
+    merchant_id=models.IntegerField()
     ip_address=models.CharField(max_length=300)
     status=models.BooleanField(default=True)
     created_at=models.DateTimeField(default=datetime.now())

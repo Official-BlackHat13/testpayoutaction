@@ -3,12 +3,12 @@ from datetime import datetime
 
 class MerchantModel(models.Model):
     id=models.AutoField
-    role=models.IntegerField(null=True)
-    client=models.IntegerField()
+    role_id=models.IntegerField(null=True)
+    client_id=models.IntegerField()
     client_code=models.CharField(max_length=60)
     auth_key=models.CharField(max_length=60)
     auth_iv=models.CharField(max_length=60)
-    bank=models.IntegerField()
+    bank_id=models.IntegerField()
     client_username=models.CharField(max_length=100)
     client_password=models.CharField(max_length=100)
     is_payout = models.BooleanField(null=True)

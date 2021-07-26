@@ -4,7 +4,7 @@ from datetime import datetime
 
 class BOUserModel(models.Model):
     id=models.AutoField
-    role=models.IntegerField()
+    role_id=models.IntegerField()
     username=models.CharField(max_length=300)
     password=models.CharField(max_length=300)
     name=models.CharField(max_length=300)

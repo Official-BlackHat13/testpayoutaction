@@ -3,7 +3,7 @@ from datetime import datetime
 
 class TransactionHistoryModel(models.Model):
     id=models.AutoField
-    merchant=models.IntegerField()
+    merchant_id=models.IntegerField()
     client_code=models.CharField(max_length=60)
     amount=models.FloatField()
     trans_type=models.CharField(max_length=20) #payout/payin/charge
