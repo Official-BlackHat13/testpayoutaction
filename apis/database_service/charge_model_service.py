@@ -26,7 +26,7 @@ class charge_model_service:
         chargeModel.updated_at = self.updated_at
         chargeModel.merchant_id= self.merchant_id
         modeid = ModeModel.objects.filter(mode=self.mode)
-        chargeModel.mode=modeid[0].id
+        chargeModel.mode_id=modeid[0].id
         chargeModel.created_at = datetime.now()
         chargeModel.save()
         log_service.table_id=chargeModel.id

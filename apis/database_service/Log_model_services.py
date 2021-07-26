@@ -39,11 +39,17 @@ class Log_Model_Service:
         logmodel.save()
         return logmodel
     @staticmethod
-    def fetch_all_logs_in_parts(length,start,end)->list:
+    def fetch_all_logs_in_parts(page,length,start,end)->list:
         if start=="all" or end=="all":
          logmodel= LogModel.objects.all()
         else:
-            logmodel=LogModel.objects.filter(created_at__range=[start,end])
+            # logmodel=LogModel.objects.filter(created_at__range=[start,end])
+            logmodel=LogModel.objects.raw("select * from apis_logmodel where created_at between "+str(start)+" and "+str(end)+" limit "+str((page-1)*length)+" , "+str(page*length))
+            print(logmodel.columns)
+            def rec(rec):
+
+                json = {"customer_ref_no":rec.customer_ref_no,"trans_completed_time":rec.trans_completed_time,"trans_init_time":rec.trans_init_time,"charge":rec.charge,"payment_mode":rec.payment_mode_id,"bene_account_name":rec.bene_account_name,"bene_account_number":rec.bene_account_number,"bene_ifsc":rec.bene_ifsc,"payout_trans_id":rec.payout_trans_id,"created_at":rec.created_at,"updated_at":rec.updated_at,"deleted_at":rec.deleted_at,"trans_amount_type":rec.trans_amount_type,"merchant_id":rec.merchant_id,"client_username":rec.client_username,"id":rec.id,"amount":rec.amount,"type_status":rec.type_status,"trans_type":rec.trans_type,}
+                return json
         if length=="all":
             return logmodel
         if len(logmodel)==0:

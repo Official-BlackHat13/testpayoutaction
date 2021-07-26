@@ -23,16 +23,16 @@ class Client_Model_Service:
         log_service=Log_model_services.Log_Model_Service(log_type="create",table_name="apis_clientmodel",remarks="saving records in apis_clientmodel table",client_ip_address=client_ip_address,server_ip_address=const.server_ip,created_by=created_by)
         
         clientmodel=ClientModel()
-        clientmodel.client=self.client_id
+        clientmodel.client_id=self.client_id
         clientmodel.client_code=self.client_code
         clientmodel.auth_key=self.auth_key
-        clientmodel.role=self.role_id
+        clientmodel.role_id=self.role_id
         clientmodel.auth_iv=self.auth_iv
-        clientmodel.bank=self.bank_id
+        clientmodel.bank_id=self.bank_id
         clientmodel.phone=self.phone_number
         clientmodel.client_username=self.client_username
         clientmodel.client_password=self.client_password
-        clientmodel.user = self.user
+        clientmodel.user_id = self.user
         clientmodel.email=self.email
         # clientmodel.is_charge=self.is_charge
         clientmodel.save()
@@ -140,12 +140,12 @@ class Client_Model_Service:
 
             d={
                 'id':b.id ,
-                'role': b.role,
-                'client': b.client,
+                'role': b.role_id,
+                'client': b.client_id,
                 'client_code': b.client_code,
                 'auth_key': b.auth_key,
                 'auth_iv': b.auth_iv,
-                'bank': b.bank,
+                'bank': b.bank_id,
                 'client_username': b.client_username,
                 'client_password': b.client_password,
                 'is_payout': b.is_payout,
@@ -154,7 +154,7 @@ class Client_Model_Service:
                 'created_at':b.created_at,
                 'deleted_at':b.deleted_at,
                 'updated_at':b.updated_at,
-                'user': b.user,
+                'user': b.user_id,
                 'created_by': b.created_by,
                 'updated_by':b.updated_by,
                 'deleted_by':b.deleted_by,

@@ -91,7 +91,7 @@ class GetLogs(APIView):
         logs = Log_model_services.Log_Model_Service(log_type="get request on "+req.path,client_ip_address=req.META['REMOTE_ADDR'],server_ip_address=const.server_ip,full_request=request_obj,remarks="get request on "+req.path+" for fetching the log records")
         logid=logs.save()
         # merchant=MerchantModel.objects.get(id=merchant)
-        role = RoleModel.objects.get(id=clientModel.role)
+        role = RoleModel.objects.get(id=clientModel.role_id)
         try:
             if page=="all" and length != "all":
                 return JsonResponse({"Message":"page and length format does not match"},status=status.HTTP_406_NOT_ACCEPTABLE)

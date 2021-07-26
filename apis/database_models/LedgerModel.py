@@ -15,7 +15,7 @@ class TransactionHistoryModel(models.Model):
     bene_account_name=models.CharField(max_length=300)
     bene_account_number=models.CharField(max_length=300)
     bene_ifsc=models.CharField(max_length=300)
-    payment_mode=models.IntegerField()
+    payment_mode_id=models.IntegerField()
     request_header=models.CharField(max_length=400)
     charge=models.FloatField()
     trans_init_time = models.DateTimeField(default=datetime.now())

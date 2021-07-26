@@ -66,7 +66,7 @@ class Ledger_Model_Service:
     def save(self,createdBy, client_ip_address=None):
         #log_service = Log_model_services.Log_Model_Service(log_type="create",table_name="apis_ledgermodel",client_ip_address=client_ip_address,server_ip_address=const.server_ip,created_by=self.client_code)
         ledgermodel = LedgerModel()
-        ledgermodel.merchant=self.merchant
+        ledgermodel.merchant_id=self.merchant
         ledgermodel.client_code=self.client_code
         ledgermodel.amount=self.amount
         ledgermodel.trans_type=self.trans_type
@@ -92,7 +92,7 @@ class Ledger_Model_Service:
         ledgermodel.deleted_at = self.deleted_at
         ledgermodel.updated_at = self.updated_at
         # ledgermodel.status = self.status
-        ledgermodel.payment_mode=self.mode
+        ledgermodel.payment_mode_id=self.mode
         ledgermodel.charge = self.charge
         ledgermodel.save()
 
@@ -113,7 +113,7 @@ class Ledger_Model_Service:
     
     def fetch_by_clientid(self,client_id,client_ip_address,created_by):
         log_service = Log_model_services.Log_Model_Service(log_type="fetch",table_name="apis_ledgermodel",remarks="fetching all records from ledger table by client id",client_ip_address=client_ip_address,server_ip_address=const.server_ip,created_by=created_by)
-        ledgerModels=LedgerModel.objects.filter(client=client_id)
+        ledgerModels=LedgerModel.objects.filter(client_id=client_id)
         log_service.save()
         return ledgerModels
     def fetch_by_clientcode(self,client_code,client_ip_address,created_by):
@@ -138,7 +138,7 @@ class Ledger_Model_Service:
     @staticmethod
     def fetch_customer_ref_no(merchant,customer_ref_no,client_ip_address,created_by):
         log_service=Log_model_services.Log_Model_Service(log_type="fetch",table_name="apis_ledgermodel",remarks="fetching all records from ledger table by van ",client_ip_address=client_ip_address,server_ip_address=const.server_ip,created_by=created_by)
-        ledgerModels=LedgerModel.objects.filter(merchant=merchant,customer_ref_no=customer_ref_no)
+        ledgerModels=LedgerModel.objects.filter(merchant_id=merchant,customer_ref_no=customer_ref_no)
         log_service.save()
         return ledgerModels
 
@@ -169,7 +169,7 @@ class Ledger_Model_Service:
     def deleteById(id, deletedBy,merchant,client_ip_address,createdBy):
         log_service = Log_model_services.Log_Model_Service(log_type="delete", table_name="apis_ledgermodel", remarks="deleting records in apis_ledgermodel table",
                                                            client_ip_address=client_ip_address, server_ip_address=const.server_ip, created_by=createdBy)
-        ledger = LedgerModel.objects.filter(id=id,merchant=merchant)
+        ledger = LedgerModel.objects.filter(id=id,merchant_id=merchant)
         if(len(ledger) > 0):
             ledgermodel = LedgerModel()
             ledgerModel = ledger[0]
@@ -248,19 +248,19 @@ class Ledger_Model_Service:
 
             if start=="all" and end=="all":
                 print("if")
-                record=LedgerModel.objects.raw("select apis_transactionhistorymodel.*,apis_merchantmodel.client_username from apis_transactionhistorymodel inner join apis_merchantmodel on apis_transactionhistorymodel.merchant=apis_merchantmodel.id where merchant="+str(merchant_id)+" limit "+str((page-1)*length)+","+str(page*length)+"")
+                record=LedgerModel.objects.raw("select apis_transactionhistorymodel.*,apis_merchantmodel.client_username from apis_transactionhistorymodel inner join apis_merchantmodel on apis_transactionhistorymodel.merchant_id=apis_merchantmodel.id where merchant_id="+str(merchant_id)+" limit "+str((page-1)*length)+","+str(page*length)+"")
                 # print(list(record.iterator()))
                 print(record.columns)
                 # record=LedgerModel.objects.filter(merchant=merchant_id)
                 # print("record :: ",record)
                 
             else:
-                print("select apis_transactionhistorymodel.*,apis_merchantmodel.client_username from apis_transactionhistorymodel inner join apis_merchantmodel on apis_transactionhistorymodel.merchant=apis_merchantmodel.id where merchant="+str(merchant_id)+" and  created_at between "+str(start)+" and "+str(end)+" limit "+str((page-1)*length)+","+str(page*length)+"")
-                record=LedgerModel.objects.raw("select apis_transactionhistorymodel.*,apis_merchantmodel.client_username from apis_transactionhistorymodel inner join apis_merchantmodel on apis_transactionhistorymodel.merchant=apis_merchantmodel.id where merchant="+str(merchant_id)+" and  apis_transactionhistorymodel.created_at between '"+str(start)+"' and '"+str(end)+"' limit "+str((page-1)*length)+","+str(page*length)+"")
+                print("select apis_transactionhistorymodel.*,apis_merchantmodel.client_username from apis_transactionhistorymodel inner join apis_merchantmodel on apis_transactionhistorymodel.merchant_id=apis_merchantmodel.id where merchant_id="+str(merchant_id)+" and  created_at between "+str(start)+" and "+str(end)+" limit "+str((page-1)*length)+","+str(page*length)+"")
+                record=LedgerModel.objects.raw("select apis_transactionhistorymodel.*,apis_merchantmodel.client_username from apis_transactionhistorymodel inner join apis_merchantmodel on apis_transactionhistorymodel.merchant_id=apis_merchantmodel.id where merchant_id="+str(merchant_id)+" and  apis_transactionhistorymodel.created_at between '"+str(start)+"' and '"+str(end)+"' limit "+str((page-1)*length)+","+str(page*length)+"")
             # print("record :: ",record)
             def rec(rec):
 
-                json = {"customer_ref_no":rec.customer_ref_no,"trans_completed_time":rec.trans_completed_time,"trans_init_time":rec.trans_init_time,"charge":rec.charge,"payment_mode":rec.payment_mode,"bene_account_name":rec.bene_account_name,"bene_account_number":rec.bene_account_number,"bene_ifsc":rec.bene_ifsc,"payout_trans_id":rec.payout_trans_id,"created_at":rec.created_at,"updated_at":rec.updated_at,"deleted_at":rec.deleted_at,"trans_amount_type":rec.trans_amount_type,"merchant_id":rec.merchant,"client_username":rec.client_username,"id":rec.id,"amount":rec.amount,"type_status":rec.type_status,"trans_type":rec.trans_type,}
+                json = {"customer_ref_no":rec.customer_ref_no,"trans_completed_time":rec.trans_completed_time,"trans_init_time":rec.trans_init_time,"charge":rec.charge,"payment_mode":rec.payment_mode_id,"bene_account_name":rec.bene_account_name,"bene_account_number":rec.bene_account_number,"bene_ifsc":rec.bene_ifsc,"payout_trans_id":rec.payout_trans_id,"created_at":rec.created_at,"updated_at":rec.updated_at,"deleted_at":rec.deleted_at,"trans_amount_type":rec.trans_amount_type,"merchant_id":rec.merchant_id,"client_username":rec.client_username,"id":rec.id,"amount":rec.amount,"type_status":rec.type_status,"trans_type":rec.trans_type,}
                 return json
             return list(map(rec,list(record.iterator()))) 
         except Exception as e:
@@ -295,7 +295,7 @@ class Ledger_Model_Service:
     def calculate_charge(merchant_id,mode,amount,client_ip_address):
         mode = ModeModel.objects.filter(mode=mode)
         print(mode[0].id)
-        charge=ChargeModel.objects.filter(mode=mode[0].id,min_amount__lt=amount,max_amount__gt=amount,merchant_id=merchant_id)
+        charge=ChargeModel.objects.filter(mode_id=mode[0].id,min_amount__lt=amount,max_amount__gt=amount,merchant_id=merchant_id)
         # print(charge[0].charge_percentage_or_fix)
         charge_amount=0
         if(len(charge)>0 and charge[0].charge_percentage_or_fix=="percentage"):
@@ -314,12 +314,12 @@ class Ledger_Model_Service:
                                                            client_ip_address=client_ip_address, server_ip_address=const.server_ip, created_by=created_by)
         log_service.table_id = id
         log_service.save()
-        ledger = LedgerModel.objects.filter(id=id, merchant=merchant)
+        ledger = LedgerModel.objects.filter(id=id, merchant_id=merchant)
         if(len(ledger) > 0):
             ledgermodel = LedgerModel()
             ledgerModel = ledger[0]
             ledgermodel.id = id
-            ledgermodel.merchant = self.merchant
+            ledgermodel.merchant_id = self.merchant
             ledgermodel.client_code = self.client_code
             ledgermodel.amount = self.amount
             ledgermodel.trans_type = self.trans_type
@@ -327,7 +327,7 @@ class Ledger_Model_Service:
             ledgermodel.trans_status = self.trans_status
             ledgermodel.bank_ref_no = self.bank_ref_no
             ledgermodel.customer_ref_no = self.customer_ref_no
-            ledgermodel.bank = self.bank_id
+            ledgermodel.bank_partner_id = self.bank_id
             ledgermodel.trans_time = self.trans_time
             ledgermodel.van = self.van
             ledgermodel.bene_account_name = self.bene_account_name
@@ -342,7 +342,7 @@ class Ledger_Model_Service:
             # ledgermodel.created_at = ledgermodel.created_at
             ledgermodel.created_at = self.created_at
             ledgermodel.status = self.status
-            ledgermodel.mode = self.mode
+            ledgermodel.payment_mode_id = self.mode
             ledgermodel.charge = self.charge
             ledgermodel.save()
         return ledgermodel.id
@@ -379,7 +379,7 @@ class Ledger_Model_Service:
         ledgermodel.amount = decResp.get("amount")
         modeOfTrans = decResp.get("mode")
         m = ModeModel.objects.filter(mode = modeOfTrans)
-        ledgermodel.payment_mode = m[0].id
+        ledgermodel.payment_mode_id = m[0].id
         ledgermodel.bank_ref_no = const.bank_ref_no
         ledgermodel.trans_amount_type = "credited"
         ledgermodel.trans_type = "payin"
@@ -387,7 +387,7 @@ class Ledger_Model_Service:
         ledgermodel.request_header = "request header"
         bankResp = "NULL"
         ledgermodel.remarks = " "
-        ledgermodel.merchant = merchant
+        ledgermodel.merchant_id = merchant
         ledgermodel.client_code = clientCode
         #CR06e65070-dbd6-11eb-9816-507b9d006cb8
         ledgermodel.customer_ref_no = generate_unique_customerRef()

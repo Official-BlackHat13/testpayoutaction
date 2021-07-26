@@ -76,8 +76,8 @@ class bankApiPaymentView(APIView):
             log = Log_model_services.Log_Model_Service(log_type="Post request at "+req.path+" slug",client_ip_address=req.META['REMOTE_ADDR'],server_ip_address=const.server_ip,full_request=request_obj)
             logid=log.save()
             client = Client_model_service.Client_Model_Service.fetch_by_id(merchant_id,req.META['REMOTE_ADDR'],"merchant id :: "+merchant_id)
-            print("client bank::"+str(client.bank))
-            bank = Bank_model_services.Bank_model_services.fetch_by_id(client.bank,req.META['REMOTE_ADDR'],"merchant id :: "+merchant_id)
+            print("client bank::"+str(client.bank_id))
+            bank = Bank_model_services.Bank_model_services.fetch_by_id(client.bank_id,req.META['REMOTE_ADDR'],"merchant id :: "+merchant_id)
             # print("bank::"+str(bank))
             payout=payout_service.PayoutService(merchant_id=merchant_id,encrypted_code=encrypted_code,client_ip_address=req.META['REMOTE_ADDR'])
             if(bank.bank_name=="ICICI"):
@@ -149,7 +149,7 @@ class paymentEnc(APIView):
                             'beneficiaryAccountNumber': rec.bene_account_number,
                             'beneficiaryIFSC': rec.bene_ifsc,
                             'transStatus': rec.trans_status,
-                            'mode': rec.payment_mode
+                            'payment_mode_id': rec.payment_mode_id
                         }
                     response.append(res)
                     
@@ -191,7 +191,7 @@ class addBalanceApi(APIView):
         authKey = clientModel.auth_key
         authIV = clientModel.auth_iv
         #start
-        role = RoleModel.objects.get(id=clientModel.role)
+        role = RoleModel.objects.get(id=clientModel.role_id)
         if clientModel.is_encrypt==False :
             print("hello")
             decResp = request.data.get("query")

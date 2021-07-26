@@ -17,7 +17,7 @@ class MerchantModel(models.Model):
     created_at=models.DateTimeField(default=datetime.now())
     deleted_at=models.DateTimeField(default=None,null=True)
     updated_at=models.DateTimeField(default=None,null=True)
-    user = models.IntegerField()
+    user_id = models.IntegerField()
     created_by=models.CharField(max_length=300)
     updated_by = models.CharField(max_length=300)
     deleted_by = models.CharField(max_length=300)

@@ -70,7 +70,7 @@ class PayoutService:
              ledgerModelService.merchant=self.merchant_id
              ledgerModelService.client_code=clientModel.client_code
              ledgerModelService.amount=payoutrequestmodel.amount
-             ledgerModelService.bank_id=clientmodel.bank
+             ledgerModelService.bank_id=clientmodel.bank_id
              ledgerModelService.bank_ref_no="waiting"
              ledgerModelService.customer_ref_no=payoutrequestmodel.orderId
              ledgerModelService.trans_status="initated"
@@ -100,6 +100,8 @@ class PayoutService:
              response = requests.post(bank_api.paytm.staging_paytmPaymentAPI(),json=request_model.to_json(),headers={"Content-type": "application/json", "x-mid": const.paytm_merchant_id, "x-checksum":checksum})
              print(response.json())
              response_model = paytm_response_model.Payment_Response_Model.from_json(response.json())
+             client_ip_address_temp=self.client_ip_address
+             merchant_id_temp = self.merchant_id
              class ServiceThread2(threading.Thread):
                     def run(self):
                         log = Log_Model_Service(log_type="Thread",client_ip_address=client_ip_address_temp,server_ip_address=const.server_ip,remarks="Running service thread on webhook apis for merchant id :: "+ merchant_id_temp)

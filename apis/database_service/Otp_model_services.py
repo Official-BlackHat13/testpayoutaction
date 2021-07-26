@@ -14,7 +14,7 @@ class Otp_Model_Services:
         self.otp_status=otp_status
     def save(self)->int:
         otp_model = OtpModel()
-        otp_model.user=self.user_id
+        otp_model.user_id=self.user_id
         otp_model.type=self.type
         otp_model.user_type=self.user_type
         otp_model.verification_token=self.verification_token
