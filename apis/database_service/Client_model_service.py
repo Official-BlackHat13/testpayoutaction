@@ -183,7 +183,7 @@ def enc(b):
                 'auth_iv': b.get("auth_iv"),
                 'bank': b.get("bank"),
                 'client_username': b.get("client_username"),
-                'client_password': b.get("client_password"),
+                'client_password':b.get("client_password"),
                 'is_payout': b.get("is_payout"),
                 'is_merchant': b.get("is_merchant"),
                 'status':b.get("status"),
