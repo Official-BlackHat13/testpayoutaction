@@ -137,8 +137,11 @@ class Client_Model_Service:
         offSet = (int(page)-1)*int(length)
         query = "call fetchMerchants("+str(length)+","+str(offSet)+");"
         resp = list()
-        for b in ClientModel.objects.raw(query):
-
+        record=ClientModel.objects.raw(query)
+        print(record.columns)
+        for b in list(record.iterator()):
+            print(b.encrypted_password,b.client_username)
+            # print(b.columns)
             d={
                 'id':b.id ,
                 'role': b.role_id,
@@ -169,7 +172,7 @@ class Client_Model_Service:
             }
             resp.append(d)
         result = list(map(enc,resp))
-        print("..........resi = ",result)
+        # print("..........resi = ",result)
         return result
 
 def enc(b):
@@ -184,7 +187,7 @@ def enc(b):
                 'auth_iv': b.get("auth_iv"),
                 'bank': b.get("bank"),
                 'client_username': b.get("client_username"),
-                'encrypted_client_password':b.get("encrypted_password"),
+                'encrypted_client_password':b.get("encrypted_client_password"),
                 'is_payout': b.get("is_payout"),
                 'is_merchant': b.get("is_merchant"),
                 'status':b.get("status"),
