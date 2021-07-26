@@ -69,8 +69,8 @@ class Client_Model_Service:
         log_service.table_id=model.id
         log_service.save()
         return model
+    
     @staticmethod
-
     def fetch_by_clientid(client_id,client_ip_address,created_by)->ClientModel:
         log_service=Log_model_services.Log_Model_Service(log_type="fetch",table_name="apis_clientmodel",remarks="fetching records in apis_clientmodel table by client id",client_ip_address=client_ip_address,server_ip_address=const.server_ip,created_by=created_by)
         
@@ -138,7 +138,7 @@ class Client_Model_Service:
         resp = list()
         for b in ClientModel.objects.raw(query):
             d={
-                'id ':b.id ,
+                'id':b.id ,
                 'role': b.role,
                 'client': b.client,
                 'client_code': b.client_code,
@@ -167,7 +167,6 @@ class Client_Model_Service:
             }
             resp.append(d)
         result = list(map(enc,resp))
-        print("..........resi = ",result)
         return result
 
 def enc(b):

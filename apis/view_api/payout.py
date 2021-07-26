@@ -204,7 +204,7 @@ class addBalanceApi(APIView):
         res = ast.literal_eval(decResp)
         response = Ledger_Model_Service.addBal(res,client_ip_address=request.META['REMOTE_ADDR'],merchant = decMerchant,clientCode = clientModel.client_code)
         print(authKey+" "+authIV)
-        encResponse = auth.AESCipher(authKey, authIV).encrypt(response)
+        encResponse = str(auth.AESCipher(authKey, authIV).encrypt(response))[2:].replace("'","")
         Log_model_services.Log_Model_Service.update_response(
             logid, {"Message": str(encResponse), "response_code": "1"})
         return Response({"message": "data saved succefully", "data": str(encResponse), "response_code": "1"}, status=status.HTTP_200_OK)

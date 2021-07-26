@@ -1,7 +1,6 @@
 from datetime import date, datetime
 import time
 from sabpaisa import auth
-
 import bank_api
 from ..database_service import Client_model_service,Ledger_model_services,Mode_model_services,Beneficiary_model_services,Slab_model_services
 from ..Utils import splitString
@@ -40,9 +39,7 @@ class PayoutService:
             # role = RoleModel.objects.get(id=merchant.role)
             query=self.encrypted_code
             if clientModel.is_encrypt:
-
              query=auth.AESCipher(authKey,authIV).decrypt(self.encrypted_code)
-            
             map=splitString.StringToMap(query)
             print(str(map))
             # if map["usern"]!=clientModel.client_username and map["pass"]!=clientModel.client_password:
@@ -55,8 +52,7 @@ class PayoutService:
              bal = Ledger_model_services.Ledger_Model_Service.getBalance(self.merchant_id,self.client_ip_address,"Merchant_ID :: "+str(self.merchant_id))
              print("amount :: "+payoutrequestmodel.amount)
              print("balance ::"+str(bal))
-             if bal<int(payoutrequestmodel.amount):
-                 
+             if bal<int(payoutrequestmodel.amount):                 
                  return ["Not Sufficent Balance",{},False]
              bene=Beneficiary_model_services.Beneficiary_Model_Services.fetch_by_account_number_ifsc(self.merchant_id,payoutrequestmodel.beneficiaryAccount,payoutrequestmodel.beneficiaryIFSC)
              if bene==None:
@@ -280,10 +276,6 @@ class PayoutService:
              message_body.tranAmount=payoutrequestmodel.txnAmount
              message_body.ifsc=payoutrequestmodel.ifscCode
              message_body.beneAccType="current"
-             
-
         except Exception as e:
             print(e.args)
             return False            
-
-

@@ -138,15 +138,15 @@ DATABASES = {
     #     # 'socket': '/Applications/XAMPP/xamppfiles/var/mysql/mysql.sock'
     # }
     #deployment db
-     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'payout_for_development',
-        'USER': 'payout_for_development',
-        'PASSWORD': 'payout@123',
-        'HOST': 'localhost',
-        'PORT': '3306',
-        # 'socket': '/Applications/XAMPP/xamppfiles/var/mysql/mysql.sock'
-    }
+    #  'default': {
+    #     'ENGINE': 'django.db.backends.mysql',
+    #     'NAME': 'payout_for_development',
+    #     'USER': 'payout_for_development',
+    #     'PASSWORD': 'payout@123',
+    #     'HOST': 'localhost',
+    #     'PORT': '3306',
+    #     # 'socket': '/Applications/XAMPP/xamppfiles/var/mysql/mysql.sock'
+    # }
     #  'default': {
     #     'ENGINE': 'django.db.backends.mysql',
     #     'NAME': 'stagingPayout',
@@ -177,14 +177,14 @@ DATABASES = {
     #     # 'socket': '/Applications/XAMPP/xamppfiles/var/mysql/mysql.sock'
     # }
     #kunal local db
-    # 'default': {
-    #      'ENGINE': 'django.db.backends.mysql',
-    #      'NAME': 'payoutdb',
-    #      'USER': 'root',
-    #      'PASSWORD': "root",
-    #      'HOST': "127.0.0.1",
-    #      'PORT': "3306",
-    #  }
+    'default': {
+         'ENGINE': 'django.db.backends.mysql',
+         'NAME': 'payoutdb',
+         'USER': 'root',
+         'PASSWORD': "root",
+         'HOST': "127.0.0.1",
+         'PORT': "3306",
+     }
 }
 
 

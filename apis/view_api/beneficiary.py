@@ -1,10 +1,6 @@
 # from django.shortcuts import render
 # Create your views here.
-
-
 from django.db.models import query
-
-
 from pyexcel_xls import get_data as xls_get
 from pyexcel_xlsx import get_data as xlsx_get
 from django.utils.datastructures import MultiValueDictKeyError
@@ -19,7 +15,6 @@ from rest_framework.views import APIView
 from rest_framework.response import *
 from rest_framework import status
 from drf_yasg.utils import swagger_auto_schema
-
 from apis.database_service import Beneficiary_model_services
 from ..API_docs import payout_docs,auth_docs,login_docs,payoutTransactionEnquiry_docs,addBalance_docs,addBeneficiary_docs,log_docs
 from datetime import datetime
@@ -42,27 +37,13 @@ from rest_framework.permissions import IsAuthenticated
 from .. import const
 from ..Utils import randomstring
 from ..database_service import BO_user_services
-
 from ..models import MerchantModel,RoleModel
-
-
-
-
-
-
-
 # from .models import MerchantModel,RoleModel
 from sabpaisa import auth
-
 from datetime import datetime
-
 from ..bank_services import ICICI_service
-
 from ..other_service import login_service,signup_service
-
-
 from sabpaisa import auth
-
 
 class fetchBeneficiary(APIView):
     @swagger_auto_schema(request_body=addBeneficiary_docs.fetch_request,responses=addBeneficiary_docs.fetch_response)
@@ -105,7 +86,7 @@ class fetchBeneficiary(APIView):
                 merchant_id=decQuery[11]
             service = Beneficiary_Model_Services(account_number=account_number,ifsc_code=ifsc_code,merchant_id=merchant_id)
             response= list(service.fetchBeneficiaryByParams())
-            encResponse = auth.AESCipher(authKey,authIV).encrypt(str(response))
+            encResponse = str(auth.AESCipher(authKey,authIV).encrypt(str(response)))[2:].replace("'","")
             return Response({"data":str(encResponse),"responseCode":"1"})
         except Exception as e:
             import traceback

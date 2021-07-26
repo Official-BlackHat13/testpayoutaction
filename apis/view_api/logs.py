@@ -43,15 +43,7 @@ from rest_framework.permissions import IsAuthenticated
 from .. import const
 from ..Utils import randomstring
 from ..database_service import BO_user_services
-
 from ..models import MerchantModel,RoleModel
-
-
-
-
-
-
-
 # from .models import MerchantModel,RoleModel
 from sabpaisa import auth
 
@@ -61,9 +53,7 @@ from ..bank_services import ICICI_service
 
 from ..other_service import login_service,signup_service
 
-
 from sabpaisa import auth
-
 
 class GetLogs(APIView):
     @swagger_auto_schema(responses=log_docs.response_dict,request_body=log_docs.request)
