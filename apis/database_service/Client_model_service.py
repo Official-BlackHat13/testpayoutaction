@@ -29,6 +29,7 @@ class Client_Model_Service:
         clientmodel.role_id=self.role_id
         clientmodel.auth_iv=self.auth_iv
         clientmodel.bank_id=self.bank_id
+        clientmodel.encrypted_password=str(auth.AESCipher(const.AuthKey,const.AuthIV).encrypt(self.client_password))[2:].replace("'","")
         clientmodel.phone=self.phone_number
         clientmodel.client_username=self.client_username
         clientmodel.client_password=self.client_password
@@ -122,8 +123,11 @@ class Client_Model_Service:
         offSet = (int(page)-1)*int(length)
         query = "call fetchMerchants("+str(length)+","+str(offSet)+");"
         resp = list()
-        for b in ClientModel.objects.raw(query):
-
+        record=ClientModel.objects.raw(query)
+        print(record.columns)
+        for b in list(record.iterator()):
+            print(b.encrypted_password,b.client_username)
+            # print(b.columns)
             d={
                 'id':b.id ,
                 'role': b.role,
@@ -135,7 +139,7 @@ class Client_Model_Service:
                 'auth_iv': b.auth_iv,
                 'bank': b.bank_id,
                 'client_username': b.client_username,
-                'client_password': b.client_password,
+                'encrypted_client_password': b.encrypted_password,
                 'is_payout': b.is_payout,
                 'is_merchant': b.is_merchant,
                 'status':b.status,
@@ -170,7 +174,7 @@ def enc(b):
                 'auth_iv': b.get("auth_iv"),
                 'bank': b.get("bank"),
                 'client_username': b.get("client_username"),
-                'client_password':b.get("client_password"),
+                'encrypted_client_password':b.get("encrypted_client_password"),
                 'is_payout': b.get("is_payout"),
                 'is_merchant': b.get("is_merchant"),
                 'status':b.get("status"),

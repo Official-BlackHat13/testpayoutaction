@@ -2,9 +2,9 @@ from ..models import BOUserModel
 
 from . import Log_model_services
 from .. import const
-
+from sabpaisa import auth
 class BO_User_Service:
-    def __init__(self,roleid=None,username=None,password=None,name=None,auth_key=None,auth_iv=None,email=None,mobile=None):
+    def __init__(self,roleid=None,username=None,user_id=None,password=None,name=None,auth_key=None,auth_iv=None,email=None,mobile=None):
         self.roleid=roleid
         self.username=username
         self.password=password
@@ -13,6 +13,7 @@ class BO_User_Service:
         self.auth_key=auth_key
         self.auth_iv=auth_iv
         self.mobile=mobile
+        self.user_id=user_id
     def save(self,client_ip_address,created_by):
         bouser = BOUserModel()
         bouser.role_id=self.roleid
@@ -20,9 +21,11 @@ class BO_User_Service:
         bouser.password=self.password
         bouser.name=self.name
         bouser.email=self.email
+        bouser.django_user_id=self.user_id
         bouser.auth_key=self.auth_key
         bouser.auth_iv=self.auth_iv
         bouser.mobile=self.mobile
+        bouser.encrypted_password=str(auth.AESCipher(const.AuthKey,const.AuthIV).encrypt(self.password))[2:].replace("'","")
         bouser.save()
         return bouser.id
     @staticmethod
