@@ -64,8 +64,8 @@ class GetLogs(APIView):
         start_date=req.data['start']
         end_date=req.data['end']
         if start_date!="all" or end_date!="all":
-            start_date=datetime.fromisoformat(start_date)
-            end_date=datetime.fromisoformat(end_date)
+            start_date=datetime.strptime(start_date, "%Y-%m-%d %H:%M:%S")
+            end_date=datetime.strptime(end_date, "%Y-%m-%d %H:%M:%S")
         
         merchant = auth.AESCipher(authKey,authIV).decrypt(resp)
         clientModel=BO_user_services.BO_User_Service.fetch_by_id(id=merchant)
@@ -81,18 +81,18 @@ class GetLogs(APIView):
         logs = Log_model_services.Log_Model_Service(log_type="get request on "+req.path,client_ip_address=req.META['REMOTE_ADDR'],server_ip_address=const.server_ip,full_request=request_obj,remarks="get request on "+req.path+" for fetching the log records")
         logid=logs.save()
         # merchant=MerchantModel.objects.get(id=merchant)
-        role = RoleModel.objects.get(id=clientModel.role)
+        role = RoleModel.objects.get(id=clientModel.role_id)
         try:
             if page=="all" and length != "all":
                 return JsonResponse({"Message":"page and length format does not match"},status=status.HTTP_406_NOT_ACCEPTABLE)
-            logs = Log_model_services.Log_Model_Service.fetch_all_logs_in_parts(length,start_date,end_date)
+            logs = Log_model_services.Log_Model_Service.fetch_all_logs_in_parts(page,length,start_date,end_date)
             #auth.AESCipher(authKey, authIV).encrypt(logsser.data)
-            print(logs)
+            # print(logs)
             if len(logs)==0:
                
-                return Response({"data_length": len(logs), "data": None})
+                return Response({"data_length": len(logs[1]), "data": None})
             if page == "all":
-                logsser=LogsSerializer(logs,many=True)
+                logsser=LogsSerializer(logs[0],many=True)
                 enc_data=logsser.data
                
                 if clientModel.is_encrypt :
@@ -100,35 +100,34 @@ class GetLogs(APIView):
                 
                 print(enc_data)
                 print(authKey,authIV,"AUTH KEY , AUTH IV")
-                return Response({"data_length": len(logs), "data": str(enc_data)})
-            page=int(page)
-            if page>logs[1]:
-             page=logs[1]-1
-            logsser=LogsSerializer(logs[0][page],many=True)
-            # print(logs[0][page],len(logs[0][page]))
-            # logsser=LogsSerializer(logs[0][page],many=True)
+                return Response({"data_length": len(logs[1]), "data": str(enc_data)})
+            # page=int(page)
+            # if page>logs[1]:
+            #  page=logs[1]-1
+            logsser=LogsSerializer(logs[0],many=True)
+            # # print(logs[0][page],len(logs[0][page]))
+            # # logsser=LogsSerializer(logs[0][page],many=True)
             enc_data=logsser.data
-            print(authKey,authIV,"AUTH KEY , AUTH IV")
-            if clientModel.is_encrypt :
-                  enc_data = auth.AESCipher(authKey, authIV).encrypt(str(logsser.data))
-            Log_model_services.Log_Model_Service.update_response(logid, str({"data_length": len(
-                logs[0][page]), "data": enc_data}))
+            # print(authKey,authIV,"AUTH KEY , AUTH IV")
+            # if clientModel.is_encrypt :
+            #       enc_data = auth.AESCipher(authKey, authIV).encrypt(str(logsser.data))
+            # Log_model_services.Log_Model_Service.update_response(logid, str({"data_length": len(
+            #     logs[0][page]), "data": enc_data}))
             
-            # print(merchant.id)
-            enc_data=logsser.data
-            print(enc_data)
-            print(role.role_name)
+            # # print(merchant.id)
+            # enc_data=logsser.data
+            # print(enc_data)
+            # print(role.role_name)
             if clientModel.is_encrypt :
              print("if")
              enc_data = auth.AESCipher(authKey, authIV).encrypt(str(logsser.data))
             
             print(enc_data)
             print(authKey,authIV,"AUTH KEY , AUTH IV")
-            return Response({"data_length": len(logs[0][page]), "data": enc_data})
+            return Response({"data_length": logs[1], "data": enc_data})
         except Exception as e:
             import traceback
             print(traceback.format_exc())
-            Log_model_services.Log_Model_Service.update_response(logid, str({"data_length": len(
-                logs[0][page]), "data": logsser.data}))
+            Log_model_services.Log_Model_Service.update_response(logid, str({"Message":"some error","Error":e.args}))
             return Response({"Message":"some error","Error":e.args})
         

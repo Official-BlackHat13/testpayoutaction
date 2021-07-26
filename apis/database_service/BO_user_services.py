@@ -15,7 +15,7 @@ class BO_User_Service:
         self.mobile=mobile
     def save(self,client_ip_address,created_by):
         bouser = BOUserModel()
-        bouser.role=self.roleid
+        bouser.role_id=self.roleid
         bouser.username=self.username
         bouser.password=self.password
         bouser.name=self.name
@@ -45,7 +45,7 @@ class BO_User_Service:
         bouser = BOUserModel.objects.get(id=id,status=True)
         if bouser == None:
             return None
-        return bouser.role
+        return bouser.role_id
     @staticmethod
     def fetch_by_id(id)->BOUserModel:
         try:
@@ -53,6 +53,13 @@ class BO_User_Service:
          return bouser
         except Exception as e:
             return None
+
+    @staticmethod
+    def fetch_by_email(email)->BOUserModel:
+        
+         bouser = BOUserModel.objects.filter(email=email,status=True)
+         return bouser
+        
     
 
     

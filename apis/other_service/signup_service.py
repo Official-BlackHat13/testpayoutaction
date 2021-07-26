@@ -11,7 +11,7 @@ class Signup_Service:
         if(len(BO_user_services.BO_User_Service.fetch_by_name(self.user["name"],client_ip_address=self.client_ip_address,created_by="new user"))>0):
                 raise Exception("User Already Present")
         
-        elif(len(Client_model_service.Client_Model_Service.fetch_by_email(self.user["email"],client_ip_address=self.client_ip_address,created_by="new user"))>0):
+        elif(len(BO_user_services.BO_User_Service.fetch_by_email(self.user["email"]))>0):
             raise Exception("Email already exist")
         # print(len(len_client_by_mail))
         # bank=Bank_model_services.Bank_model_services.fetch_by_bankcode(self.user["bank_code"],client_ip_address=self.client_ip_address,created_by="client added")

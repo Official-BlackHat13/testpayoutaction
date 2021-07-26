@@ -3,7 +3,7 @@ from datetime import datetime
 
 class TransactionHistoryModel(models.Model):
     id=models.AutoField
-    merchant=models.IntegerField()
+    merchant_id=models.IntegerField()
     client_code=models.CharField(max_length=60)
     amount=models.FloatField()
     trans_type=models.CharField(max_length=20) #payout/payin/charge
@@ -15,7 +15,7 @@ class TransactionHistoryModel(models.Model):
     bene_account_name=models.CharField(max_length=300)
     bene_account_number=models.CharField(max_length=300)
     bene_ifsc=models.CharField(max_length=300)
-    payment_mode=models.IntegerField()
+    payment_mode_id=models.IntegerField()
     request_header=models.CharField(max_length=400)
     charge=models.FloatField()
     trans_init_time = models.DateTimeField(default=datetime.now())

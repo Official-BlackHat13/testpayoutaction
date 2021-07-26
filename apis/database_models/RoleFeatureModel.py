@@ -3,8 +3,8 @@ from datetime import datetime
 
 class RoleFeatureModel(models.Model):
     id=models.AutoField
-    role=models.IntegerField()
-    feature=models.IntegerField()
+    role_id=models.IntegerField()
+    feature_id=models.IntegerField()
     custom_json = models.CharField(max_length=300,default=None,null=True)
     created_at=models.DateTimeField(default=datetime.now())
     deleted_at=models.DateTimeField(default=None,null=True)

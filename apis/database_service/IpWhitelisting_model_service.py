@@ -10,7 +10,7 @@ class IpWhiteListing_Model_Service:
         log = Log_Model_Service(log_type="create",client_ip_address=self.clientip,server_ip_address=const.server_ip,table_name="apis_ipwhitelistedmodel",remarks="adding records into apis_ipwhitelistedmodel")
         
         ipmodel = IpWhiteListedModel()
-        ipmodel.merchant=self.merchant_id
+        ipmodel.merchant_id=self.merchant_id
         ipmodel.ip_address=self.ip_add
         ipmodel.save()
         log.table_id=ipmodel.id

@@ -39,22 +39,37 @@ class Log_Model_Service:
         logmodel.save()
         return logmodel
     @staticmethod
-    def fetch_all_logs_in_parts(length,start,end)->list:
-        if start=="all" or end=="all":
-         logmodel= LogModel.objects.all()
-        else:
-            logmodel=LogModel.objects.filter(created_at__range=[start,end])
-        if length=="all":
-            return logmodel
-        if len(logmodel)==0:
-            return logmodel
+    def fetch_all_logs_in_parts(page,length,start,end)->list:
+        page=int(page)
         length=int(length)
-        splitlen = math.ceil(len(logmodel)/length)
-        split_list = []
-        for i in range(splitlen):
-            split_list.append(logmodel[length*i:length*(i+1)])
-        split_list.reverse()
+        if start=="all" or end=="all":
+            print("select * from apis_logmodel  order by id desc  limit "+str((page-1)*length)+","+str(page*length)+"")
+            logmodel=LogModel.objects.raw("select * from apis_logmodel  order by id desc  limit "+str((page-1)*length)+","+str(page*length)+"")
+            
+        else:
+            # logmodel=LogModel.objects.filter(created_at__range=[start,end])
+            print("select * from apis_logmodel where  created_at order by id desc between '"+str(start)+"' and '"+str(end)+"' limit "+str((page-1)*length)+","+str(page*length)+"")
+            logmodel=LogModel.objects.raw("select * from apis_logmodel where created_at  between '"+str(start)+"' and '"+str(end)+"' order by id desc limit "+str((page-1)*length)+","+str(page*length)+"")
+            
+            
+        def rec(rec1):
+                json = {"id":rec1.id,"log_type":rec1.log_type,"client_ip_address":rec1.client_ip_address,"server_ip_address":rec1.server_ip_address,"table_primary_id":rec1.table_primary_id,"table_name":rec1.table_name,"remarks":rec1.remarks,"full_request":rec1.full_request,"full_response":rec1.full_response,"created_at":rec1.created_at,"deleted_at":rec1.deleted_at,"updated_at":rec1.updated_at,"created_by":rec1.created_by,"updated_by":rec1.updated_by,"deleted_by":rec1.deleted_by}
+                return json
+        # print(list(logmodel.iterator()))
+        logmodel=list(map(rec,list(logmodel.iterator())))
+        
+        
+        # if length=="all":
+        #     return logmodel
+        # if len(logmodel)==0:
+        #     return logmodel
+        # length=int(length)
+        # splitlen = math.ceil(len(logmodel)/length)
+        # split_list = []
+        # for i in range(splitlen):
+        #     split_list.append(logmodel[length*i:length*(i+1)])
+        # split_list.reverse()
         # print(split_list,splitlen)
-        return [split_list,splitlen]
+        return [logmodel,len(logmodel)]
 
 
