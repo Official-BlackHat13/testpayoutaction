@@ -43,13 +43,13 @@ class Log_Model_Service:
         page=int(page)
         length=int(length)
         if start=="all" or end=="all":
-            print("select * from apis_logmodel  order by id desc  limit "+str((page-1)*length)+","+str(page*length)+"")
-            logmodel=LogModel.objects.raw("select * from apis_logmodel  order by id desc  limit "+str((page-1)*length)+","+str(page*length)+"")
+            print("select * from apis_logmodel  order by id desc  limit "+str(page*length)+","+str((page-1)*length)+"")
+            logmodel=LogModel.objects.raw("select * from apis_logmodel  order by id desc  limit "+str(page*length)+","+str((page-1)*length)+"")
             
         else:
             # logmodel=LogModel.objects.filter(created_at__range=[start,end])
-            print("select * from apis_logmodel where  created_at order by id desc between '"+str(start)+"' and '"+str(end)+"' limit "+str((page-1)*length)+","+str(page*length)+"")
-            logmodel=LogModel.objects.raw("select * from apis_logmodel where created_at  between '"+str(start)+"' and '"+str(end)+"' order by id desc limit "+str((page-1)*length)+","+str(page*length)+"")
+            print("select * from apis_logmodel where  created_at order by id desc between '"+str(start)+"' and '"+str(end)+"' limit "+str(page*length)+","+str((page-1)*length)+"")
+            logmodel=LogModel.objects.raw("select * from apis_logmodel where created_at  between '"+str(start)+"' and '"+str(end)+"' order by id desc limit "+str(page*length)+","+str((page-1)*length)+"")
             
             
         def rec(rec1):
