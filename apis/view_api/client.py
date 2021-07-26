@@ -62,4 +62,4 @@ class allMerchants(APIView):
         if(admin.is_encrypt==True):
             encResp = str(auth.AESCipher(admin.auth_key,admin.auth_iv).encrypt(str(resp)))[2:].replace("'","")
             return Response({"message":"data found", "Response code":"1","data":str(encResp)})
-        return Response({"message":"data found", "Response code":"1","data":resp})
+        return Response({"message":"Data found", "Response code":"1","data":resp})
