@@ -5,6 +5,7 @@ from datetime import datetime
 class BOUserModel(models.Model):
     id=models.AutoField
     role_id=models.IntegerField()
+    django_user_id=models.IntegerField(default=0)
     username=models.CharField(max_length=300)
     password=models.CharField(max_length=300)
     name=models.CharField(max_length=300)
@@ -20,5 +21,6 @@ class BOUserModel(models.Model):
     deleted_by=models.CharField(null=True,default=None,max_length=300)
     is_encrypt=models.BooleanField(default=True)
     status=models.BooleanField(default=True)
+    encrypted_password=models.CharField(default="",max_length=300)
     def __str__(self):
         return str(self.id)

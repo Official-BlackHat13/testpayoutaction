@@ -81,6 +81,7 @@ class AuthAdmin(APIView):
         except Exception as e:
             import traceback
             print(traceback.format_exc())
+
             Log_model_services.Log_Model_Service.update_response(logid,{"Message":"some error","error":e.args,"trace_back":e.with_traceback(e.__traceback__)})
             
             return Response({"Message":"some error","error":e.args},status=status.HTTP_400_BAD_REQUEST)
@@ -101,6 +102,7 @@ class Auth(APIView):
         except Exception as e:
             import traceback
             print(traceback.format_exc())
+            
             Log_model_services.Log_Model_Service.update_response(logid,{"Message":"some error","error":e.args,"trace_back":e.with_traceback(e.__traceback__)})
             
             return Response({"Message":"some error","error":e.args},status=status.HTTP_400_BAD_REQUEST)

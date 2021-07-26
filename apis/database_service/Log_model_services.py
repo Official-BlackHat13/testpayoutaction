@@ -43,14 +43,15 @@ class Log_Model_Service:
         page=int(page)
         length=int(length)
         if start=="all" or end=="all":
-            print("select * from apis_logmodel  order by id desc  limit "+str(page*length)+","+str((page-1)*length)+"")
-            logmodel=LogModel.objects.raw("select * from apis_logmodel  order by id desc  limit "+str(page*length)+","+str((page-1)*length)+"")
+            print("select * from apis_logmodel  order by id desc  limit "+str(length)+" offset "+str((page-1)*length)+"")
+            logmodel=LogModel.objects.raw("select * from apis_logmodel  order by id desc  limit "+str(length)+" offset "+str((page-1)*length)+"")
             
         else:
             # logmodel=LogModel.objects.filter(created_at__range=[start,end])
-            print("select * from apis_logmodel where  created_at order by id desc between '"+str(start)+"' and '"+str(end)+"' limit "+str(page*length)+","+str((page-1)*length)+"")
-            logmodel=LogModel.objects.raw("select * from apis_logmodel where created_at  between '"+str(start)+"' and '"+str(end)+"' order by id desc limit "+str(page*length)+","+str((page-1)*length)+"")
+            print("select * from apis_logmodel order by id desc between '"+str(start)+"' and '"+str(end)+"' limit "+str(length)+" offset "+str((page-1)*length)+"")
+            logmodel=LogModel.objects.raw("select * from apis_logmodel order by id desc between '"+str(start)+"' and '"+str(end)+"' limit "+str(length)+" offset "+str((page-1)*length)+"")
             
+
             
         def rec(rec1):
                 json = {"id":rec1.id,"log_type":rec1.log_type,"client_ip_address":rec1.client_ip_address,"server_ip_address":rec1.server_ip_address,"table_primary_id":rec1.table_primary_id,"table_name":rec1.table_name,"remarks":rec1.remarks,"full_request":rec1.full_request,"full_response":rec1.full_response,"created_at":rec1.created_at,"deleted_at":rec1.deleted_at,"updated_at":rec1.updated_at,"created_by":rec1.created_by,"updated_by":rec1.updated_by,"deleted_by":rec1.deleted_by}
