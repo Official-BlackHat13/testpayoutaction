@@ -126,8 +126,6 @@ class Client_Model_Service:
         record=ClientModel.objects.raw(query)
         print(record.columns)
         for b in list(record.iterator()):
-            print(b.encrypted_password,b.client_username)
-            # print(b.columns)
             d={
                 'id':b.id ,
                 'role': b.role,

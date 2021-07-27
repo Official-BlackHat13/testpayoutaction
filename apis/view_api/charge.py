@@ -104,7 +104,7 @@ class addCharge(APIView):
 
 
 class fetchCharges(APIView):
-    def post(self,request):
+    def post(self,request,page,length):
         request_obj = "path:: "+request.path+" :: headers::" + \
             str(request.headers)+" :: meta_data:: " + \
             str(request.META)+"data::"+str(request.data)
@@ -112,32 +112,27 @@ class fetchCharges(APIView):
                                                    client_ip_address=request.META['REMOTE_ADDR'], server_ip_address=const.server_ip, full_request=request_obj)
         logid = log.save()
         try:
-            query = request.headers.get("auth_token")
-            if(query==""):
-                return Response({"message":"merchant id required"})
-            id = request.data.get("chargeId")
-            merchantId = auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(query)
-            service = charge_model_service()
-            resp = service.fetch_by_id(id = id,client_ip_address=request.META['REMOTE_ADDR'],created_by="merchant id :: "+merchantId,merchant_id=merchantId)
-            if(resp=="-1"):
-                return Response({"message":"no data found","response_code":"1"},status=status.HTTP_404_NOT_FOUND)
-            response = {
-                "id":resp.get("id"),
-                "mode id":resp.get("mode"),
-                "min_amount":resp.get("min_amount"),
-                "max_amount":resp.get("max_amount"),
-                "charge_percentage_or_fix":resp.get("charge_percentage_or_fix"),
-                "charge":resp.get("charge")
-            }
-            clientModel = Client_model_service.Client_Model_Service.fetch_by_id(
-                id=merchantId, created_by="merchantid :: "+merchantId, client_ip_address=request.META['REMOTE_ADDR'])
-            print("....... ",clientModel.is_encrypt)
-            if(clientModel.is_encrypt==False):
-                return Response({"message":"data found","data":str(response),"response_code":"1"},status=status.HTTP_200_OK)
-            authKey = clientModel.auth_key
-            authIV = clientModel.auth_iv
-            encResp = auth.AESCipher(authKey,authIV).encrypt(str(response))
-            return Response({"message":"data found","data":str(encResp),"response_code":"1"},status=status.HTTP_200_OK)
+            header = request.headers.get("auth_token")
+            adminId = auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(header)
+            admin = BO_user_services.BO_User_Service.fetch_by_id(adminId)
+            if(admin==None):
+                Log_model_services.Log_Model_Service.update_response(
+                logid, {"Message": "admin code missing", "response_code": "0"})
+                return Response({"message":"admin id does not exist", "Response code":"0"},status=status.HTTP_404_NOT_FOUND)
+            if page=="all" and length != "all":
+                return JsonResponse({"Message":"page and length format does not match"},status=status.HTTP_406_NOT_ACCEPTABLE)
+            if(admin.is_encrypt==True):
+                merchant_id = auth.AESCipher(admin.auth_key,admin.auth_iv).decrypt(request.data.get("query")).split(":")[1]
+            else:
+                merchant_id = str(request.data.get("query")).split(":")[1]
+            chargeResponse = charge_model_service.fetch_by_id(client_ip_address=request.META['REMOTE_ADDR'],created_by="admin :: "+adminId,page=page,length=length,merchant_id=merchant_id)
+            if(len(chargeResponse)==0):
+                return Response({"message":"data not found","data":None},status=status.HTTP_404_NOT_FOUND)
+            if(admin.is_encrypt==True):
+                encResp = auth.AESCipher(admin.auth_key,admin.auth_iv).encrypt(str(chargeResponse))
+                return Response({"messgae":"data found","data":encResp},status=status.HTTP_200_OK) 
+            else:
+                return Response({"messgae":"data found","data":chargeResponse},status=status.HTTP_200_OK)         
         except Exception as e:
             import traceback
             print(traceback.format_exc())

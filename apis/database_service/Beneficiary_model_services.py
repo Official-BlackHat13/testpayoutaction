@@ -1,3 +1,6 @@
+from apis import const
+from apis.database_models.ChangeModel import ChargeModel
+from apis.database_service import Log_model_services
 from ..database_models.BeneficiaryModel import BeneficiaryModel
 
 class Beneficiary_Model_Services:
@@ -38,14 +41,29 @@ class Beneficiary_Model_Services:
         beneficiarymodel.created_at=created_at
         beneficiarymodel.updated_by=updated_by
         beneficiarymodel.save()
-    
-    def fetchBeneficiaryByParams(self):
-        if(self.ifsc_code!=None and self.account_number != None and self.merchant_id != None):
-            resp = BeneficiaryModel.objects.filter(account_number=self.account_number,ifsc_code=self.ifsc_code,merchant_id=self.merchant_id).values()
-            return list(resp)
-        # elif(self.ifsc_code!=None and self.account_number != None):
-        #     resp = BeneficiaryModel.objects.filter(account_number=self.account_number,ifsc_code=self.ifsc_code).values()
-        #     return list(resp)
-        resp = BeneficiaryModel.objects.filter(merchant_id=self.merchant_id).values()
-        return list(resp)
-        
+    @staticmethod
+    def fetchBeneficiaryByParams(client_ip_address,created_by,page,length,merchant_id=None):
+        log_service=Log_model_services.Log_Model_Service(log_type="fetch",table_name="apis_chargemodel",remarks="fetching records from apis_chargemodel by primary key in the record",client_ip_address=client_ip_address,server_ip_address=const.server_ip,created_by=created_by)
+        offSet = (int(page)-1)*int(length)
+        if(merchant_id=="all"):
+            chargeModel=BeneficiaryModel.objects.raw("select * from apis_beneficiarymodel order by id desc  limit "+str(length)+" offset "+str(offSet))
+        else:
+            chargeModel=BeneficiaryModel.objects.raw("select * from apis_beneficiarymodel where merchant_id = "+merchant_id+" order by id desc  limit "+str(length)+" offset "+str(offSet))
+        resp=list()
+        for data in list(chargeModel.iterator()):
+            d={
+                "id": data.id,
+                "full_name": data.full_name,
+                "account_number": data.account_number,
+                "ifsc_code": data.ifsc_code,
+                "merchant_id": data.merchant_id,
+                "created_at": data.created_at,
+                "deleted_at": data.deleted_at,
+                "updated_at": data.updated_at,
+                "created_by": data.created_by,
+                "deleted_by": data.deleted_by,
+                "updated_by": data.updated_by,
+            }
+            resp.append(d)
+        log_service.save()
+        return resp

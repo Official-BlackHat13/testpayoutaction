@@ -50,7 +50,8 @@ urlpatterns = [
     path("loginverified/",views.login.LoginVerificationAPI.as_view()),
     path("resendotp/",views.login.ResendLoginOTP.as_view()),
     path("addBeneficiary/",views.beneficiary.addSingleBeneficiary.as_view()),
-    path("fetchBeneficiary/",views.beneficiary.fetchBeneficiary.as_view()),
+    path("adminFetchBeneficiary/<slug:page>/<slug:length>",views.beneficiary.adminFetchBeneficiary.as_view()),
+    path("merchantFetchBeneficiary/<slug:page>/<slug:length>",views.beneficiary.merchantFetchBeneficiary.as_view()),
    #  path("updateBeneficiary/",views.updateBeneficiary.as_view()),
    #  path("deleteBeneficiary/",views.deleteBeneficiary.as_view()),
    #  path("addBeneficiary/",views.saveBeneficiary.as_view()),
@@ -59,11 +60,12 @@ urlpatterns = [
     path("addBeneficiaries/",views.beneficiary.saveBeneficiary.as_view()),
     path("addCharge/",views.charge.addCharge.as_view()),
     path("addSlab/",views.slab.SlabView.as_view()),
-    path("fetchCharges/",views.charge.fetchCharges.as_view()),
+    path("fetchCharges/<slug:page>/<slug:length>",views.charge.fetchCharges.as_view()),
     path("getLedgers/<slug:page>/<slug:length>/",views.ledger.GetLedger.as_view()),
     path("getLedgersMerchant/",views.ledger.GetLedgerForMerchant.as_view()),
     path("getTransactionHistory/<slug:page>/<slug:length>",views.ledger.GetTransactionHistory.as_view()),
     path("getAllMerchants/<slug:page>/<slug:length>/",views.client.allMerchants.as_view())
+    
    #  path("testicic/",)
    #  path("createTest",views.getTest.as_view()),
    #  path("updateTest/<int:id>",views.updateTest.as_view()),

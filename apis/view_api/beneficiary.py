@@ -45,54 +45,80 @@ from ..bank_services import ICICI_service
 from ..other_service import login_service,signup_service
 from sabpaisa import auth
 
-class fetchBeneficiary(APIView):
+class adminFetchBeneficiary(APIView):
     @swagger_auto_schema(request_body=addBeneficiary_docs.fetch_request,responses=addBeneficiary_docs.fetch_response)
-    def post(self,request):
+    def post(self,request,page,length):
         request_obj = "path:: "+request.path+" :: headers::" + \
             str(request.headers)+" :: meta_data:: " + \
             str(request.META)+"data::"+str(request.data)
-        auth_token = request.headers["auth_token"]
-        merchantId = auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(auth_token)
         log = Log_model_services.Log_Model_Service(log_type="fetchBeneficiary request at "+request.path+" slug",
                                                    client_ip_address=request.META['REMOTE_ADDR'], server_ip_address=const.server_ip, full_request=request_obj)
         logid = log.save()
-        clientModel = Client_model_service.Client_Model_Service.fetch_by_id(
-            id=merchantId, created_by="merchantid :: "+merchantId, client_ip_address=request.META['REMOTE_ADDR'])
-        authKey = clientModel.auth_key
-        authIV = clientModel.auth_iv
-        query = request.data.get("query")
-        role = RoleModel.objects.get(id=clientModel.role)
-        decResp = str(request.data.get("query"))
-        account_number=None
-        ifsc_code=None
-        merchant_id=None
         try:
-            role = RoleModel.objects.get(id=clientModel.role)
-            if  not clientModel.is_encrypt :
-                print("yooooooooooooooooooooooooooooooo")
-                account_number = request.data.get("account_number")
-                ifsc_code = request.data.get("ifsc_code")
-                merchant_id = merchantId
-                service = Beneficiary_Model_Services(account_number=account_number,ifsc_code=ifsc_code,merchant_id=merchant_id)
-                response= list(service.fetchBeneficiaryByParams())
-                return Response({"data":str(response),"responseCode":"1"})
-            decQuery = auth.AESCipher(authKey,authIV).decrypt(query).split("'")
-            print(".......... ",decQuery)
-            if(decQuery[1] == "account_number"):
-                account_number = decQuery[3]
-            if(decQuery[5]=="ifsc_code"):
-                ifsc_code=decQuery[7]
-            if(decQuery[9]=="merchant_id"):
-                merchant_id=decQuery[11]
-            service = Beneficiary_Model_Services(account_number=account_number,ifsc_code=ifsc_code,merchant_id=merchant_id)
-            response= list(service.fetchBeneficiaryByParams())
-            encResponse = str(auth.AESCipher(authKey,authIV).encrypt(str(response)))[2:].replace("'","")
-            return Response({"data":str(encResponse),"responseCode":"1"})
+            header = request.headers.get("auth_token")
+            adminId = auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(header)
+            admin = BO_user_services.BO_User_Service.fetch_by_id(adminId)
+            if(admin==None):
+                Log_model_services.Log_Model_Service.update_response(
+                logid, {"Message": "admin code missing", "response_code": "0"})
+                return Response({"message":"admin id does not exist", "Response code":"0"},status=status.HTTP_404_NOT_FOUND)
+            if page=="all" and length != "all":
+                return JsonResponse({"Message":"page and length format does not match"},status=status.HTTP_406_NOT_ACCEPTABLE)
+            if(admin.is_encrypt==True):
+                merchant_id = auth.AESCipher(admin.auth_key,admin.auth_iv).decrypt(request.data.get("query")).split(":")[1]
+            else:
+                merchant_id = str(request.data.get("query")).split(":")[1]
+            bene_response = Beneficiary_Model_Services.fetchBeneficiaryByParams(client_ip_address=request.META['REMOTE_ADDR'],created_by="admin :: "+adminId,page=page,length=length,merchant_id=merchant_id)
+            if(len(bene_response)==0):
+                return Response({"message":"data not found","data":None},status=status.HTTP_404_NOT_FOUND)
+            if(admin.is_encrypt==True):
+                encResp = auth.AESCipher(admin.auth_key,admin.auth_iv).encrypt(str(bene_response))
+                return Response({"message":"data found","data":encResp},status=status.HTTP_200_OK) 
+            else:
+                return Response({"message":"data found","data":bene_response},status=status.HTTP_200_OK)  
         except Exception as e:
             import traceback
             print(traceback.format_exc())
-            Log_model_services.Log_Model_Service.update_response(logid,{"message":"Some error occured","Error_Code":e.args,"response_code":"2"})
+            Log_model_services.Log_Model_Service.update_response(logid, str({"Message":"some error","Error":e.args}))
             return Response({"Message":"some error","Error":e.args})
+
+
+class merchantFetchBeneficiary(APIView):
+    @swagger_auto_schema(request_body=addBeneficiary_docs.fetch_request,responses=addBeneficiary_docs.fetch_response)
+    def post(self,request,page,length):
+        request_obj = "path:: "+request.path+" :: headers::" + \
+            str(request.headers)+" :: meta_data:: " + \
+            str(request.META)+"data::"+str(request.data)
+        log = Log_model_services.Log_Model_Service(log_type="fetchBeneficiary request at "+request.path+" slug",
+                                                   client_ip_address=request.META['REMOTE_ADDR'], server_ip_address=const.server_ip, full_request=request_obj)
+        logid = log.save()
+        try:
+            auth_token = request.headers.get("auth_token")
+            merchantId = auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(auth_token)
+            clientModel = Client_model_service.Client_Model_Service.fetch_by_id(
+                id=merchantId, created_by="merchantid :: "+merchantId, client_ip_address=request.META['REMOTE_ADDR'])
+            if(clientModel==None):
+                Log_model_services.Log_Model_Service.update_response(
+                logid, {"Message": "admin code missing", "response_code": "0"})
+                return Response({"message":"admin id does not exist", "Response code":"0"},status=status.HTTP_404_NOT_FOUND)
+            if page=="all" and length != "all":
+                return JsonResponse({"Message":"page and length format does not match"},status=status.HTTP_406_NOT_ACCEPTABLE)
+            
+            bene_response = Beneficiary_Model_Services.fetchBeneficiaryByParams(client_ip_address=request.META['REMOTE_ADDR'],created_by="merchant :: "+merchantId,page=page,length=length,merchant_id=merchantId)
+            if(len(bene_response)==0):
+                return Response({"message":"data not found","data":None},status=status.HTTP_404_NOT_FOUND) 
+            if(clientModel.is_encrypt==True):
+                encResp = auth.AESCipher(clientModel.auth_key,clientModel.auth_iv).encrypt(str(bene_response))
+                return Response({"message":"data found","data":encResp},status=status.HTTP_200_OK) 
+            else:
+                return Response({"message":"data found","data":bene_response},status=status.HTTP_200_OK)  
+        except Exception as e:
+            import traceback
+            print(traceback.format_exc())
+            Log_model_services.Log_Model_Service.update_response(logid, str({"Message":"some error","Error":e.args}))
+            return Response({"Message":"some error","Error":e.args})
+
+               
 
 class updateBeneficiary(APIView):
     def put(self,request):
@@ -137,9 +163,8 @@ class addSingleBeneficiary(APIView):
                 id=merchantId, created_by="merchantid :: "+merchantId, client_ip_address=request.META['REMOTE_ADDR'])
             authKey = clientModel.auth_key
             authIV = clientModel.auth_iv
-            role = RoleModel.objects.get(id=clientModel.role_id)
             decResp = str(request.data.get("query"))
-            if  clientModel.is_encrypt :
+            if  clientModel.is_encrypt  :
                 decResp = auth.AESCipher(authKey, authIV).decrypt(decResp)
             res = ast.literal_eval(decResp)
             print(res.get("full_name"))

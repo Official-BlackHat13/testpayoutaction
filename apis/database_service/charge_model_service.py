@@ -33,14 +33,29 @@ class charge_model_service:
         log_service.save()
         return chargeModel.id
     @staticmethod
-    def fetch_by_id(id,client_ip_address,created_by,merchant_id):
+    def fetch_by_id(client_ip_address,created_by,page,length,merchant_id=None):
         log_service=Log_model_services.Log_Model_Service(log_type="fetch",table_name="apis_chargemodel",remarks="fetching records from apis_chargemodel by primary key in the record",client_ip_address=client_ip_address,server_ip_address=const.server_ip,created_by=created_by)
-        chargeModel=ChargeModel.objects.filter(id=id,merchant_id=merchant_id).values()
-        if(len(chargeModel)==0):
-            return "-1"
-        print(chargeModel[0].get("id"))
-        log_service.table_id=chargeModel[0].get("id")
+        offSet = (int(page)-1)*int(length)
+        if(merchant_id=="all"):
+            chargeModel=ChargeModel.objects.raw("select * from apis_chargemodel order by id desc  limit "+str(length)+" offset "+str(offSet))
+        else:
+            chargeModel=ChargeModel.objects.raw("select * from apis_chargemodel where merchant_id = "+merchant_id+" order by id desc  limit "+str(length)+" offset "+str(offSet))
+        resp=list()
+        for data in list(chargeModel.iterator()):
+            d={
+                "id": data.id,
+                "mode_id": data.mode_id,
+                "min_amount": data.min_amount,
+                "max_amount": data.max_amount,
+                "charge_percentage_or_fix": data.charge_percentage_or_fix,
+                "charge": data.charge,
+                "created_at": data.created_at,
+                "deleted_at": data.deleted_at,
+                "updated_at": data.updated_at,
+                "merchant_id": data.merchant_id,
+            }
+            resp.append(d)
         log_service.save()
-        return chargeModel[0]
+        return resp
 
         
