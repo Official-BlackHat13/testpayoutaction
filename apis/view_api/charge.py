@@ -68,21 +68,39 @@ class addCharge(APIView):
                                                    client_ip_address=request.META['REMOTE_ADDR'], server_ip_address=const.server_ip, full_request=request_obj)
         logid = log.save()
         try:
-            query = request.headers.get("auth_token")
-            merchantId = auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(query)
-            mode = request.data.get("mode")
-            min_amount = request.data.get("min_amount")
-            max_amount = request.data.get("max_amount")
-            charge_percentage_or_fix = request.data.get("charge_percentage_or_fix")
-            charge = request.data.get("charge")
-            service = charge_model_service(merchant_id=merchantId,mode=mode,min_amount=min_amount,max_amount=max_amount,charge_percentage_or_fix=charge_percentage_or_fix,charge=charge)
+            header = request.headers.get("auth_token")
+            adminId = auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(header)
+            admin = BO_user_services.BO_User_Service.fetch_by_id(adminId)
+            if(admin==None):
+                Log_model_services.Log_Model_Service.update_response(
+                logid, {"Message": "admin code missing", "response_code": "0"})
+                return Response({"message":"admin id does not exist", "Response code":"0"},status=status.HTTP_404_NOT_FOUND)
+            query = request.data.get("query")
+            if(admin.is_encrypt==True):
+                decrypted_query = auth.AESCipher(admin.auth_key,admin.auth_iv).decrypt(query)
+                query = ast.literal_eval(str(decrypted_query))
+            mode=query.get("mode")
+            min_amount=query.get("min_amount")
+            max_amount=query.get("max_amount")
+            charge_percentage_or_fix=query.get("charge_percentage_or_fix")
+            charge=query.get("charge")
+            merchant_id=query.get("merchant_id")
+            merchant = Client_model_service.Client_Model_Service.fetch_by_id(id=merchant_id,created_by="admin :: "+adminId,client_ip_address=request.META['REMOTE_ADDR'])
+            if(merchant==None):
+                Log_model_services.Log_Model_Service.update_response(
+                logid, {"Message": "merchant code missing", "response_code": "0"})
+                return Response({"message":"merchant id does not exist", "Response code":"0"},status=status.HTTP_404_NOT_FOUND)
+            service = charge_model_service(merchant_id=merchant_id,mode=mode,min_amount=min_amount,max_amount=max_amount,charge_percentage_or_fix=charge_percentage_or_fix,charge=charge)
             resp = service.save(client_ip_address=request.META['REMOTE_ADDR'])
-            return Response({"message":"data saved"},status=status.HTTP_200_OK)
+            Log_model_services.Log_Model_Service.update_response(
+                logid, {"Message": "data saved","data":str(resp), "response_code": "1"})
+            return Response({"message":"data saved", "response_code": "1"},status=status.HTTP_200_OK)
         except Exception as e:
             import traceback
             print(traceback.format_exc())
             Log_model_services.Log_Model_Service.update_response(logid,{"message":"Some error occured","Error_Code":e.args,"response_code":"2"})
             return Response({"Message":"some error","Error":e.args})
+
 
 
 class fetchCharges(APIView):

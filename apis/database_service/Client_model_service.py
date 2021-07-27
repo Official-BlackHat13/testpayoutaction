@@ -70,25 +70,11 @@ class Client_Model_Service:
         log_service.table_id=model.id
         log_service.save()
         return model
+    
     @staticmethod
-
-    def fetch_by_clientid(client_id,client_ip_address,created_by)->ClientModel:
-        log_service=Log_model_services.Log_Model_Service(log_type="fetch",table_name="apis_clientmodel",remarks="fetching records in apis_clientmodel table by client id",client_ip_address=client_ip_address,server_ip_address=const.server_ip,created_by=created_by)
-        
-        clientModels=ClientModel.objects.filter(client=client_id,status=True)
-        model=clientModels[0]
-        log_service.table_id=model.id
-        log_service.save()
-        return model
-    @staticmethod
-    def fetch_by_clientcode(client_code,client_ip_address,created_by)->list:
-        log_service=Log_model_services.Log_Model_Service(log_type="fetch",table_name="apis_clientmodel",remarks="fetching records in apis_clientmodel table by client code",client_ip_address=client_ip_address,server_ip_address=const.server_ip,created_by=created_by)
-        log_service.save()
-
-
     def fetch_by_clientcode(client_code,client_ip_address,created_by)->ClientModel:
         log_service=Log_model_services.Log_Model_Service(log_type="fetch",table_name="apis_clientmodel",remarks="fetching records in apis_clientmodel table by client code",client_ip_address=client_ip_address,server_ip_address=const.server_ip,created_by=created_by)
-
+        
         clientModel=ClientModel.objects.filter(client_code=client_code,status=True)
         model=clientModel[0]
         return model
@@ -150,6 +136,8 @@ class Client_Model_Service:
             # print(b.columns)
             d={
                 'id':b.id ,
+                'role': b.role,
+                'client': b.client,
                 'role': b.role_id,
                 'client': b.client_id,
                 'client_code': b.client_code,
@@ -178,7 +166,6 @@ class Client_Model_Service:
             }
             resp.append(d)
         result = list(map(enc,resp))
-        # print("..........resi = ",result)
         return result
 
 def enc(b):

@@ -181,7 +181,7 @@ class addBalanceApi(APIView):
         merchant = request.headers["auth_token"]
         if(merchant == ""):
             Log_model_services.Log_Model_Service.update_response(
-                logid, {"Message": "merchant code missing", "response_code": "3"})
+                logid, {"Message": "merchant code missing", "response_code": "0"})
             return Response({"message": "merchant code missing", "data": None, "response_code": "3"}, status=status.HTTP_400_BAD_REQUEST)
         decMerchant = auth.AESCipher(authKey, authIV).decrypt(merchant)
         created_by = "merchant ::"+decMerchant
@@ -204,7 +204,35 @@ class addBalanceApi(APIView):
         res = ast.literal_eval(decResp)
         response = Ledger_Model_Service.addBal(res,client_ip_address=request.META['REMOTE_ADDR'],merchant = decMerchant,clientCode = clientModel.client_code)
         print(authKey+" "+authIV)
-        encResponse = auth.AESCipher(authKey, authIV).encrypt(response)
+        encResponse = str(auth.AESCipher(authKey, authIV).encrypt(response))[2:].replace("'","")
         Log_model_services.Log_Model_Service.update_response(
             logid, {"Message": str(encResponse), "response_code": "1"})
         return Response({"message": "data saved succefully", "data": str(encResponse), "response_code": "1"}, status=status.HTTP_200_OK)
+
+
+# class adminAddBalance(APIView):
+#     def post(self,request):
+#         request_obj = "path:: "+request.path+" :: headers::" + \
+#             str(request.headers)+" :: meta_data:: " + \
+#             str(request.META)+"data::"+str(request.data)
+
+#         log = Log_model_services.Log_Model_Service(log_type="addCharge request at "+request.path+" slug",
+#                                                    client_ip_address=request.META['REMOTE_ADDR'], server_ip_address=const.server_ip, full_request=request_obj)
+#         logid = log.save()
+#         try:
+#             query = request.headers.get("auth_token")
+#             adminId = auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(query)
+#             admin = BO_user_services.BO_User_Service.fetch_by_id(adminId)
+#             if(admin==None):
+#                 Log_model_services.Log_Model_Service.update_response(
+#                 logid, {"Message": "admin code missing", "response_code": "0"})
+#                 return Response({"message":"admin id does not exist", "Response code":"0"},status=status.HTTP_404_NOT_FOUND)
+#             authKey = admin.auth_key
+#             authIV = admin.auth_iv
+#             if(admin.is_encrypt != True):
+
+#         except Exception as e:
+#             import traceback
+#             print(traceback.format_exc())
+#             Log_model_services.Log_Model_Service.update_response(logid,{"message":"Some error occured","Error_Code":e.args,"response_code":"2"})
+#             return Response({"Message":"some error","Error":e.args})

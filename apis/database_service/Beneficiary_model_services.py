@@ -43,6 +43,9 @@ class Beneficiary_Model_Services:
         if(self.ifsc_code!=None and self.account_number != None and self.merchant_id != None):
             resp = BeneficiaryModel.objects.filter(account_number=self.account_number,ifsc_code=self.ifsc_code,merchant_id=self.merchant_id).values()
             return list(resp)
-        elif(self.ifsc_code!=None and self.account_number != None):
-            resp = BeneficiaryModel.objects.filter(account_number=self.account_number,ifsc_code=self.ifsc_code).values()
-            return list(resp)
+        # elif(self.ifsc_code!=None and self.account_number != None):
+        #     resp = BeneficiaryModel.objects.filter(account_number=self.account_number,ifsc_code=self.ifsc_code).values()
+        #     return list(resp)
+        resp = BeneficiaryModel.objects.filter(merchant_id=self.merchant_id).values()
+        return list(resp)
+        

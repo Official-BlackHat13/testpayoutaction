@@ -1,11 +1,8 @@
 from django.db.models import query
-
-
 from pyexcel_xls import get_data as xls_get
 from pyexcel_xlsx import get_data as xlsx_get
 from django.utils.datastructures import MultiValueDictKeyError
 # from apis.database_models.Test import TestModel
-
 from rest_framework.exceptions import server_error
 # from apis.bank_services.IFDC_service import payment
 from django.http import *
@@ -38,25 +35,12 @@ from rest_framework.permissions import IsAuthenticated
 from .. import const
 from ..Utils import randomstring
 from ..database_service import BO_user_services
-
 from ..models import MerchantModel,RoleModel
-
-
-
-
-
-
-
 # from .models import MerchantModel,RoleModel
 from sabpaisa import auth
-
 from datetime import datetime
-
 from ..bank_services import ICICI_service
-
 from ..other_service import login_service,signup_service
-
-
 from sabpaisa import auth
 
 class allMerchants(APIView):
@@ -78,4 +62,4 @@ class allMerchants(APIView):
         if(admin.is_encrypt==True):
             encResp = str(auth.AESCipher(admin.auth_key,admin.auth_iv).encrypt(str(resp)))[2:].replace("'","")
             return Response({"message":"data found", "Response code":"1","data":str(encResp)})
-        return Response({"message":"data found", "Response code":"1","data":resp})
+        return Response({"message":"Data found", "Response code":"1","data":resp})

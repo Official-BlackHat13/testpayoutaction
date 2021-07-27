@@ -40,7 +40,7 @@ urlpatterns = [
    #  path("head/",views.tester.as_view()),
    #  path("encHeader/",views.encHeader.as_view()),
     path("addBalance/",views.payout.addBalanceApi.as_view()),
-
+   
    #  path("fetch/<slug:page>/<slug:length>",views.extras.fetch.as_view()),
    path("FetchLedgers/<slug:page>/<slug:length>",views.extras.fetch.as_view()),
    # path("fetch/<slug:page>/<slug:length>",views.extras.fetch.as_view()),

@@ -92,7 +92,7 @@ class ICICI_service:
         value = cursors.fetchall()
         cursors.close()
         return value
-    #added on 28 june
+    
     def fetchAll():
         ledgerModel = LedgerModel.objects.filter(status=True)
         return ledgerModel
