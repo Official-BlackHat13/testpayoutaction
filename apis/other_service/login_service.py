@@ -15,7 +15,11 @@ class Login_service:
         self.password=password
         self.client_ip_address=client_ip_address
     def login_request_admin(self):
-        client_model = BO_User_Service.fetch_by_username_password(self.username,self.password,client_ip_address=self.client_ip_address,created_by="api call")
+        if const.encrypted_password:
+            client_model = BO_User_Service.fetch_by_username_encrypted_password(self.username,self.password,client_ip_address=self.client_ip_address,created_by="api call")
+        else:
+            client_model = BO_User_Service.fetch_by_username_password(self.username,self.password,client_ip_address=self.client_ip_address,created_by="api call")
+        
         print(client_model)
         if len(client_model)==0:
             print('if')
@@ -48,7 +52,11 @@ class Login_service:
             ExpireOTP().start()
             return otp_service.verification_token
     def login_request(self):
-        client_model = Client_Model_Service.fetch_by_username_password(self.username,self.password,client_ip_address=self.client_ip_address,created_by="api call")
+        if const.encrypted_password:
+            client_model = Client_Model_Service.fetch_by_username_encrypted_password(self.username,self.password,client_ip_address=self.client_ip_address,created_by="api call")
+        else:
+            client_model = Client_Model_Service.fetch_by_username_password(self.username,self.password,client_ip_address=self.client_ip_address,created_by="api call")
+        
         print(client_model)
         if len(client_model)==0:
             print('if')
@@ -91,14 +99,14 @@ class Login_service:
                 username=client.username
                 password=client.password
             else:
-             client=Client_Model_Service.fetch_by_id(record[0].user_id,client_ip_address,created_by="merchant_id::"+str(record[0].user))
+             client=Client_Model_Service.fetch_by_id(record[0].user_id,client_ip_address,created_by="merchant_id::"+str(record[0].user_id))
              username=client.client_username
              password=client.client_password
             print("record--> :: "+str(record[0].user_id))
             res = requests.post(const.domain+"api/token/",json={"username":username,"password":password})
             val_dic=UserActive_Model_Service(client.id,active_status="active",login_status="active",client_ip_address=client_ip_address,login_time=datetime.now(),login_expire_time=datetime.now()+timedelta(days=3),geo_location=geo_location).save()
             Otp_Model_Services.update_status(record[0].id,"Verified")
-            return {"user_id":record[0].user_id,"jwt_token":res.json(),"user_token":{"login_token":val_dic["login_token"],"tab_login":val_dic["tab_token"]}}
+            return {"user_id":record[0].user_id,"username":username,"jwt_token":res.json(),"user_token":{"login_token":val_dic["login_token"],"tab_login":val_dic["tab_token"]}}
     @staticmethod
     def resend_otp(verification_token,client_ip_address,type):
         record = Otp_Model_Services.fetch_by_verification_only(verification_token)

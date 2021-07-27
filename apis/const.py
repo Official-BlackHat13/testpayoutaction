@@ -8,7 +8,7 @@ server_ip = socket.gethostbyname(socket.gethostname())
 bene_account_name = "SRS"
 bene_account_number="98765"
 bene_ifsc = "12345"
-
+encrypted_password=False
 
 # paytm_subwalletGuid = "4957c207-dafa-11eb-bbc6-fa163e429e83"
 # paytm_merchant_id = "SubPai61513678214850"

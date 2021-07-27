@@ -109,6 +109,12 @@ class Client_Model_Service:
         clientModel=ClientModel.objects.filter(client_username=username,client_password=password,status=True)
         return clientModel
     @staticmethod
+    def fetch_by_username_encrypted_password(username,password,client_ip_address,created_by)->list:
+        log_service=Log_model_services.Log_Model_Service(log_type="fetch",table_name="apis_clientmodel",remarks="fetching all records in apis_clientmodel table by username",client_ip_address=client_ip_address,server_ip_address=const.server_ip,created_by=created_by)
+        log_service.save()
+        clientModel=ClientModel.objects.filter(client_username=username,encrypted_password=password,status=True)
+        return clientModel
+    @staticmethod
     def get_user_type(merchant_id)->list:
         cursors = connection.cursor()
         cursors.execute('call getRoleType("'+str(merchant_id)+'")')

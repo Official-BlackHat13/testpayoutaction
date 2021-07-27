@@ -36,12 +36,12 @@ end
 --END$$
 --DELIMITER ;
 
--- DELIMITER &&
--- create PROCEDURE getRoleType(in merchant_id int)
--- begin
--- select apis_rolemodel.role_name from apis_merchantmodel  inner join apis_rolemodel on apis_merchantmodel.role=apis_rolemodel.id where apis_merchantmodel.id=merchant_id;
--- end 
 DELIMITER &&
+create PROCEDURE getRoleType(in merchant_id int)
+begin
+select apis_rolemodel.role_name from apis_merchantmodel  inner join apis_rolemodel on apis_merchantmodel.role_id=apis_rolemodel.id where apis_merchantmodel.id=merchant_id;
+end 
+&& DELIMITER ;
 create PROCEDURE getLedger(in length int,in page int)
 begin
 
