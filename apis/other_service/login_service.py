@@ -99,14 +99,14 @@ class Login_service:
                 username=client.username
                 password=client.password
             else:
-             client=Client_Model_Service.fetch_by_id(record[0].user_id,client_ip_address,created_by="merchant_id::"+str(record[0].user))
+             client=Client_Model_Service.fetch_by_id(record[0].user_id,client_ip_address,created_by="merchant_id::"+str(record[0].user_id))
              username=client.client_username
              password=client.client_password
             print("record--> :: "+str(record[0].user_id))
             res = requests.post(const.domain+"api/token/",json={"username":username,"password":password})
             val_dic=UserActive_Model_Service(client.id,active_status="active",login_status="active",client_ip_address=client_ip_address,login_time=datetime.now(),login_expire_time=datetime.now()+timedelta(days=3),geo_location=geo_location).save()
             Otp_Model_Services.update_status(record[0].id,"Verified")
-            return {"user_id":record[0].user_id,"jwt_token":res.json(),"user_token":{"login_token":val_dic["login_token"],"tab_login":val_dic["tab_token"]}}
+            return {"user_id":record[0].user_id,"username":username,"jwt_token":res.json(),"user_token":{"login_token":val_dic["login_token"],"tab_login":val_dic["tab_token"]}}
     @staticmethod
     def resend_otp(verification_token,client_ip_address,type):
         record = Otp_Model_Services.fetch_by_verification_only(verification_token)

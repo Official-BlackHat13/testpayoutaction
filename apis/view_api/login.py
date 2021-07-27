@@ -120,13 +120,13 @@ class LoginVerificationAPI(APIView):
                 Log_model_services.Log_Model_Service.update_response(logid,{"message":"OTP Expired","response_code":"0"})
                 return Response({"message":"OTP Expired","response_code":"0"},status=status.HTTP_400_BAD_REQUEST)
             elif login==False:
-                Log_model_services.Log_Model_Service.update_response(logid,{"message":"OTP or Verification token is not valid","response_code":"0"})
-                return Response({"message":"OTP or Verification token is not valid","response_code":"0"},status=status.HTTP_400_BAD_REQUEST)
+                Log_model_services.Log_Model_Service.update_response(logid,{"message":"OTP is not valid","response_code":"0"})
+                return Response({"message":"OTP is not valid","response_code":"0"},status=status.HTTP_400_BAD_REQUEST)
             else:
                 # print(str(login[0]))
                 api_key=auth.AESCipher(const.AuthKey,const.AuthIV).encrypt(str(login["user_id"]))
                 Log_model_services.Log_Model_Service.update_response(logid,{"auth_token":str(api_key)[2:].replace("'",""),"response_code":"1"})
-                return Response({"auth_token":str(api_key)[2:].replace("'",""),"jwt_token":login["jwt_token"],"user_token":login['user_token'],"response_code":"1"},status=status.HTTP_200_OK)
+                return Response({"auth_token":str(api_key)[2:].replace("'",""),"jwt_token":login["jwt_token"],"username":login["username"],"user_token":login['user_token'],"response_code":"1"},status=status.HTTP_200_OK)
         except Exception as e:
             import traceback
             print(traceback.format_exc())
