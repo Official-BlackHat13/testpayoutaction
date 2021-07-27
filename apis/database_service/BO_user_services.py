@@ -44,6 +44,11 @@ class BO_User_Service:
         
         return bouser
     @staticmethod
+    def fetch_by_username_encrypted_password(username,password,client_ip_address,created_by):
+        bouser = BOUserModel.objects.filter(username=username,encrypted_password=password,status=True)
+        
+        return bouser
+    @staticmethod
     def fetch_user_type(id):
         bouser = BOUserModel.objects.get(id=id,status=True)
         if bouser == None:

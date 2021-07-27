@@ -15,7 +15,11 @@ class Login_service:
         self.password=password
         self.client_ip_address=client_ip_address
     def login_request_admin(self):
-        client_model = BO_User_Service.fetch_by_username_password(self.username,self.password,client_ip_address=self.client_ip_address,created_by="api call")
+        if const.encrypted_password:
+            client_model = BO_User_Service.fetch_by_username_encrypted_password(self.username,self.password,client_ip_address=self.client_ip_address,created_by="api call")
+        else:
+            client_model = BO_User_Service.fetch_by_username_password(self.username,self.password,client_ip_address=self.client_ip_address,created_by="api call")
+        
         print(client_model)
         if len(client_model)==0:
             print('if')
@@ -48,7 +52,11 @@ class Login_service:
             ExpireOTP().start()
             return otp_service.verification_token
     def login_request(self):
-        client_model = Client_Model_Service.fetch_by_username_password(self.username,self.password,client_ip_address=self.client_ip_address,created_by="api call")
+        if const.encrypted_password:
+            client_model = Client_Model_Service.fetch_by_username_encrypted_password(self.username,self.password,client_ip_address=self.client_ip_address,created_by="api call")
+        else:
+            client_model = Client_Model_Service.fetch_by_username_password(self.username,self.password,client_ip_address=self.client_ip_address,created_by="api call")
+        
         print(client_model)
         if len(client_model)==0:
             print('if')
