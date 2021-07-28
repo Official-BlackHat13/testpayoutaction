@@ -127,12 +127,12 @@ class fetchCharges(APIView):
                 merchant_id = str(request.data.get("query")).split(":")[1]
             chargeResponse = charge_model_service.fetch_by_id(client_ip_address=request.META['REMOTE_ADDR'],created_by="admin :: "+adminId,page=page,length=length,merchant_id=merchant_id)
             if(len(chargeResponse)==0):
-                return Response({"message":"data not found","data":None},status=status.HTTP_404_NOT_FOUND)
+                return Response({"message":"data not found","data":None,"response_code":"0"},status=status.HTTP_404_NOT_FOUND)
             if(admin.is_encrypt==True):
                 encResp = auth.AESCipher(admin.auth_key,admin.auth_iv).encrypt(str(chargeResponse))
-                return Response({"messgae":"data found","data":encResp},status=status.HTTP_200_OK) 
+                return Response({"message":"data found","data":encResp,"response_code":"1"},status=status.HTTP_200_OK) 
             else:
-                return Response({"messgae":"data found","data":chargeResponse},status=status.HTTP_200_OK)         
+                return Response({"message":"data found","data":chargeResponse,"response_code":"1"},status=status.HTTP_200_OK)         
         except Exception as e:
             import traceback
             print(traceback.format_exc())

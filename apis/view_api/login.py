@@ -142,7 +142,7 @@ class ResendLoginOTP(APIView):
          login=login_service.Login_service.resend_otp(req.data["verification_code"],req.META['REMOTE_ADDR'],req.data["type"])
         #  api_key=auth.AESCipher(const.AuthKey,const.AuthIV).encrypt(login)
          Log_model_services.Log_Model_Service.update_response(logid,{"verification_token":login,"response_code":"1"})
-         return Response({"verification_token":login,"response_code":"1"},status=status.HTTP_200_OK)
+         return Response({"message":"OTP sent ","verification_token":login,"response_code":"1"},status=status.HTTP_200_OK)
         except Exception as e:
             import traceback
             print(traceback.format_exc())

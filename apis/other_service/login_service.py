@@ -112,13 +112,13 @@ class Login_service:
         record = Otp_Model_Services.fetch_by_verification_only(verification_token)
         if(record==None):
             raise Exception("Verfication token not valid")
-        print(record.user)
+        print(record.user_id)
         if type=="back_office":
-            user=BO_User_Service.fetch_by_id(record.user)
+            user=BO_User_Service.fetch_by_id(record.user_id)
             username=user.username
             password=user.password
         else:
-         user = Client_Model_Service.fetch_by_id(record.user,client_ip_address,"merchant_id :: "+str(record.user))
+         user = Client_Model_Service.fetch_by_id(record.user_id,client_ip_address,"merchant_id :: "+str(record.user_id))
          username=user.client_username
          password=user.client_password
         # print(record[0].user)
