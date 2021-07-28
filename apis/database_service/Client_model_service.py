@@ -134,8 +134,8 @@ class Client_Model_Service:
         for b in list(record.iterator()):
             d={
                 'id':b.id ,
-                'role': b.role,
-                'client': b.client,
+                
+             
                 'role': b.role_id,
                 'client': b.client_id,
                 'client_code': b.client_code,
