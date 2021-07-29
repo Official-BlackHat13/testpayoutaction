@@ -372,37 +372,38 @@ class Ledger_Model_Service:
             return True
         return False
 
-    def addBal(decResp, client_ip_address,merchant,clientCode):
+    def addBal(decResp, client_ip_address,admin,amount):
         log_service = Log_model_services.Log_Model_Service(log_type="create", table_name="apis_ledgermodel", remarks="saving records in apis_ledgermodel table",
                                                            client_ip_address=client_ip_address, server_ip_address=const.server_ip, created_by=decResp.get("created_by"))
         ledgermodel = LedgerModel()
-        ledgermodel.amount = decResp.get("amount")
+        ledgermodel.amount = amount
         modeOfTrans = decResp.get("mode")
         m = ModeModel.objects.filter(mode = modeOfTrans)
         ledgermodel.payment_mode_id = m[0].id
-        ledgermodel.bank_ref_no = const.bank_ref_no
+        ledgermodel.bank_ref_no = decResp.get("bank_ref_no")
         ledgermodel.trans_amount_type = "credited"
         ledgermodel.trans_type = "payin"
         ledgermodel.type_status = "Generated"
         ledgermodel.request_header = "request header"
         bankResp = "NULL"
-        ledgermodel.remarks = " "
-        ledgermodel.merchant_id = merchant
-        ledgermodel.client_code = clientCode
+        ledgermodel.purpose = "CREDIT"
+        ledgermodel.remarks = decResp.get("remarks")
+        ledgermodel.merchant_id = decResp.get("merchant_id")
+        ledgermodel.client_code = "null"
         #CR06e65070-dbd6-11eb-9816-507b9d006cb8
         ledgermodel.customer_ref_no = generate_unique_customerRef()
         ledgermodel.bank_partner_id = const.bank
-        ledgermodel.trans_time = datetime.now()
         ledgermodel.van = " "
+        ledgermodel.credit_transaction_date=datetime.now()
         ledgermodel.bene_account_name = const.bene_account_name
         ledgermodel.bene_account_number = const.bene_account_number
         ledgermodel.bene_ifsc = const.bene_ifsc
-        ledgermodel.createdBy = "merchantID :: "+str(merchant)
+        ledgermodel.createdBy = "adminID :: "+str(admin)
         ledgermodel.created_at = datetime.now()
         ledgermodel.status = True
         ledgermodel.trans_status = "Success"#success
         ledgermodel.payout_trans_id = generate_token()
-        ledgermodel.charge = 1.0
+        ledgermodel.charge = decResp.get("charge")
         ledgermodel.save()  
         log_service.table_id = ledgermodel.id
         log_service.save()

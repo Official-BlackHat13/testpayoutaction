@@ -3,8 +3,7 @@
 
 
 from django.db.models import query
-
-
+import json
 from pyexcel_xls import get_data as xls_get
 from pyexcel_xlsx import get_data as xlsx_get
 from django.utils.datastructures import MultiValueDictKeyError
@@ -236,3 +235,46 @@ class addBalanceApi(APIView):
 #             print(traceback.format_exc())
 #             Log_model_services.Log_Model_Service.update_response(logid,{"message":"Some error occured","Error_Code":e.args,"response_code":"2"})
 #             return Response({"Message":"some error","Error":e.args})
+
+
+
+
+class addBalance(APIView):
+    def post(self,request):
+        request_obj = "path:: "+request.path+" :: headers::" + \
+            str(request.headers)+" :: meta_data:: " + \
+            str(request.META)+"data::"+str(request.data)
+        log = Log_model_services.Log_Model_Service(log_type="fetchCharges request at "+request.path+" slug",
+                                                   client_ip_address=request.META['REMOTE_ADDR'], server_ip_address=const.server_ip, full_request=request_obj)
+        logid = log.save()
+        try:
+            header = request.headers.get("auth_token")
+            adminId = auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(header)
+            admin = BO_user_services.BO_User_Service.fetch_by_id(adminId)
+            if(admin==None):
+                Log_model_services.Log_Model_Service.update_response(
+                logid, {"Message": "admin code missing", "response_code": "0"})
+                return Response({"message":"admin id does not exist", "Response code":"0"},status=status.HTTP_404_NOT_FOUND)
+            # res = ast.literal_eval(request.data.get("query")) 
+            if(admin.is_encrypt == True):
+                query = request.data.get("query")
+                decrypted_query = auth.AESCipher(admin.auth_key,admin.auth_iv).decrypt(query)
+                requestBody = ast.literal_eval(decrypted_query)
+                response = Ledger_Model_Service.addBal(requestBody,client_ip_address=request.META['REMOTE_ADDR'],
+                admin= adminId,amount=requestBody.get("amount"))
+                if(requestBody.get("charge")>0):
+                    response2 = Ledger_Model_Service.addBal(requestBody,client_ip_address=request.META['REMOTE_ADDR'],
+                admin= adminId,amount=requestBody.get("charge"))
+                return Response({"message":"balance added","response_code":"1"},status=status.HTTP_201_CREATED)
+            requestBody = request.data.get("query")
+            response = Ledger_Model_Service.addBal(requestBody,client_ip_address=request.META['REMOTE_ADDR'],
+             admin= adminId,amount=requestBody.get("amount"))
+            if(requestBody.get("charge")>0):
+                 response2 = Ledger_Model_Service.addBal(requestBody,client_ip_address=request.META['REMOTE_ADDR'],
+             admin= adminId,amount=requestBody.get("charge"))
+            return Response({"message":"balance added","response_code":"1"},status=status.HTTP_201_CREATED)
+        except Exception as e:
+            import traceback
+            print(traceback.format_exc())
+            Log_model_services.Log_Model_Service.update_response(logid,{"message":"Some error occured","Error_Code":e.args,"response_code":"2"})
+            return Response({"Message":"some error","Error":e.args}) 
