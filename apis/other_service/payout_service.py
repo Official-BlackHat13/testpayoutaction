@@ -146,7 +146,7 @@ class PayoutService:
                                 charge_ledger.mode=mode.id
                                 charge_ledger.van=""
                                 charge_ledger.charge=0
-                                charge_ledger.linked_ledger_id=id
+                                charge_ledger.linked_ledger_id=ledgerModelService.payout_trans_id
                                 charge_ledger.payout_trans_id=generater.generate_token()
                                 charge_ledger.trans_amount_type = "debited"
                                 #  ledgerModelService.
