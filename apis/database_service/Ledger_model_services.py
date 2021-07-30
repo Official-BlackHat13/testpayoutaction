@@ -394,7 +394,14 @@ class Ledger_Model_Service:
         ledgermodel.customer_ref_no = generate_unique_customerRef()
         ledgermodel.bank_partner_id = const.bank
         ledgermodel.van = " "
-        ledgermodel.credit_transaction_date=datetime.now()
+        startYear = int(decResp.get("credit_date")[0:4])
+        startMonth = int(decResp.get("credit_date")[5:7])
+        startDay = int(decResp.get("credit_date")[8:10])
+        startHours = int(decResp.get("credit_date")[11:13])
+        startMinute = int(decResp.get("credit_date")[14:16])
+        dt = datetime.now()
+        start = dt.replace(year=startYear, day=startDay, month=startMonth, hour=startHours, minute=startMinute, second=0, microsecond=0)
+        ledgermodel.credit_transaction_date=start
         ledgermodel.bene_account_name = const.bene_account_name
         ledgermodel.bene_account_number = const.bene_account_number
         ledgermodel.bene_ifsc = const.bene_ifsc
@@ -408,4 +415,3 @@ class Ledger_Model_Service:
         log_service.table_id = ledgermodel.id
         log_service.save()
         return str(ledgermodel.id)
-        
