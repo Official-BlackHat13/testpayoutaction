@@ -31,6 +31,7 @@ ALLOWED_HOSTS = ["192.168.34.42","127.0.0.1","localhost","192.168.34.15","192.16
 # Application definition
 
 INSTALLED_APPS = [
+     "django_crontab",
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -43,7 +44,8 @@ INSTALLED_APPS = [
     "apis",
     "sabpaisa",
     "paytmchecksum",
-    "ifaddr"
+    "ifaddr",
+   
 ]
 CORS_ALLOW_ALL_ORIGINS=True
 CORS_ALLOW_CREDENTIALS = True
@@ -111,7 +113,10 @@ REST_FRAMEWORK = { 'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoS
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],}
 WSGI_APPLICATION = 'payout.wsgi.application'
-
+CRONJOBS =[
+    # ("0 5 0 1/1 * ? *","apis.jobs.EnterDailyBalance"),
+    ("0 0/1 * 1/1 * ? *","apis.jobs.EnterDailyBalance"),
+]
 
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
