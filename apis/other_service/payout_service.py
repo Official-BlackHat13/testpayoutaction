@@ -117,8 +117,7 @@ class PayoutService:
                 ledgerModelService.update_status(id,"Proccesing",client_ip_address=self.client_ip_address,created_by="Merchant ID :: "+str(self.merchant_id))
                 client_ip_address_temp=self.client_ip_address
                 merchant_id_temp = self.merchant_id
-                thread = None
-                
+                thread = None   
                 class ServiceThread(threading.Thread):
                      def run(self):
                          log = Log_Model_Service(log_type="Thread",full_request={"orderId":payoutrequestmodel.orderId},client_ip_address=client_ip_address_temp,server_ip_address=const.server_ip,remarks="Running service thread on paytm enquiry api for merchant id :: "+ merchant_id_temp)
