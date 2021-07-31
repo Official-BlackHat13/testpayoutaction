@@ -31,6 +31,7 @@ class TransactionHistoryModel(models.Model):
     trans_amount_type = models.CharField(max_length=20,default="credited")
     credit_transaction_date=models.DateTimeField(default=datetime.now(),null=True)
     merchant_type_id=models.IntegerField(null=True)
+    charge_id=models.IntegerField(null=True)
     # linked_ledger_id = models.CharField(max_length=20,null=True)
     # remarks = models.CharField(max_length=50,null=True)
     # status_code = models.IntegerField(default=0, null=True)
