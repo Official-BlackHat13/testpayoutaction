@@ -1,5 +1,5 @@
 from django.db import models
-from datetime import datetime
+from datetime import date, datetime
 
 class TransactionHistoryModel(models.Model):
     id=models.AutoField
@@ -48,7 +48,7 @@ class TransactionHistoryModel(models.Model):
     system_remarks=models.CharField(null=True,max_length=900)
     payout_trans_id=models.CharField(max_length=100,default=None)
     purpose=models.CharField(max_length=1000,null=True)
-
+    trans_date=models.DateField(null=True)
     objects = models.Manager()
     def __str__(self):
         return str(self.id)

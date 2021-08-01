@@ -107,3 +107,42 @@ end
 create EVENT dailyledger on schedule every 1 day starts (time("00:00:00"))
 do
 call getDailyBalance();
+
+DELIMITER &&
+create PROCEDURE getAmount2(in type1 varchar(20),in merchant_id int,out value1 float)
+begin
+-- select type1;
+select sum(amount) into value1 from apis_transactionhistorymodel where trans_amount_type=type1 and trans_date=current_date() and apis_transactionhistorymodel.merchant_id=merchant_id and trans_status in ("Success","Pending","Requested","Proccesing");
+-- select value1;
+end 
+&& DELIMITER ;
+DELIMITER &&
+create PROCEDURE getBalancenew(in merchant_id int,out balance float,out cred1 float,out deb1 float)
+begin
+declare bal_temp int;
+-- select sum(amount) into cred1 from apis_transactionhistorymodel where trans_amount_type="credited" and merchant_id=merchant_id and trans_status in ("Success","Pending","Requested","Proccesing");
+-- select sum(amount) into deb1 from apis_transactionhistorymodel where trans_amount_type="debited" and merchant_id=merchant_id and trans_status in ("Success","Pending","Requested","Proccesing");
+
+Call getAmount2("credited",merchant_id,@cred);
+Call getAmount2("debited",merchant_id,@deb);
+
+if (isnull(@cred)) then
+set cred1=0;
+
+else
+set cred1 = @cred;
+end if;
+if (isnull(@deb)) then
+set deb1=0;
+
+else
+set deb1 = @deb;
+end if;
+set bal_temp=0;
+select opening_balance into bal_temp from apis_dailyledgermodel where apis_dailyledgermodel.merchant_id=merchant_id and date=current_date() order by id desc limit 1;
+
+select cred1-deb1 into balance;
+set balance=balance+bal_temp;
+
+end 
+&& DELIMITER ;

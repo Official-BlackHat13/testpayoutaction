@@ -4,7 +4,7 @@ import string
 import random
 from rest_framework import status
 from sabpaisa import auth
-from datetime import datetime
+from datetime import date, datetime
 from apis.Utils.generater import *
 from ..database_service import Client_model_service
 from rest_framework.permissions import AND
@@ -78,6 +78,7 @@ class Ledger_Model_Service:
         ledgermodel.bank_partner_id=self.bank_id
         ledgermodel.trans_init_time = self.trans_time
         ledgermodel.payout_trans_id=self.payout_trans_id
+        ledgermodel.trans_date=date.today()
         ledgermodel.trans_amount_type = self.trans_amount_type
         ledgermodel.van=self.van
         ledgermodel.bene_account_name=self.bene_account_name
@@ -198,7 +199,7 @@ class Ledger_Model_Service:
         
         cursors = connection.cursor()
         print(merchant_id)
-        cursors.execute("call getBalance('"+merchant_id+"',@balance,@cred,@deb)")
+        cursors.execute("call getBalancenew('"+merchant_id+"',@balance,@cred,@deb)")
         cursors.execute("select @balance")
         # cursors.execute("Call getAmount("'credited'",5,@cred);")
         # cursors.execute("Call getAmount("'debited'",5,@deb);")
@@ -394,6 +395,7 @@ class Ledger_Model_Service:
         ledgermodel.trans_amount_type = "credited"
         ledgermodel.trans_type = "payin"
         ledgermodel.type_status = "Generated"
+        ledgermodel.trans_date=date.today()
         ledgermodel.request_header = "request header"
         bankResp = "NULL"
         ledgermodel.purpose = "CREDIT"
