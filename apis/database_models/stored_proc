@@ -69,3 +69,36 @@ end
 --begin
 --select * from apis_merchantmodel limit length offset page;
 --end
+
+DELIMITER &&
+create PROCEDURE getDailyBalance()
+begin
+declare merchant_length int;
+declare looping int;
+declare merchant int;
+declare temp_check int;
+set merchant_length=0;
+set looping=0;
+select count(*) into merchant_length from apis_merchantmodel;
+loop1: LOOP
+if looping>=merchant_length then 
+leave loop1;
+end if;
+set merchant=0;
+select id into merchant from apis_merchantmodel limit looping,1;
+call getBalance(merchant,@balance,@cred,@deb);
+set temp_check=0;
+select count(*) into temp_check where id=merchant;
+if temp_check=0 then
+insert into apis_dailyledgermodel (merchant_id,date,opening_balance,closing_balance,created_at,created_by) values (merchant,CURDATE(),0,@balance,now(),"system");
+else
+update apis_dailyledgermodel set closing_balance=@balance where date = DATE_SUB(CURDATE(), INTERVAL 1 DAY);
+end if;
+
+insert into apis_dailyledgermodel (merchant_id,date,opening_balance,created_at,created_by) values (merchant,CURDATE(),@balance,now(),"system");
+
+
+set looping=looping+1;
+end LOOP loop1;
+end
+&& DELIMITER ;
