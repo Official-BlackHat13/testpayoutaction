@@ -151,3 +151,13 @@ set balance=balance+bal_temp;
 
 end 
 && DELIMITER ;
+
+--for admin screen
+DELIMITER $$
+create PROCEDURE todayTransactingMerchant()
+BEGIN
+create view info as select merchant_id from apis_transactionhistorymodel where trans_date =  CURDATE() group by merchant_id;
+select count(*) from info;
+drop view info;
+END$$
+DELIMITER ;

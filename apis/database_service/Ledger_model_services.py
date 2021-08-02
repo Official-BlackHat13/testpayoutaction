@@ -440,3 +440,26 @@ class Ledger_Model_Service:
         log_service.table_id = ledgermodel.id
         log_service.save()
         return str(ledgermodel.id)
+
+    def fetchInfo():
+        cursors = connection.cursor()
+        cursors.execute("select sum(amount) from apis_transactionhistorymodel where trans_amount_type=\"credited\" and trans_date =  CURDATE();")
+        credit_amount = cursors.fetchone()[0]
+        cursors.execute("select sum(amount) from apis_transactionhistorymodel where trans_amount_type=\"debited\" and trans_date =  CURDATE();")
+        debited_amount = cursors.fetchone()[0]
+        total_balance = credit_amount-debited_amount
+        cursors.execute("select count(merchant_id) as c from apis_transactionhistorymodel where trans_date =  CURDATE();")
+        total_transactions = cursors.fetchone()[0]
+        cursors.execute("select merchant_id from apis_transactionhistorymodel where trans_date =  CURDATE() group by merchant_id;")
+        total_merchants = cursors.fetchone()[0]
+        cursors.execute("call todayTransactingMerchant();")
+        transacting_merchant=cursors.fetchone()[0]
+        resp = {
+            "credit_amount":credit_amount,
+            "debited_amount":debited_amount,
+            "total_balance":total_balance,
+            "total_transactions":total_transactions,
+            "transacting_merchant":transacting_merchant
+        }
+        return resp
+
