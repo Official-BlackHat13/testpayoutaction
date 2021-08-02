@@ -250,3 +250,30 @@ class UpdateLedger(APIView):
         Log_model_services.Log_Model_Service.update_response(
             logid, {"Message": "something went wrong!!!!", "response_code": "0"})
         return JsonResponse({"Message": "something went wrong!!!!", "response_code": "0"}, status=status.HTTP_400_BAD_REQUEST)
+
+class fetchInfo(APIView):
+    def get(self,request):
+        request_obj = "path:: "+request.path+" :: headers::" + \
+            str(request.headers)+" :: meta_data:: " + \
+            str(request.META)+"data::"+str(request.data)
+        log = Log_model_services.Log_Model_Service(log_type="fecth info request at "+request.path+" slug",
+                                                    client_ip_address=request.META['REMOTE_ADDR'], server_ip_address=const.server_ip, full_request=request_obj)
+        logid = log.save()
+        try:
+            header = request.headers.get("auth_token")
+            adminId = auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(header)
+            admin = BO_user_services.BO_User_Service.fetch_by_id(adminId)
+            if(admin==None):
+                Log_model_services.Log_Model_Service.update_response(
+                logid, {"Message": "admin code missing", "response_code": "0"})
+                return Response({"message":"admin id does not exist", "Response code":"0"},status=status.HTTP_404_NOT_FOUND)
+            response = Ledger_Model_Service.fetchInfo()
+            if(admin.is_encrypt==True):
+                encResp = auth.AESCipher(admin.auth_key,admin.auth_iv).encrypt(str(response))
+                return Response({"message":"data found","data":encResp,"response_code":"1"},status=status.HTTP_200_OK) 
+            return Response({"message":"data found","data":response,"response_code":"1"})
+        except Exception as e:
+            import traceback
+            print(traceback.format_exc())
+            Log_model_services.Log_Model_Service.update_response(logid,{"message":"Some error occured","Error_Code":e.args,"response_code":"2"})
+            return Response({"Message":"some error","Error":e.args})
