@@ -38,4 +38,5 @@ request=openapi.Schema(
     properties={
         'auth-token(header)': openapi.Schema(type=openapi.TYPE_STRING, description='string'),
         'encrypted_code': openapi.Schema(type=openapi.TYPE_STRING, description='string'),
+        "mode":openapi.Schema(type=openapi.TYPE_STRING, description='string'),
     })
