@@ -53,7 +53,7 @@ class Ledger_Model_Service:
         json  = {}
         json["amount"]=self.amount
         json['customer_ref_no']=self.customer_ref_no
-        json["trans_time"]=self.trans_time
+        json["trans_time"]=str(self.trans_time)
         json['payout_trans_id']=self.payout_trans_id
         json['charge']=self.charge
         json['mode']=self.mode
@@ -125,13 +125,26 @@ class Ledger_Model_Service:
         ledgerModels=LedgerModel.objects.filter(client_code=client_code)
         log_service.save()
         return ledgerModels
-    def fetch_by_id(self,id,client_ip_address,created_by):
+    @staticmethod
+    def fetch_by_id(id,client_ip_address,created_by)->LedgerModel:
         log_service=Log_model_services.Log_Model_Service(log_type="fetch",table_name="apis_ledgermodel",remarks="fetching record from ledger table by primary key ",client_ip_address=client_ip_address,server_ip_address=const.server_ip,created_by=created_by)
         
         ledgerModels=LedgerModel.objects.get(id=id)
         log_service.table_id=ledgerModels.id
         log_service.save()
         return ledgerModels
+    @staticmethod
+    def fetch_by_id_tojson(id,client_ip_address,created_by)->LedgerModel:
+        log_service=Log_model_services.Log_Model_Service(log_type="fetch",table_name="apis_ledgermodel",remarks="fetching record from ledger table by primary key ",client_ip_address=client_ip_address,server_ip_address=const.server_ip,created_by=created_by)
+        
+        ledgerModels=LedgerModel.objects.get(id=id)
+        json={}
+        json["customer_ref_no"]=ledgerModels.customer_ref_no
+        json['amount']=ledgerModels.amount
+        json['status']=ledgerModels.trans_status
+        log_service.table_id=ledgerModels.id
+        log_service.save()
+        return json
     def fetch_by_van(self,van,client_ip_address,created_by):
         log_service=Log_model_services.Log_Model_Service(log_type="fetch",table_name="apis_ledgermodel",remarks="fetching all records from ledger table by van ",client_ip_address=client_ip_address,server_ip_address=const.server_ip,created_by=created_by)
         
