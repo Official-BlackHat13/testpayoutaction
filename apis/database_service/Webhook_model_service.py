@@ -16,11 +16,11 @@ class Webhook_Model_Service:
         log.save()
         return webhook.id
     @staticmethod
-    def fetch_by_merchant_id(merchant_id,client_ip_address)->list:
+    def fetch_by_merchant_id(merchant_id,client_ip_address)->WebhookModel:
         log = Log_Model_Service(log_type="fetch",client_ip_address=client_ip_address,table_name="api_webhook_model",server_ip_address=server_ip,remarks="fetching webhook record for merchant id :: "+merchant_id)
-        webhook = WebhookModel.objects.filter(merchant_id=merchant_id)
+        webhook = WebhookModel.objects.filter(merchant_id=merchant_id,status=True)
         if len(webhook)==0:
             return None
-        return webhook
+        return webhook[0]
         
         

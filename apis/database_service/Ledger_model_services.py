@@ -4,13 +4,13 @@ import string
 import random
 from rest_framework import status
 from sabpaisa import auth
-from datetime import datetime
+from datetime import date, datetime
 from apis.Utils.generater import *
 from ..database_service import Client_model_service
 from rest_framework.permissions import AND
 from ..models import TransactionHistoryModel as LedgerModel
 from ..models import ModeModel
-
+from ..Utils.numbers import get_number
 
 from ..models import ChargeModel
 
@@ -19,7 +19,7 @@ from django.db import connection
 from sabpaisa import main
 import pytz
 class Ledger_Model_Service:
-    def __init__(self,id=None, merchant=None,client_code=None,linked_ledger_id=None,payout_trans_id=None,trans_amount_type=None, type_status=None, amount=None, van=None, trans_type=None, trans_status=None, bank_ref_no=None, customer_ref_no=None, bank_id=None, trans_time=None, bene_account_name=None, bene_account_number=None, bene_ifsc=None, request_header=None, createdBy=None, updatedBy=None, deletedBy=None, created_at=None, deleted_at=None, updated_at=None, status=True, mode=None, charge=None):
+    def __init__(self,id=None, merchant=None,charge_id=None,client_code=None,linked_ledger_id=None,payout_trans_id=None,trans_amount_type=None, type_status=None, amount=None, van=None, trans_type=None, trans_status=None, bank_ref_no=None, customer_ref_no=None, bank_id=None, trans_time=None, bene_account_name=None, bene_account_number=None, bene_ifsc=None, request_header=None, createdBy=None, updatedBy=None, deletedBy=None, created_at=None, deleted_at=None, updated_at=None, status=True, mode=None, charge=None):
         self.id = id
         self.merchant=merchant
         self.client_code=client_code
@@ -37,7 +37,7 @@ class Ledger_Model_Service:
         self.bene_account_number=bene_account_number
         self.bene_ifsc=bene_ifsc
         self.payout_trans_id=payout_trans_id
-        
+        self.charge_id=charge_id
         self.request_header=request_header
         self.van=van
         self.createdBy=createdBy
@@ -53,7 +53,7 @@ class Ledger_Model_Service:
         json  = {}
         json["amount"]=self.amount
         json['customer_ref_no']=self.customer_ref_no
-        json["trans_time"]=self.trans_time
+        json["trans_time"]=str(self.trans_time)
         json['payout_trans_id']=self.payout_trans_id
         json['charge']=self.charge
         json['mode']=self.mode
@@ -78,6 +78,7 @@ class Ledger_Model_Service:
         ledgermodel.bank_partner_id=self.bank_id
         ledgermodel.trans_init_time = self.trans_time
         ledgermodel.payout_trans_id=self.payout_trans_id
+        ledgermodel.trans_date=date.today()
         ledgermodel.trans_amount_type = self.trans_amount_type
         ledgermodel.van=self.van
         ledgermodel.bene_account_name=self.bene_account_name
@@ -94,6 +95,8 @@ class Ledger_Model_Service:
         # ledgermodel.status = self.status
         ledgermodel.payment_mode_id=self.mode
         ledgermodel.charge = self.charge
+        if self.charge_id!=None:
+            ledgermodel.charge_id=self.charge_id
         ledgermodel.save()
 
         #start
@@ -122,13 +125,26 @@ class Ledger_Model_Service:
         ledgerModels=LedgerModel.objects.filter(client_code=client_code)
         log_service.save()
         return ledgerModels
-    def fetch_by_id(self,id,client_ip_address,created_by):
+    @staticmethod
+    def fetch_by_id(id,client_ip_address,created_by)->LedgerModel:
         log_service=Log_model_services.Log_Model_Service(log_type="fetch",table_name="apis_ledgermodel",remarks="fetching record from ledger table by primary key ",client_ip_address=client_ip_address,server_ip_address=const.server_ip,created_by=created_by)
         
         ledgerModels=LedgerModel.objects.get(id=id)
         log_service.table_id=ledgerModels.id
         log_service.save()
         return ledgerModels
+    @staticmethod
+    def fetch_by_id_tojson(id,client_ip_address,created_by)->LedgerModel:
+        log_service=Log_model_services.Log_Model_Service(log_type="fetch",table_name="apis_ledgermodel",remarks="fetching record from ledger table by primary key ",client_ip_address=client_ip_address,server_ip_address=const.server_ip,created_by=created_by)
+        
+        ledgerModels=LedgerModel.objects.get(id=id)
+        json={}
+        json["customer_ref_no"]=ledgerModels.customer_ref_no
+        json['amount']=ledgerModels.amount
+        json['status']=ledgerModels.trans_status
+        log_service.table_id=ledgerModels.id
+        log_service.save()
+        return json
     def fetch_by_van(self,van,client_ip_address,created_by):
         log_service=Log_model_services.Log_Model_Service(log_type="fetch",table_name="apis_ledgermodel",remarks="fetching all records from ledger table by van ",client_ip_address=client_ip_address,server_ip_address=const.server_ip,created_by=created_by)
         
@@ -196,7 +212,7 @@ class Ledger_Model_Service:
         
         cursors = connection.cursor()
         print(merchant_id)
-        cursors.execute("call getBalance('"+merchant_id+"',@balance,@cred,@deb)")
+        cursors.execute("call getBalancenew('"+merchant_id+"',@balance,@cred,@deb)")
         cursors.execute("select @balance")
         # cursors.execute("Call getAmount("'credited'",5,@cred);")
         # cursors.execute("Call getAmount("'debited'",5,@deb);")
@@ -293,19 +309,27 @@ class Ledger_Model_Service:
         # return value        
     @staticmethod
     def calculate_charge(merchant_id,mode,amount,client_ip_address):
+        
         mode = ModeModel.objects.filter(mode=mode)
+        print(mode)
         print(mode[0].id)
         charge=ChargeModel.objects.filter(mode_id=mode[0].id,min_amount__lt=amount,max_amount__gt=amount,merchant_id=merchant_id)
         # print(charge[0].charge_percentage_or_fix)
         charge_amount=0
-        if(len(charge)>0 and charge[0].charge_percentage_or_fix=="percentage"):
-            charge_amount=(amount/100)*charge[0].charge
-            return charge_amount
-        elif (len(charge)>0 and charge[0].charge_percentage_or_fix=="fix"):
-            print(charge[0].charge)
-            return charge[0].charge
+        for i in charge:
+            charge_amount+=get_number(i.charge_percentage_or_fix,amount,i.charge)
+        if len(charge)==0:
+            return [0,0]
         else:
-            return 0
+            return [charge_amount,charge]
+        # if(len(charge)>0 and charge[0].charge_percentage_or_fix=="percentage"):
+        #     charge_amount=(amount/100)*charge[0].charge
+        #     return charge_amount
+        # elif (len(charge)>0 and charge[0].charge_percentage_or_fix=="fix"):
+        #     print(charge[0].charge)
+        #     return charge[0].charge
+        # else:
+        #     return 0
             
 
 
@@ -384,6 +408,7 @@ class Ledger_Model_Service:
         ledgermodel.trans_amount_type = "credited"
         ledgermodel.trans_type = "payin"
         ledgermodel.type_status = "Generated"
+        ledgermodel.trans_date=date.today()
         ledgermodel.request_header = "request header"
         bankResp = "NULL"
         ledgermodel.purpose = "CREDIT"

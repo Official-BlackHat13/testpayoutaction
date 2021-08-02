@@ -23,25 +23,28 @@
 -- end 
 -- && DELIMITER ;
 #get amount
-DELIMITER &&
-create PROCEDURE getAmount(in type varchar(20),in merchant_id int,out value int)
-begin
-select sum(amount) into value from apis_transactionhistorymodel where trans_amount_type=type and merchant_id=merchant_id and trans_status in ("Success","Pending","Requested","Proccesing");
-end 
-&& DELIMITER ;
+-- DELIMITER &&
+-- create PROCEDURE getAmount(in type1 varchar(20),in merchant_id int,out value1 float)
+-- begin
+-- select sum(amount) into value1 from apis_transactionhistorymodel where trans_amount_type=type1 and apis_transactionhistorymodel.merchant_id=merchant_id and trans_status in ("Success","Pending","Requested","Proccesing");
+
+-- end 
+-- && DELIMITER ;
 --DELIMITER $$
 --CREATE DEFINER=`root`@`localhost` PROCEDURE `fet`(IN n varchar(1000), m int(11))
 --BEGIN
 --select * from apis_transactionhistorymodel where (customer_ref_no = n OR trans_amount_type = n OR client_code = n) AND (merchant = m) ;
 --END$$
 --DELIMITER ;
-
+#get role
 DELIMITER &&
 create PROCEDURE getRoleType(in merchant_id int)
 begin
 select apis_rolemodel.role_name from apis_merchantmodel  inner join apis_rolemodel on apis_merchantmodel.role_id=apis_rolemodel.id where apis_merchantmodel.id=merchant_id;
 end 
-&& DELIMITER ;
+#get ledger
+DELIMITER &&
+
 create PROCEDURE getLedger(in length int,in page int)
 begin
 
@@ -53,8 +56,8 @@ declare page_val int;
 
 -- select (page*length) into endpage;
 select (page-1)*length into page_val;
-create view tempcredview as select sum(amount) as amount,count(*) as totaltrans,merchant_id as merchant  from apis_transactionhistorymodel where trans_amount_type="credited" group by merchant;
-create view tempdebview as select sum(amount) as amount,count(*) as totaltrans,merchant_id as merchant  from apis_transactionhistorymodel where trans_amount_type="debited" group by merchant;
+create view tempcredview as select sum(amount) as amount,count(*) as totaltrans,merchant_id as merchant  from apis_transactionhistorymodel where trans_amount_type="credited" and trans_status in ("Success","Pending","Requested","Proccesing") group by merchant;
+create view tempdebview as select sum(amount) as amount,count(*) as totaltrans,merchant_id as merchant  from apis_transactionhistorymodel where trans_amount_type="debited" and trans_status in ("Success","Pending","Requested","Proccesing") group by merchant;
 
 create view tempview as select tempcredview.amount-ifnull(tempdebview.amount,0) as balance, tempcredview.totaltrans+ifnull(tempdebview.totaltrans,0) as totaltrans,tempcredview.merchant from tempcredview left join tempdebview on tempcredview.merchant=tempdebview.merchant;
 select apis_merchantmodel.client_username,tempview.balance,tempview.totaltrans,apis_merchantmodel.id from tempview inner join apis_merchantmodel on tempview.merchant=apis_merchantmodel.id where apis_merchantmodel.status=true limit page_val,length;
@@ -64,8 +67,87 @@ drop view tempview;
 -- select endpage;
 end 
 && DELIMITER ;
-
+# fetch merchant
 --CREATE DEFINER=`root`@`localhost` PROCEDURE `fetchMerchants`(in length int, in page int)
 --begin
 --select * from apis_merchantmodel limit length offset page;
 --end
+# get daily balance
+DELIMITER &&
+create PROCEDURE getDailyBalance()
+begin
+declare merchant_length int;
+declare looping int;
+declare merchant int;
+declare temp_check int;
+set merchant_length=0;
+set looping=0;
+select count(*) into merchant_length from apis_merchantmodel;
+loop1: LOOP
+if looping>=merchant_length then 
+leave loop1;
+end if;
+set merchant=0;
+select id into merchant from apis_merchantmodel limit looping,1;
+call getBalance(merchant,@balance,@cred,@deb);
+set temp_check=0;
+select count(*) into temp_check from apis_dailyledgermodel where merchant_id=merchant;
+if temp_check=0 then
+insert into apis_dailyledgermodel (merchant_id,date,opening_balance,closing_balance,created_at,created_by) values (merchant,CURDATE(),0,@balance,now(),"system");
+else
+update apis_dailyledgermodel set closing_balance=@balance,update_at=now() where date = DATE_SUB(CURDATE(), INTERVAL 1 DAY);
+end if;
+
+insert into apis_dailyledgermodel (merchant_id,date,opening_balance,created_at,created_by) values (merchant,CURDATE(),@balance,now(),"system");
+set @balance=0;
+
+set looping=looping+1;
+end LOOP loop1;
+end
+&& DELIMITER ;
+# event 
+create EVENT dailyledger on schedule every 1 day starts (time("00:00:00"))
+do
+call getDailyBalance();
+#get amount 2
+DELIMITER &&
+create PROCEDURE getAmount2(in type1 varchar(20),in merchant_id int,out value1 float)
+begin
+-- select type1;
+select sum(amount) into value1 from apis_transactionhistorymodel where trans_amount_type=type1 and trans_date=current_date() and apis_transactionhistorymodel.merchant_id=merchant_id and trans_status in ("Success","Pending","Requested","Proccesing");
+-- select value1;
+end 
+&& DELIMITER ;
+#get balance new
+DELIMITER &&
+create PROCEDURE getBalancenew(in merchant_id int,out balance float,out cred1 float,out deb1 float)
+begin
+declare bal_temp int;
+-- select sum(amount) into cred1 from apis_transactionhistorymodel where trans_amount_type="credited" and merchant_id=merchant_id and trans_status in ("Success","Pending","Requested","Proccesing");
+-- select sum(amount) into deb1 from apis_transactionhistorymodel where trans_amount_type="debited" and merchant_id=merchant_id and trans_status in ("Success","Pending","Requested","Proccesing");
+
+Call getAmount2("credited",merchant_id,@cred);
+Call getAmount2("debited",merchant_id,@deb);
+
+if (isnull(@cred)) then
+set cred1=0;
+
+else
+set cred1 = @cred;
+end if;
+if (isnull(@deb)) then
+set deb1=0;
+
+else
+set deb1 = @deb;
+end if;
+set bal_temp=0;
+select opening_balance into bal_temp from apis_dailyledgermodel where apis_dailyledgermodel.merchant_id=merchant_id and date=current_date() order by id desc limit 1;
+if (isnull(bal_temp)) then
+set bal_temp=0;
+end if;
+select cred1-deb1 into balance;
+set balance=balance+bal_temp;
+
+end 
+&& DELIMITER ;

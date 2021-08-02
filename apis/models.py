@@ -18,3 +18,6 @@ from .database_models.BeneficiaryModel import BeneficiaryModel
 from .database_models.SlabModel import SlabModel
 # from .database_models.Test import TestModel
 from .database_models.WebhookModel import WebhookModel
+from .database_models.MerchantModeModel import MercahantModeModel
+from .database_models.DailyLedgerModel import DailyLedgerModel
+from .database_models.WebhookRequestModel import WebhookRequestModel
