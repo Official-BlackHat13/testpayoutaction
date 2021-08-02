@@ -42,13 +42,20 @@ class Login_service:
                     print("service_init")
                     Otp_Model_Services.update_status(id,"Expired")
                     print("service_done")
-            
-            response = requests.post(const.email_api,headers={"user-agent":"Application","Accept":"*/*","Content-Type":"application/json; charset=utf-8"},json={"toEmail": user.email,
+            class GetOTP(threading.Thread):
+                def run(self):
+                     response = requests.post(const.email_api,headers={"user-agent":"Application","Accept":"*/*","Content-Type":"application/json; charset=utf-8"},json={"toEmail": user.email,
   "toCc": "",
   "subject": "OTP for Sabpaisa Payout",
   "msg": "Please find the otp for your payout login request "+str(otp)})
-            response_sms=requests.post(const.sms_api(user.mobile,str(otp),user.name))
-            print(response_sms.text,"response sms")
+                     print("response email :: "+response.text)
+            GetOTP().start()
+            class GetSmsOTP(threading.Thread):
+                def run(self):
+                    response_sms=requests.post(const.sms_api(user.mobile,str(otp),user.name))
+            
+                    print(response_sms.text,"response sms")
+            GetSmsOTP().start()
             ExpireOTP().start()
             return otp_service.verification_token
     def login_request(self):
@@ -67,7 +74,7 @@ class Login_service:
             rec=Client_Model_Service.get_user_type(user.id)
             # print(rec[0][0])
             otp = int(randomstring.randomNumber(length=6))
-            otp_service = Otp_Model_Services(user_id=user.id,user_type=rec[0][0],email=user.email,otp=otp,otp_status="pending",type="merchant",verification_token=randomstring.randomString(30))
+            otp_service = Otp_Model_Services(mobile=user.phone,user_id=user.id,user_type=rec[0][0],email=user.email,otp=otp,otp_status="pending",type="merchant",verification_token=randomstring.randomString(30))
             id=otp_service.save()
             class ExpireOTP(threading.Thread):
                 def run(self):
@@ -76,12 +83,19 @@ class Login_service:
                     print("service_init")
                     Otp_Model_Services.update_status(id,"Expired")
                     print("service_done")
-            
-            response = requests.post(const.email_api,headers={"user-agent":"Application","Accept":"*/*","Content-Type":"application/json; charset=utf-8"},json={"toEmail": user.email,
+            class GetOTP(threading.Thread):
+                def run(self):
+                    response = requests.post(const.email_api,headers={"user-agent":"Application","Accept":"*/*","Content-Type":"application/json; charset=utf-8"},json={"toEmail": user.email,
   "toCc": "",
   "subject": "OTP for Sabpaisa Payout",
   "msg": "Please find the otp for your payout login request "+str(otp)})
-            response_sms=requests.post(const.sms_api(user.phone,str(otp),user.client_username))
+                    print("response email :: "+response.text)
+            class GetSmsOTP(threading.Thread):
+                def run(self):
+                    response_sms=requests.post(const.sms_api(user.phone,str(otp),user.client_username))
+                    print("response sms :: "+response_sms.text)
+            GetOTP().start()
+            GetSmsOTP().start()
             ExpireOTP().start()
             return otp_service.verification_token
     @staticmethod
