@@ -13,6 +13,7 @@ from ..bank_models.PAYTM_Model import payment_request_model as paytm_request_mod
 from ..bank_models.PAYTM_Model import payment_response_model as paytm_response_model
 from ..bank_models.PAYTM_Model import paytm_extra
 from ..models import RoleModel,MerchantModel
+from ..Utils import statuscodes
 from .. import const
 from ..Utils import generater
 from ..RequestModels.payoutrequestmodel import PayoutRequestModel
@@ -21,6 +22,7 @@ import paytmchecksum
 import threading
 import json
 from ..database_service.Webhook_model_service import Webhook_Model_Service
+from apis import Utils
 class PayoutService:
     def __init__(self,merchant_id=None,encrypted_code=None,client_ip_address=None):
         self.merchant_id=merchant_id
@@ -71,13 +73,14 @@ class PayoutService:
              ledgerModelService.bank_id=clientmodel.bank_id
              ledgerModelService.bank_ref_no="null"
              ledgerModelService.customer_ref_no=payoutrequestmodel.orderId
-             ledgerModelService.trans_status="initated"
+             ledgerModelService.trans_status="Initiated"
              ledgerModelService.bene_account_name=payoutrequestmodel.beneficiaryName
              ledgerModelService.bene_account_number=payoutrequestmodel.beneficiaryAccount
              ledgerModelService.bene_ifsc=payoutrequestmodel.beneficiaryIFSC
              ledgerModelService.request_header="null"
              ledgerModelService.type_status="Generated"
              ledgerModelService.trans_type="payout"
+             
             #  order_id=paytm_extra.generate_order_id()
             #  ledgerModelService.customer_ref_no=order_id
              
@@ -87,6 +90,7 @@ class PayoutService:
              print("charge :: "+str(charge))
              ledgerModelService.charge=charge[0]
              ledgerModelService.van="null"
+             ledgerModelService.status_code=statuscodes.statuscodes["Initiated"]
              ledgerModelService.mode=mode.id
              ledgerModelService.is_tax_inclusive=clientModel.is_tax_inclusive
              ledgerModelService.tax=taxes[0]

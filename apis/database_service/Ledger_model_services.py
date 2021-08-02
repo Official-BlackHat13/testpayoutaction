@@ -6,6 +6,7 @@ from rest_framework import status
 from sabpaisa import auth
 from datetime import date, datetime
 from apis.Utils.generater import *
+from ..Utils import statuscodes
 from ..database_service import Client_model_service
 from rest_framework.permissions import AND
 from ..models import TransactionHistoryModel as LedgerModel
@@ -21,7 +22,7 @@ from sabpaisa import main
 from ..database_models.TaxModel import TaxModel
 import pytz
 class Ledger_Model_Service:
-    def __init__(self,id=None, is_tax_inclusive=None,tax=None,merchant=None,charge_id=None,client_code=None,linked_ledger_id=None,payout_trans_id=None,trans_amount_type=None, type_status=None, amount=None, van=None, trans_type=None, trans_status=None, bank_ref_no=None, customer_ref_no=None, bank_id=None, trans_time=None, bene_account_name=None, bene_account_number=None, bene_ifsc=None, request_header=None, createdBy=None, updatedBy=None, deletedBy=None, created_at=None, deleted_at=None, updated_at=None, status=True, mode=None, charge=None):
+    def __init__(self,id=None, is_tax_inclusive=None,status_code=None,tax=None,merchant=None,charge_id=None,client_code=None,linked_ledger_id=None,payout_trans_id=None,trans_amount_type=None, type_status=None, amount=None, van=None, trans_type=None, trans_status=None, bank_ref_no=None, customer_ref_no=None, bank_id=None, trans_time=None, bene_account_name=None, bene_account_number=None, bene_ifsc=None, request_header=None, createdBy=None, updatedBy=None, deletedBy=None, created_at=None, deleted_at=None, updated_at=None, status=True, mode=None, charge=None):
         self.id = id
         self.merchant=merchant
         self.client_code=client_code
@@ -41,6 +42,7 @@ class Ledger_Model_Service:
         self.bene_ifsc=bene_ifsc
         self.payout_trans_id=payout_trans_id
         self.charge_id=charge_id
+        self.status_code=status_code
         self.request_header=request_header
         self.van=van
         self.createdBy=createdBy
@@ -99,6 +101,7 @@ class Ledger_Model_Service:
         ledgermodel.deleted_at = self.deleted_at
         ledgermodel.updated_at = self.updated_at
         # ledgermodel.status = self.status
+        ledgermodel.status_code=self.status_code
         ledgermodel.payment_mode_id=self.mode
         ledgermodel.charge = self.charge
         if self.charge_id!=None:
@@ -191,6 +194,7 @@ class Ledger_Model_Service:
 
         ledgerModel=LedgerModel.objects.get(id=id)
         ledgerModel.trans_status=status
+        ledgerModel.status_code=statuscodes.statuscodes[status]
         ledgerModel.updated_at=datetime.now()
         ledgerModel.save()
         log_service.table_id=ledgerModel.id
