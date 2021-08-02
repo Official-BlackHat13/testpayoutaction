@@ -36,13 +36,15 @@
 --select * from apis_transactionhistorymodel where (customer_ref_no = n OR trans_amount_type = n OR client_code = n) AND (merchant = m) ;
 --END$$
 --DELIMITER ;
-
+#get role
 DELIMITER &&
 create PROCEDURE getRoleType(in merchant_id int)
 begin
 select apis_rolemodel.role_name from apis_merchantmodel  inner join apis_rolemodel on apis_merchantmodel.role_id=apis_rolemodel.id where apis_merchantmodel.id=merchant_id;
 end 
+#get ledger
 DELIMITER &&
+
 create PROCEDURE getLedger(in length int,in page int)
 begin
 
@@ -65,12 +67,12 @@ drop view tempview;
 -- select endpage;
 end 
 && DELIMITER ;
-
+# fetch merchant
 --CREATE DEFINER=`root`@`localhost` PROCEDURE `fetchMerchants`(in length int, in page int)
 --begin
 --select * from apis_merchantmodel limit length offset page;
 --end
-
+# get daily balance
 DELIMITER &&
 create PROCEDURE getDailyBalance()
 begin
@@ -103,11 +105,11 @@ set looping=looping+1;
 end LOOP loop1;
 end
 && DELIMITER ;
-
+# event 
 create EVENT dailyledger on schedule every 1 day starts (time("00:00:00"))
 do
 call getDailyBalance();
-
+#get amount 2
 DELIMITER &&
 create PROCEDURE getAmount2(in type1 varchar(20),in merchant_id int,out value1 float)
 begin
@@ -116,6 +118,7 @@ select sum(amount) into value1 from apis_transactionhistorymodel where trans_amo
 -- select value1;
 end 
 && DELIMITER ;
+#get balance new
 DELIMITER &&
 create PROCEDURE getBalancenew(in merchant_id int,out balance float,out cred1 float,out deb1 float)
 begin
