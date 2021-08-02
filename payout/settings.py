@@ -31,7 +31,6 @@ ALLOWED_HOSTS = ["192.168.34.42","127.0.0.1","localhost","192.168.34.15","192.16
 # Application definition
 
 INSTALLED_APPS = [
-     "django_crontab",
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
