@@ -1,3 +1,4 @@
+from apis.database_models.ClientModel import MerchantModel
 from requests.api import request
 from apis import const
 import string
@@ -497,6 +498,7 @@ class Ledger_Model_Service:
         total_transactions = cursors.fetchone()[0]
         if total_transactions==None:
             total_transactions=0
+        total_merchant=len(MerchantModel.objects.all())
         # cursors.execute("select count(merchant_id) from apis_transactionhistorymodel where trans_date =  CURDATE() ")
         
         # total_merchants = cursors.fetchone()[0]
@@ -509,6 +511,7 @@ class Ledger_Model_Service:
         resp = {
             "credit_amount":credit_amount,
             "debited_amount":debited_amount,
+            "total_merchants":total_merchant,
             "total_balance":total_balance,
             "total_transactions":total_transactions,
             "transacting_merchant":transacting_merchant
