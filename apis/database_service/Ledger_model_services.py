@@ -484,8 +484,12 @@ class Ledger_Model_Service:
         cursors = connection.cursor()
         cursors.execute("select sum(amount) from apis_transactionhistorymodel where trans_amount_type=\"credited\" and trans_date =  CURDATE();")
         credit_amount = cursors.fetchone()[0]
+        if credit_amount==None:
+            credit_amount=0
         cursors.execute("select sum(amount) from apis_transactionhistorymodel where trans_amount_type=\"debited\" and trans_date =  CURDATE();")
         debited_amount = cursors.fetchone()[0]
+        if debited_amount==None:
+            debited_amount=0
         total_balance = credit_amount-debited_amount
         cursors.execute("select count(merchant_id) as c from apis_transactionhistorymodel where trans_date =  CURDATE();")
         total_transactions = cursors.fetchone()[0]
