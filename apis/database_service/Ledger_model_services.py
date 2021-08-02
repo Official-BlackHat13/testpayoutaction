@@ -13,19 +13,22 @@ from ..models import ModeModel
 from ..Utils.numbers import get_number
 
 from ..models import ChargeModel
-
+from ..database_models.VariableModel import VariableModel
 from . import Log_model_services
+from ..Utils import formulas
 from django.db import connection
 from sabpaisa import main
+from ..database_models.TaxModel import TaxModel
 import pytz
 class Ledger_Model_Service:
-    def __init__(self,id=None, merchant=None,charge_id=None,client_code=None,linked_ledger_id=None,payout_trans_id=None,trans_amount_type=None, type_status=None, amount=None, van=None, trans_type=None, trans_status=None, bank_ref_no=None, customer_ref_no=None, bank_id=None, trans_time=None, bene_account_name=None, bene_account_number=None, bene_ifsc=None, request_header=None, createdBy=None, updatedBy=None, deletedBy=None, created_at=None, deleted_at=None, updated_at=None, status=True, mode=None, charge=None):
+    def __init__(self,id=None, is_tax_inclusive=None,tax=None,merchant=None,charge_id=None,client_code=None,linked_ledger_id=None,payout_trans_id=None,trans_amount_type=None, type_status=None, amount=None, van=None, trans_type=None, trans_status=None, bank_ref_no=None, customer_ref_no=None, bank_id=None, trans_time=None, bene_account_name=None, bene_account_number=None, bene_ifsc=None, request_header=None, createdBy=None, updatedBy=None, deletedBy=None, created_at=None, deleted_at=None, updated_at=None, status=True, mode=None, charge=None):
         self.id = id
         self.merchant=merchant
         self.client_code=client_code
         self.amount=amount
         self.trans_type=trans_type
         self.trans_status = trans_status
+        self.is_tax_inclusive=is_tax_inclusive
         self.bank_ref_no=bank_ref_no
         self.customer_ref_no=customer_ref_no
         self.trans_amount_type = trans_amount_type
@@ -43,6 +46,7 @@ class Ledger_Model_Service:
         self.createdBy=createdBy
         self.updatedBy=updatedBy
         self.deletedBy=deletedBy
+        self.tax=tax
         self.created_at=created_at
         self.deleted_at = deleted_at
         self.updated_at=updated_at
@@ -87,6 +91,8 @@ class Ledger_Model_Service:
         ledgermodel.request_header=self.request_header
         ledgermodel.createdBy=self.createdBy
         ledgermodel.updatedBy = self.updatedBy
+        ledgermodel.tax=self.tax
+        ledgermodel.is_tax_inclusive=self.is_tax_inclusive
         ledgermodel.linked_Txn_id=self.linked_ledger_id
         ledgermodel.deletedBy=self.deletedBy
         # ledgermodel.created_at = self.created_at
@@ -113,7 +119,23 @@ class Ledger_Model_Service:
         # return encResp
         return ledgermodel.id
         #end
-    
+    @staticmethod
+    def calculate_tax(is_inclusive,charges):
+        tax=0
+        taxmodel=TaxModel.objects.filter(status=True)
+        ls=[]
+        for i in charges:
+            if is_inclusive:
+                base=formulas.calulate_base(i.charge,taxmodel[0].tax)
+                tax_temp=i.charge-base
+                tax=tax+tax_temp
+                ls.append([i.id,tax_temp,base])
+            else:
+                tax_temp=formulas.calulate_tax_exclusive(i.charge,taxmodel[0].tax)
+                tax=tax+tax_temp
+                ls.append([i.id,tax_temp,i.charge])
+        return [tax,ls]
+
     def fetch_by_clientid(self,client_id,client_ip_address,created_by):
         log_service = Log_model_services.Log_Model_Service(log_type="fetch",table_name="apis_ledgermodel",remarks="fetching all records from ledger table by client id",client_ip_address=client_ip_address,server_ip_address=const.server_ip,created_by=created_by)
         ledgerModels=LedgerModel.objects.filter(client_id=client_id)
@@ -132,6 +154,12 @@ class Ledger_Model_Service:
         ledgerModels=LedgerModel.objects.get(id=id)
         log_service.table_id=ledgerModels.id
         log_service.save()
+        return ledgerModels
+    @staticmethod
+    def fetch_by_linked_id(id):
+        ledgerModels = LedgerModel.objects.filter(linked_Txn_id=id)
+        if len(ledgerModels)==0:
+            return None
         return ledgerModels
     @staticmethod
     def fetch_by_id_tojson(id,client_ip_address,created_by)->LedgerModel:
@@ -212,7 +240,11 @@ class Ledger_Model_Service:
         
         cursors = connection.cursor()
         print(merchant_id)
-        cursors.execute("call getBalancenew('"+merchant_id+"',@balance,@cred,@deb)")
+        rec=VariableModel.objects.filter(variable_name="getBalance")
+        if len(rec)==0 or rec[0].variable_value=="first":
+            cursors.execute("call getBalance('"+merchant_id+"',@balance,@cred,@deb)")
+        else:
+            cursors.execute("call getBalancenew('"+merchant_id+"',@balance,@cred,@deb)")
         cursors.execute("select @balance")
         # cursors.execute("Call getAmount("'credited'",5,@cred);")
         # cursors.execute("Call getAmount("'debited'",5,@deb);")
@@ -316,12 +348,15 @@ class Ledger_Model_Service:
         charge=ChargeModel.objects.filter(mode_id=mode[0].id,min_amount__lt=amount,max_amount__gt=amount,merchant_id=merchant_id)
         # print(charge[0].charge_percentage_or_fix)
         charge_amount=0
+        charge_list=[]
         for i in charge:
-            charge_amount+=get_number(i.charge_percentage_or_fix,amount,i.charge)
+            cc=get_number(i.charge_percentage_or_fix,amount,i.charge)
+            charge_list.append([cc,i])
+            charge_amount+=cc
         if len(charge)==0:
             return [0,0]
         else:
-            return [charge_amount,charge]
+            return [charge_amount,charge_list]
         # if(len(charge)>0 and charge[0].charge_percentage_or_fix=="percentage"):
         #     charge_amount=(amount/100)*charge[0].charge
         #     return charge_amount

@@ -43,12 +43,14 @@ class TransactionHistoryModel(models.Model):
 
     # trans_amount_type = models.CharField(max_length=20)
     remarks = models.CharField(max_length=900,default="remarks")
-    linked_Txn_id=models.IntegerField(null=True)
+    linked_Txn_id=models.CharField(null=True,max_length=3000)
     status_code = models.CharField(null=True,max_length=900)
     system_remarks=models.CharField(null=True,max_length=900)
     payout_trans_id=models.CharField(max_length=100,default=None)
     purpose=models.CharField(max_length=1000,null=True)
     trans_date=models.DateField(null=True)
+    tax=models.FloatField(null=True)
+    is_tax_inclusive=models.BooleanField(default=False)
     objects = models.Manager()
     def __str__(self):
         return str(self.id)
