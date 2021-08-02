@@ -300,7 +300,7 @@ class Ledger_Model_Service:
 
             if start=="all" and end=="all":
                 print("if")
-                record=LedgerModel.objects.raw("select apis_transactionhistorymodel.*,apis_merchantmodel.client_username from apis_transactionhistorymodel inner join apis_merchantmodel on apis_transactionhistorymodel.merchant_id=apis_merchantmodel.id where merchant_id="+str(merchant_id)+" limit "+str(length)+","+str(page*length)+"")
+                record=LedgerModel.objects.raw("select apis_transactionhistorymodel.*,apis_merchantmodel.client_username from apis_transactionhistorymodel inner join apis_merchantmodel on apis_transactionhistorymodel.merchant_id=apis_merchantmodel.id where merchant_id="+str(merchant_id)+" limit "+str((page-1)*length)+","+str(length)+"")
                 # print(list(record.iterator()))
                 print(record.columns)
                 # record=LedgerModel.objects.filter(merchant=merchant_id)
@@ -497,10 +497,11 @@ class Ledger_Model_Service:
         total_transactions = cursors.fetchone()[0]
         if total_transactions==None:
             total_transactions=0
-        cursors.execute("select merchant_id from apis_transactionhistorymodel where trans_date =  CURDATE() group by merchant_id;")
-        total_merchants = cursors.fetchone()[0]
-        if total_merchants==None:
-            total_merchants=0
+        # cursors.execute("select count(merchant_id) from apis_transactionhistorymodel where trans_date =  CURDATE() ")
+        
+        # total_merchants = cursors.fetchone()[0]
+        # if total_merchants==None:
+        #     total_merchants=0
         cursors.execute("call todayTransactingMerchant();")
         transacting_merchant=cursors.fetchone()[0]
         if transacting_merchant==None:
