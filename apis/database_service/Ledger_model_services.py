@@ -492,11 +492,19 @@ class Ledger_Model_Service:
             debited_amount=0
         total_balance = credit_amount-debited_amount
         cursors.execute("select count(merchant_id) as c from apis_transactionhistorymodel where trans_date =  CURDATE();")
+       
+
         total_transactions = cursors.fetchone()[0]
+        if total_transactions==None:
+            total_transactions=0
         cursors.execute("select merchant_id from apis_transactionhistorymodel where trans_date =  CURDATE() group by merchant_id;")
         total_merchants = cursors.fetchone()[0]
+        if total_merchants==None:
+            total_merchants=0
         cursors.execute("call todayTransactingMerchant();")
         transacting_merchant=cursors.fetchone()[0]
+        if transacting_merchant==None:
+            transacting_merchant=0
         resp = {
             "credit_amount":credit_amount,
             "debited_amount":debited_amount,
