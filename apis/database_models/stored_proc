@@ -140,7 +140,9 @@ set deb1 = @deb;
 end if;
 set bal_temp=0;
 select opening_balance into bal_temp from apis_dailyledgermodel where apis_dailyledgermodel.merchant_id=merchant_id and date=current_date() order by id desc limit 1;
-
+if (isnull(bal_temp)) then
+set bal_temp=0;
+end if;
 select cred1-deb1 into balance;
 set balance=balance+bal_temp;
 
