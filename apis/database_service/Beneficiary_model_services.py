@@ -16,9 +16,6 @@ class Beneficiary_Model_Services:
         beneficiarymodel.ifsc_code=self.ifsc_code
         beneficiarymodel.merchant_id=self.merchant_id
         beneficiarymodel.created_by = "merchant id :: "+str(self.merchant_id)
-        resultSet = BeneficiaryModel.objects.filter(merchant_id=int(self.merchant_id),account_number=self.account_number,ifsc_code=self.ifsc_code)
-        if(len(resultSet)>0):
-            return "-1"
         beneficiarymodel.save()
     @staticmethod
     def fetch_by_id(id):

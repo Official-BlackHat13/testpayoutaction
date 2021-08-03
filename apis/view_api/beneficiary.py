@@ -168,10 +168,12 @@ class addSingleBeneficiary(APIView):
                 decResp = auth.AESCipher(authKey, authIV).decrypt(decResp)
             res = ast.literal_eval(decResp)
             print(res.get("full_name"))
+            resultSet = BeneficiaryModel.objects.filter(merchant_id=int(merchantId),account_number=res.get("account_number"),ifsc_code=res.get("ifsc_code"))
+            if(len(resultSet)>0):
+                return Response({"Message":"data already exist","response_code":'0'},status=status.HTTP_406_NOT_ACCEPTABLE)
+            
             service = Beneficiary_Model_Services(full_name=res.get("full_name"),account_number=res.get("account_number"),ifsc_code=res.get("ifsc_code"),merchant_id=merchantId)
             resp = service.save()
-            if(resp=="-1"):
-                return Response({"Message":"data already exist","response_code":'0'},status=status.HTTP_406_NOT_ACCEPTABLE)
             return Response({"msg":"data saved to database","response_code":'1'},status=status.HTTP_200_OK)
         except Exception as e:
             import traceback
