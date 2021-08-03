@@ -188,7 +188,6 @@ class saveBeneficiary(APIView):
         log = Log_model_services.Log_Model_Service(log_type="saveBeneficiary request at "+request.path+" slug",
                                                    client_ip_address=request.META['REMOTE_ADDR'], server_ip_address=const.server_ip, full_request=request_obj)
         logid = log.save()
-        print("saveBeneficiary api")
         api_key = str(request.headers['auth_token'])
         merchantId =auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(api_key)
         try:
@@ -213,6 +212,7 @@ class saveBeneficiary(APIView):
                     merchant_id = d[3]
                     resultSet = BeneficiaryModel.objects.filter(merchant_id=int(merchantId),account_number=account_number,ifsc_code=ifsc_code)
                     if(len(resultSet)==0 and merchant_id==int(merchantId)):
+                        print("true")
                         service = Beneficiary_Model_Services(full_name=full_name,account_number=account_number,ifsc_code=ifsc_code,merchant_id=merchant_id)
                         service.save()
             return Response({"msg":"data parsed and saved to database","response_code":'1'},status=status.HTTP_200_OK)
