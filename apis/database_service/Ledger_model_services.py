@@ -1,3 +1,4 @@
+from apis.database_models.ClientModel import MerchantModel
 from requests.api import request
 from apis import const
 import string
@@ -300,7 +301,7 @@ class Ledger_Model_Service:
 
             if start=="all" and end=="all":
                 print("if")
-                record=LedgerModel.objects.raw("select apis_transactionhistorymodel.*,apis_merchantmodel.client_username from apis_transactionhistorymodel inner join apis_merchantmodel on apis_transactionhistorymodel.merchant_id=apis_merchantmodel.id where merchant_id="+str(merchant_id)+" limit "+str(length)+","+str(page*length)+"")
+                record=LedgerModel.objects.raw("select apis_transactionhistorymodel.*,apis_merchantmodel.client_username from apis_transactionhistorymodel inner join apis_merchantmodel on apis_transactionhistorymodel.merchant_id=apis_merchantmodel.id where merchant_id="+str(merchant_id)+" limit "+str((page-1)*length)+","+str(length)+"")
                 # print(list(record.iterator()))
                 print(record.columns)
                 # record=LedgerModel.objects.filter(merchant=merchant_id)
@@ -492,14 +493,25 @@ class Ledger_Model_Service:
             debited_amount=0
         total_balance = credit_amount-debited_amount
         cursors.execute("select count(merchant_id) as c from apis_transactionhistorymodel where trans_date =  CURDATE();")
+       
+
         total_transactions = cursors.fetchone()[0]
-        cursors.execute("select merchant_id from apis_transactionhistorymodel where trans_date =  CURDATE() group by merchant_id;")
-        total_merchants = cursors.fetchone()[0]
+        if total_transactions==None:
+            total_transactions=0
+        total_merchant=len(MerchantModel.objects.all())
+        # cursors.execute("select count(merchant_id) from apis_transactionhistorymodel where trans_date =  CURDATE() ")
+        
+        # total_merchants = cursors.fetchone()[0]
+        # if total_merchants==None:
+        #     total_merchants=0
         cursors.execute("call todayTransactingMerchant();")
         transacting_merchant=cursors.fetchone()[0]
+        if transacting_merchant==None:
+            transacting_merchant=0
         resp = {
             "credit_amount":credit_amount,
             "debited_amount":debited_amount,
+            "total_merchants":total_merchant,
             "total_balance":total_balance,
             "total_transactions":total_transactions,
             "transacting_merchant":transacting_merchant
