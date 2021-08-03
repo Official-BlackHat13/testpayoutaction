@@ -188,7 +188,7 @@ class saveBeneficiary(APIView):
         log = Log_model_services.Log_Model_Service(log_type="saveBeneficiary request at "+request.path+" slug",
                                                    client_ip_address=request.META['REMOTE_ADDR'], server_ip_address=const.server_ip, full_request=request_obj)
         logid = log.save()
-
+        print("saveBeneficiary api")
         api_key = str(request.headers['auth_token'])
         merchantId =auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(api_key)
         try:
