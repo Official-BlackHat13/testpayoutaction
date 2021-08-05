@@ -168,11 +168,11 @@ class addSingleBeneficiary(APIView):
                 decResp = auth.AESCipher(authKey, authIV).decrypt(decResp)
             res = ast.literal_eval(decResp)
             print(res.get("full_name"))
-            resultSet = BeneficiaryModel.objects.filter(merchant_id=int(merchantId),account_number=res.get("account_number"),ifsc_code=res.get("ifsc_code"))
+            resultSet = BeneficiaryModel.objects.filter(merchant_id=int(merchantId),account_number=res.get("account_number"),ifsc_code=res.get("ifsc_code"),upi_id=res.get("upi_id"))
             if(len(resultSet)>0):
                 return Response({"Message":"data already exist","response_code":'0'},status=status.HTTP_406_NOT_ACCEPTABLE)
             
-            service = Beneficiary_Model_Services(full_name=res.get("full_name"),account_number=res.get("account_number"),ifsc_code=res.get("ifsc_code"),merchant_id=merchantId)
+            service = Beneficiary_Model_Services(upiId=res.get("upi_id"),full_name=res.get("full_name"),account_number=res.get("account_number"),ifsc_code=res.get("ifsc_code"),merchant_id=merchantId)
             resp = service.save()
             return Response({"msg":"data saved to database","response_code":'1'},status=status.HTTP_200_OK)
         except Exception as e:
@@ -212,10 +212,11 @@ class saveBeneficiary(APIView):
                     account_number = d[1]
                     ifsc_code = d[2]
                     merchant_id = d[3]
-                    resultSet = BeneficiaryModel.objects.filter(merchant_id=int(merchantId),account_number=account_number,ifsc_code=ifsc_code)
+                    upi_id=d[4]
+                    resultSet = BeneficiaryModel.objects.filter(merchant_id=int(merchantId),account_number=account_number,ifsc_code=ifsc_code,upi_id=upi_id)
                     if(len(resultSet)==0 and merchant_id==int(merchantId)):
                         print("true")
-                        service = Beneficiary_Model_Services(full_name=full_name,account_number=account_number,ifsc_code=ifsc_code,merchant_id=merchant_id)
+                        service = Beneficiary_Model_Services(full_name=full_name,account_number=account_number,ifsc_code=ifsc_code,merchant_id=merchant_id,upiId=upi_id)
                         service.save()
             return Response({"msg":"data parsed and saved to database","response_code":'1'},status=status.HTTP_200_OK)
         except Exception as e:

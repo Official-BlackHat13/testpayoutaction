@@ -4,9 +4,10 @@ from datetime import datetime
 
 class BeneficiaryModel(models.Model):
     id=models.AutoField
-    full_name=models.CharField(max_length=3000)
-    account_number=models.CharField(max_length=400)
-    ifsc_code=models.CharField(max_length=500)
+    full_name=models.CharField(max_length=3000,null=True)
+    account_number=models.CharField(max_length=400,null=True)
+    ifsc_code=models.CharField(max_length=500,null=True)
+    upi_id=models.CharField(max_length=3000,null=True)
     merchant_id=models.IntegerField()
     created_at=models.DateTimeField(default=datetime.now())
     deleted_at=models.DateTimeField(default=None,null=True)

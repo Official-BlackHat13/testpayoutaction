@@ -49,6 +49,7 @@ class PayoutService:
             # if map["usern"]!=clientModel.client_username and map["pass"]!=clientModel.client_password:
             #     return [False,{}]
             payoutrequestmodel,valid,message=PayoutRequestModel.from_json(map)
+            # print('upiid :: '+payoutrequestmodel.upiId)
             print("valid :: "+str(valid))
             # print(payoutrequestmodel.clientPaymode)
             mode=Mode_model_services.Mode_Model_Service.fetch_by_mode(payoutrequestmodel.mode)
@@ -58,7 +59,11 @@ class PayoutService:
              print("balance ::"+str(bal))
              if bal<int(payoutrequestmodel.amount):                 
                  return ["Not Sufficent Balance",{},False]
-             bene=Beneficiary_model_services.Beneficiary_Model_Services.fetch_by_account_number_ifsc(self.merchant_id,payoutrequestmodel.beneficiaryAccount,payoutrequestmodel.beneficiaryIFSC)
+             if mode_rec=="UPI":
+                bene=Beneficiary_model_services.Beneficiary_Model_Services.fetch_by_upiId(self.merchant_id,payoutrequestmodel.upiId)
+             else:
+                bene=Beneficiary_model_services.Beneficiary_Model_Services.fetch_by_account_number_ifsc(self.merchant_id,payoutrequestmodel.beneficiaryAccount,payoutrequestmodel.beneficiaryIFSC)
+             
              if bene==None:
                  return ["Beneficiary Not Added",{},False]
              if not Slab_model_services.Slab_Model_Service.check_slab(self.merchant_id,payoutrequestmodel.amount):
@@ -72,11 +77,17 @@ class PayoutService:
              ledgerModelService.amount=payoutrequestmodel.amount
              ledgerModelService.bank_id=clientmodel.bank_id
              ledgerModelService.bank_ref_no="null"
+             
              ledgerModelService.customer_ref_no=payoutrequestmodel.orderId
              ledgerModelService.trans_status="Initiated"
-             ledgerModelService.bene_account_name=payoutrequestmodel.beneficiaryName
-             ledgerModelService.bene_account_number=payoutrequestmodel.beneficiaryAccount
-             ledgerModelService.bene_ifsc=payoutrequestmodel.beneficiaryIFSC
+             if mode_rec!="UPI":
+                print("if ledger")
+                ledgerModelService.bene_account_name=payoutrequestmodel.beneficiaryName
+                ledgerModelService.bene_account_number=payoutrequestmodel.beneficiaryAccount
+                ledgerModelService.bene_ifsc=payoutrequestmodel.beneficiaryIFSC
+             else:
+                 print("else ledger")
+                 ledgerModelService.upiId=payoutrequestmodel.upiId
              ledgerModelService.request_header="null"
              ledgerModelService.type_status="Generated"
              ledgerModelService.trans_type="payout"
@@ -85,7 +96,11 @@ class PayoutService:
             #  ledgerModelService.customer_ref_no=order_id
              
              charge=Ledger_model_services.Ledger_Model_Service.calculate_charge(self.merchant_id,mode_rec,payoutrequestmodel.amount,self.client_ip_address)
-             taxes=Ledger_model_services.Ledger_Model_Service.calculate_tax(clientModel.is_tax_inclusive,[ls[1] for ls in charge[1]])
+             print("charges :: "+str(charge))
+             if charge==[0,0]:
+                 return ["charges not added to this mode",{},False]
+
+             taxes=Ledger_model_services.Ledger_Model_Service.calculate_tax(clientModel.is_tax_inclusive,[ls for ls in charge[1]])
              
              print("charge :: "+str(charge))
              ledgerModelService.charge=charge[0]
@@ -109,9 +124,14 @@ class PayoutService:
              tax_ledger.bank_ref_no="null"
              tax_ledger.customer_ref_no=payoutrequestmodel.orderId
              tax_ledger.trans_status="Pending"
-             tax_ledger.bene_account_name=payoutrequestmodel.beneficiaryName
-             tax_ledger.bene_account_number=payoutrequestmodel.beneficiaryAccount
-             tax_ledger.bene_ifsc=payoutrequestmodel.beneficiaryIFSC
+             if mode_rec!="UPI":
+                print("if ledger")
+                tax_ledger.bene_account_name=payoutrequestmodel.beneficiaryName
+                tax_ledger.bene_account_number=payoutrequestmodel.beneficiaryAccount
+                tax_ledger.bene_ifsc=payoutrequestmodel.beneficiaryIFSC
+             else:
+                 print("else ledger")
+                 tax_ledger.upiId=payoutrequestmodel.upiId
              tax_ledger.type_status="Generated"
              tax_ledger.trans_type="tax"
              tax_ledger.request_header="null"
@@ -134,14 +154,19 @@ class PayoutService:
                                     charge_ledger.client_id=clientModel.id
                                     charge_ledger.merchant=self.merchant_id
                                     charge_ledger.client_code=clientModel.client_code
-                                    charge_ledger.amount=taxes[1][irt][2]
+                                    charge_ledger.amount=i[0]
                                     charge_ledger.bank_id=clientmodel.bank_id
                                     charge_ledger.bank_ref_no="null"
                                     charge_ledger.customer_ref_no=payoutrequestmodel.orderId
                                     charge_ledger.trans_status="Pending"
-                                    charge_ledger.bene_account_name=payoutrequestmodel.beneficiaryName
-                                    charge_ledger.bene_account_number=payoutrequestmodel.beneficiaryAccount
-                                    charge_ledger.bene_ifsc=payoutrequestmodel.beneficiaryIFSC
+                                    if mode_rec!="UPI":
+                                        print("if ledger")
+                                        charge_ledger.bene_account_name=payoutrequestmodel.beneficiaryName
+                                        charge_ledger.bene_account_number=payoutrequestmodel.beneficiaryAccount
+                                        charge_ledger.bene_ifsc=payoutrequestmodel.beneficiaryIFSC
+                                    else:
+                                        print("else ledger")
+                                        charge_ledger.upiId=payoutrequestmodel.upiId
                                     charge_ledger.type_status="Generated"
                                     charge_ledger.trans_type="charge"
                                     charge_ledger.request_header="null"
@@ -158,7 +183,11 @@ class PayoutService:
                                     charge_ledger.trans_time=datetime.now()
                                     charge_ledger.save("Merchant Id :: "+str(self.merchant_id),self.client_ip_address)
                                     irt+=1
-             request_model=paytm_request_model.Payment_Request_Model(transfer_mode=payoutrequestmodel.mode,subwalletGuid=const.paytm_subwalletGuid,orderId=payoutrequestmodel.orderId,beneficiaryAccount=payoutrequestmodel.beneficiaryAccount,beneficiaryIFSC=payoutrequestmodel.beneficiaryIFSC,amount=payoutrequestmodel.amount,purpose=payoutrequestmodel.purpose)
+             if mode_rec=="UPI":
+                 request_model=paytm_request_model.Payment_Request_Model(transfer_mode=payoutrequestmodel.mode,subwalletGuid=const.paytm_subwalletGuid,orderId=payoutrequestmodel.orderId,beneficiaryVPA=payoutrequestmodel.upiId,amount=payoutrequestmodel.amount,purpose=payoutrequestmodel.purpose)
+             
+             else:
+                request_model=paytm_request_model.Payment_Request_Model(beneficiaryName=payoutrequestmodel.beneficiaryName,transfer_mode=payoutrequestmodel.mode,subwalletGuid=const.paytm_subwalletGuid,orderId=payoutrequestmodel.orderId,beneficiaryAccount=payoutrequestmodel.beneficiaryAccount,beneficiaryIFSC=payoutrequestmodel.beneficiaryIFSC,amount=payoutrequestmodel.amount,purpose=payoutrequestmodel.purpose)
              
              log_model=Log_Model_Service(log_type="Paytm_Request",server_ip_address=const.server_ip,client_ip_address=self.client_ip_address,full_request=str(request_model.to_json()))
              log_id=log_model.save()
