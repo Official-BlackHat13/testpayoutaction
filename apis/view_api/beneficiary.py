@@ -122,16 +122,26 @@ class merchantFetchBeneficiary(APIView):
 
 class updateBeneficiary(APIView):
     def put(self,request):
-        id = request.data.get("id")
+        auth_token = request.headers.get("auth_token")
+        merchantId = auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(auth_token)
+        clientModel = Client_model_service.Client_Model_Service.fetch_by_id(
+                id=merchantId, created_by="merchantid :: "+merchantId, client_ip_address=request.META['REMOTE_ADDR'])
+        authKey = clientModel.auth_key
+        authIV = clientModel.auth_iv
+        decResp = str(request.data.get("query"))
+        if  clientModel.is_encrypt  :
+                decResp = auth.AESCipher(authKey, authIV).decrypt(decResp)
+        res = ast.literal_eval(decResp)
+        id = res.get("id")
         bene = BeneficiaryModel.objects.filter(id=id)
         if(len(bene)==0):
             return Response({"msg":"not found","response_code":'0'},status=status.HTTP_404_NOT_FOUND)
-        full_name = request.data.get("full_name")
-        account_number = request.data.get("account_number")
-        ifsc_code = request.data.get("ifsc_code")
-        upi_id=request.data.get("upi_id")
-        merchant_id = request.data.get("merchant_id")
-        updated_by = request.data.get("updated_by")
+        full_name = res.get("full_name")
+        account_number = res.get("account_number")
+        ifsc_code = res.get("ifsc_code")
+        upi_id=res.get("upi_id")
+        merchant_id = res.get("merchant_id")
+        updated_by = res.get("updated_by")
         created_at = bene[0].created_at
         updated_at = datetime.now()
         service = Beneficiary_Model_Services(upiId=upi_id,full_name=full_name,account_number=account_number,ifsc_code=ifsc_code,merchant_id=merchant_id)
@@ -140,7 +150,17 @@ class updateBeneficiary(APIView):
 
 class deleteBeneficiary(APIView):
     def delete(self,request):
-        id = request.data.get("id")
+        auth_token = request.headers.get("auth_token")
+        merchantId = auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(auth_token)
+        clientModel = Client_model_service.Client_Model_Service.fetch_by_id(
+                id=merchantId, created_by="merchantid :: "+merchantId, client_ip_address=request.META['REMOTE_ADDR'])
+        authKey = clientModel.auth_key
+        authIV = clientModel.auth_iv
+        decResp = str(request.data.get("query"))
+        if  clientModel.is_encrypt  :
+                decResp = auth.AESCipher(authKey, authIV).decrypt(decResp)
+        res = ast.literal_eval(decResp)
+        id = res.get("id")
         bene = BeneficiaryModel.objects.filter(id=id)
         if(len(bene)==0):
             return Response({"msg":"not found","response_code":'0'},status=status.HTTP_404_NOT_FOUND)
