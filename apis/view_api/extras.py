@@ -230,7 +230,7 @@ class bankFilter(APIView):
             
             resp = BankModel.BankPartnerModel.objects.filter().all().values()
             if(len(resp)==0):
-                return Response({"message":"no data found","response_code":"0"})
+                return Response({"message":"no data found","data":None,"response_code":"0"})
             response =  list()
             for data in resp:
                 dict = {
@@ -309,7 +309,7 @@ class MerchantModes(APIView):
             merchantId = auth.AESCipher(admin.auth_key,admin.auth_iv).decrypt(str(merchantId))
             resp = Merchant_mode_services.Merchant_Mode_Service.fetchModesByMerchantId(merchantId)
             if(len(resp)==0):
-                return Response({"message":"data not found","data":None})    
+                return Response({"message":"data not found","data":None,"response_code":'0'})    
             if(admin.is_encrypt==True):
                 encResp = auth.AESCipher(admin.auth_key,admin.auth_iv).encrypt(str(resp))
                 return Response({"message":"data found","data":encResp,"response_code":'1'},status=status.HTTP_200_OK)    
@@ -336,8 +336,12 @@ class tax(APIView):
             Log_model_services.Log_Model_Service.update_response(
                 logid, {"Message": "admin code missing", "response_code": "0"})
             return Response({"message":"admin id does not exist", "Response code":"0"},status=status.HTTP_404_NOT_FOUND)
-        resp = TaxModel.objects.filter(status=True).values()[0].get("tax")
+        resp = TaxModel.objects.filter(status=True).values()
+        if(len(resp) == 0):
+            print("len = 0")
+            return Response({"message":"data not found","data":None, "Response code":"0"},status=status.HTTP_404_NOT_FOUND)
+        resp = resp[0].get("tax")
         if(admin.is_encrypt==True):
                 encResp = auth.AESCipher(admin.auth_key,admin.auth_iv).encrypt(str(resp))
-                return Response({"message":"data found","data":encResp})    
+                return Response({"message":"data found","data":encResp,"response_code":'1'})    
         return Response({"message":"data found","data":resp,"response_code":'1'},status=status.HTTP_200_OK)

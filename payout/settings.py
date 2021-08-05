@@ -151,15 +151,15 @@ DATABASES = {
     #     'PORT': '3306',
     #     # 'socket': '/Applications/XAMPP/xamppfiles/var/mysql/mysql.sock'
     # }
-     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'stagingPayout',
-        'USER': 'stagingPayout',
-        'PASSWORD': 'ooTee0ie',
-        'HOST': '172.16.157.5',
-        'PORT': '3306',
-        # 'socket': '/Applications/XAMPP/xamppfiles/var/mysql/mysql.sock'
-    }
+    #  'default': {
+    #     'ENGINE': 'django.db.backends.mysql',
+    #     'NAME': 'stagingPayout',
+    #     'USER': 'stagingPayout',
+    #     'PASSWORD': 'ooTee0ie',
+    #     'HOST': '172.16.157.5',
+    #     'PORT': '3306',
+    #     # 'socket': '/Applications/XAMPP/xamppfiles/var/mysql/mysql.sock'
+    # }
     # kanishk local db
     # 'default': {
     #     'ENGINE': 'django.db.backends.mysql',
@@ -181,14 +181,14 @@ DATABASES = {
     #     # 'socket': '/Applications/XAMPP/xamppfiles/var/mysql/mysql.sock'
     # }
     #kunal local db
-    # 'default': {
-    #      'ENGINE': 'django.db.backends.mysql',
-    #      'NAME': 'payoutdb',
-    #      'USER': 'root',
-    #      'PASSWORD': "root",
-    #      'HOST': "127.0.0.1",
-    #      'PORT': "3306",
-    #  }
+    'default': {
+         'ENGINE': 'django.db.backends.mysql',
+         'NAME': 'payoutdb',
+         'USER': 'root',
+         'PASSWORD': "root",
+         'HOST': "127.0.0.1",
+         'PORT': "3306",
+     }
 }
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators

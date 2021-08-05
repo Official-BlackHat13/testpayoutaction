@@ -663,7 +663,7 @@ class Ledger_Model_Service:
         ledgermodel.trans_status = "Success"#success
         ledgermodel.tax = tax
         ledgermodel.payout_trans_id = generate_token()
-        ledgermodel.is_chargedBy_bank = is_chargedBy_bank
+        ledgermodel.is_charged_by_bank = is_chargedBy_bank
         ledgermodel.is_tax_inclusive = decResp.get("is_tax_inclusive")
         ledgermodel.save()  
         log_service.table_id = ledgermodel.id
