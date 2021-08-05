@@ -57,6 +57,11 @@ class PayoutService:
              bal = Ledger_model_services.Ledger_Model_Service.getBalance(self.merchant_id,self.client_ip_address,"Merchant_ID :: "+str(self.merchant_id))
              print("amount :: "+payoutrequestmodel.amount)
              print("balance ::"+str(bal))
+             log = Log_Model_Service(log_type="Checking for duplicate order id",client_ip_address=self.client_ip_address,server_ip_address=const.server_ip,remarks="checking for duplicate order id for merchant id :: "+ self.merchant_id+" orderid :: "+str(payoutrequestmodel.orderId))
+             log.save()
+             check_cus=Ledger_model_services.Ledger_Model_Service.fetch_by_customer_ref_no(self.merchant_id,payoutrequestmodel.orderId)
+             if check_cus==None:
+                 return ["Duplicate Order id",{},False]
              if bal<int(payoutrequestmodel.amount):                 
                  return ["Not Sufficent Balance",{},False]
              if mode_rec=="UPI":
@@ -184,10 +189,10 @@ class PayoutService:
                                     charge_ledger.save("Merchant Id :: "+str(self.merchant_id),self.client_ip_address)
                                     irt+=1
              if mode_rec=="UPI":
-                 request_model=paytm_request_model.Payment_Request_Model(transfer_mode=payoutrequestmodel.mode,subwalletGuid=const.paytm_subwalletGuid,orderId=payoutrequestmodel.orderId,beneficiaryVPA=payoutrequestmodel.upiId,amount=payoutrequestmodel.amount,purpose=payoutrequestmodel.purpose)
+                 request_model=paytm_request_model.Payment_Request_Model(transfer_mode=payoutrequestmodel.mode,subwalletGuid=const.paytm_subwalletGuid,orderId=ledgerModelService.payout_trans_id,beneficiaryVPA=payoutrequestmodel.upiId,amount=payoutrequestmodel.amount,purpose=payoutrequestmodel.purpose)
              
              else:
-                request_model=paytm_request_model.Payment_Request_Model(beneficiaryName=payoutrequestmodel.beneficiaryName,transfer_mode=payoutrequestmodel.mode,subwalletGuid=const.paytm_subwalletGuid,orderId=payoutrequestmodel.orderId,beneficiaryAccount=payoutrequestmodel.beneficiaryAccount,beneficiaryIFSC=payoutrequestmodel.beneficiaryIFSC,amount=payoutrequestmodel.amount,purpose=payoutrequestmodel.purpose)
+                request_model=paytm_request_model.Payment_Request_Model(beneficiaryName=payoutrequestmodel.beneficiaryName,transfer_mode=payoutrequestmodel.mode,subwalletGuid=const.paytm_subwalletGuid,orderId=ledgerModelService.payout_trans_id,beneficiaryAccount=payoutrequestmodel.beneficiaryAccount,beneficiaryIFSC=payoutrequestmodel.beneficiaryIFSC,amount=payoutrequestmodel.amount,purpose=payoutrequestmodel.purpose)
              
              log_model=Log_Model_Service(log_type="Paytm_Request",server_ip_address=const.server_ip,client_ip_address=self.client_ip_address,full_request=str(request_model.to_json()))
              log_id=log_model.save()

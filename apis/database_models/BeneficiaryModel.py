@@ -1,3 +1,4 @@
+from os import stat
 from django.db import models
 
 from datetime import datetime
@@ -15,5 +16,6 @@ class BeneficiaryModel(models.Model):
     created_by=models.CharField(max_length=30,default="merchant")
     deleted_by=models.DateTimeField(default=None,null=True)
     updated_by=models.CharField(max_length=20,null=True)
+    status=models.BooleanField(default=True)
     def __str__(self):
         return str(self.id)

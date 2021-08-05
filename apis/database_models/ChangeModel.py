@@ -8,7 +8,7 @@ class ChargeModel(models.Model):
     min_amount=models.IntegerField()
     max_amount=models.IntegerField()
     charge_percentage_or_fix=models.CharField(max_length=300)
-    charge=models.IntegerField()
+    charge=models.FloatField()
     created_at=models.DateTimeField(default=datetime.now())
     deleted_at=models.DateTimeField(default=None,null=True)
     updated_at=models.DateTimeField(default=None,null=True)

@@ -150,7 +150,12 @@ class Ledger_Model_Service:
                 total_charge+=i[0]
                 ls.append([i[1].id,tax_temp,i[1].charge])
         return [tax,ls,total_charge]
-
+    @staticmethod
+    def fetch_by_customer_ref_no(merchant_id,customer_ref):
+        ledger=LedgerModel.objects.filter(merchant_id=merchant_id,customer_ref_no=customer_ref)
+        if len(ledger)>0:
+            return None
+        return ledger
     def fetch_by_clientid(self,client_id,client_ip_address,created_by):
         log_service = Log_model_services.Log_Model_Service(log_type="fetch",table_name="apis_ledgermodel",remarks="fetching all records from ledger table by client id",client_ip_address=client_ip_address,server_ip_address=const.server_ip,created_by=created_by)
         ledgerModels=LedgerModel.objects.filter(client_id=client_id)
