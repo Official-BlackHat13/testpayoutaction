@@ -129,11 +129,12 @@ class updateBeneficiary(APIView):
         full_name = request.data.get("full_name")
         account_number = request.data.get("account_number")
         ifsc_code = request.data.get("ifsc_code")
+        upi_id=request.data.get("upi_id")
         merchant_id = request.data.get("merchant_id")
         updated_by = request.data.get("updated_by")
         created_at = bene[0].created_at
         updated_at = datetime.now()
-        service = Beneficiary_Model_Services(full_name=full_name,account_number=account_number,ifsc_code=ifsc_code,merchant_id=merchant_id)
+        service = Beneficiary_Model_Services(upiId=upi_id,full_name=full_name,account_number=account_number,ifsc_code=ifsc_code,merchant_id=merchant_id)
         service.update(id=id,updated_at=updated_at,updated_by=updated_by,created_at=created_at)
         return Response({"msg":"done","response_code":'1'},status=status.HTTP_200_OK)
 
@@ -144,7 +145,7 @@ class deleteBeneficiary(APIView):
         if(len(bene)==0):
             return Response({"msg":"not found","response_code":'0'},status=status.HTTP_404_NOT_FOUND)
         
-        BeneficiaryModel.objects.filter(id=id).delete()
+        Beneficiary_Model_Services.soft_delete_by_id(id)
         return Response({"msg":"done","response_code":'1'},status=status.HTTP_200_OK)
 
 class addSingleBeneficiary(APIView):

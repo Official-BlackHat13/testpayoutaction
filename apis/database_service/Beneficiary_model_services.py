@@ -20,26 +20,30 @@ class Beneficiary_Model_Services:
         beneficiarymodel.created_by = "merchant id :: "+str(self.merchant_id)
         beneficiarymodel.save()
     @staticmethod
+    def soft_delete_by_id(id):
+        ben=BeneficiaryModel.objects.get(id=id)
+        ben.status=False
+        ben.save()
+    @staticmethod
     def fetch_by_upiId(merchant_id,upi_id):
-        beneficiarymodel=BeneficiaryModel.objects.filter(merchant_id=merchant_id,upi_id=upi_id)
+        beneficiarymodel=BeneficiaryModel.objects.filter(merchant_id=merchant_id,upi_id=upi_id,status=True)
         if len(beneficiarymodel)==0:
             return None
         return beneficiarymodel
     @staticmethod
     def fetch_by_id(id):
-        beneficiarymodel=BeneficiaryModel.objects.get(id=id)
+        beneficiarymodel=BeneficiaryModel.objects.get(id=id,status=True)
         return beneficiarymodel
     @staticmethod
     def fetch_by_account_number_ifsc(merchant_id,account_number,ifsc):
-        beneficiarymodel=BeneficiaryModel.objects.filter(merchant_id=merchant_id,account_number=account_number,ifsc_code=ifsc)
+        beneficiarymodel=BeneficiaryModel.objects.filter(status=True,merchant_id=merchant_id,account_number=account_number,ifsc_code=ifsc)
         if len(beneficiarymodel)==0:
             return None
         return beneficiarymodel
     def update(self,updated_by,updated_at,id,created_at):
-        beneficiarymodel = BeneficiaryModel()
-        beneficiarymodel.id = id
+        beneficiarymodel = BeneficiaryModel.objects.get(id=id)
         beneficiarymodel.full_name=self.full_name
-
+        beneficiarymodel.upi_id=self.upiId
         beneficiarymodel.account_number=self.account_number
         beneficiarymodel.ifsc_code=self.ifsc_code
         beneficiarymodel.merchant_id=self.merchant_id
