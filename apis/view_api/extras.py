@@ -312,8 +312,8 @@ class MerchantModes(APIView):
                 return Response({"message":"data not found","data":None})    
             if(admin.is_encrypt==True):
                 encResp = auth.AESCipher(admin.auth_key,admin.auth_iv).encrypt(str(resp))
-                return Response({"message":"data found","data":encResp})    
-            return Response({"message":"data found","data":resp})
+                return Response({"message":"data found","data":encResp,"response_code":'1'},status=status.HTTP_200_OK)    
+            return Response({"message":"data found","data":resp,"response_code":'1'},status=status.HTTP_200_OK)
         except Exception as e:
             import traceback
             print(traceback.format_exc())
@@ -340,4 +340,4 @@ class tax(APIView):
         if(admin.is_encrypt==True):
                 encResp = auth.AESCipher(admin.auth_key,admin.auth_iv).encrypt(str(resp))
                 return Response({"message":"data found","data":encResp})    
-        return Response({"message":"data found","data":resp})
+        return Response({"message":"data found","data":resp,"response_code":'1'},status=status.HTTP_200_OK)
