@@ -103,7 +103,7 @@ class PayoutService:
              taxes=Ledger_model_services.Ledger_Model_Service.calculate_tax(clientModel.is_tax_inclusive,[ls for ls in charge[1]])
              
              print("charge :: "+str(charge))
-             ledgerModelService.charge=charge[0]
+             ledgerModelService.charge=taxes[2]
              ledgerModelService.van="null"
              ledgerModelService.status_code=statuscodes.statuscodes["Initiated"]
              ledgerModelService.mode=mode.id

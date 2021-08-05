@@ -134,18 +134,22 @@ class Ledger_Model_Service:
         tax=0
         taxmodel=TaxModel.objects.filter(status=True)
         ls=[]
+        total_charge=0
         for i in charges:
             
             if is_inclusive:
                 base=formulas.calulate_base(i[0],taxmodel[0].tax)
-                tax_temp=i.charge-base
+                tax_temp=i[0]-base
+                i[0]=base
                 tax=tax+tax_temp
+                total_charge+=base
                 ls.append([i[1].id,tax_temp,base])
             else:
                 tax_temp=formulas.calulate_tax_exclusive(i[0],taxmodel[0].tax)
                 tax=tax+tax_temp
+                total_charge+=i[0]
                 ls.append([i[1].id,tax_temp,i[1].charge])
-        return [tax,ls]
+        return [tax,ls,total_charge]
 
     def fetch_by_clientid(self,client_id,client_ip_address,created_by):
         log_service = Log_model_services.Log_Model_Service(log_type="fetch",table_name="apis_ledgermodel",remarks="fetching all records from ledger table by client id",client_ip_address=client_ip_address,server_ip_address=const.server_ip,created_by=created_by)
