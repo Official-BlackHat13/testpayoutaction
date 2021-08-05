@@ -122,29 +122,50 @@ class merchantFetchBeneficiary(APIView):
 
 class updateBeneficiary(APIView):
     def put(self,request):
-        id = request.data.get("id")
+        auth_token = request.headers.get("auth_token")
+        merchantId = auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(auth_token)
+        clientModel = Client_model_service.Client_Model_Service.fetch_by_id(
+                id=merchantId, created_by="merchantid :: "+merchantId, client_ip_address=request.META['REMOTE_ADDR'])
+        authKey = clientModel.auth_key
+        authIV = clientModel.auth_iv
+        decResp = str(request.data.get("query"))
+        if  clientModel.is_encrypt  :
+                decResp = auth.AESCipher(authKey, authIV).decrypt(decResp)
+        res = ast.literal_eval(decResp)
+        id = res.get("id")
         bene = BeneficiaryModel.objects.filter(id=id)
         if(len(bene)==0):
             return Response({"msg":"not found","response_code":'0'},status=status.HTTP_404_NOT_FOUND)
-        full_name = request.data.get("full_name")
-        account_number = request.data.get("account_number")
-        ifsc_code = request.data.get("ifsc_code")
-        merchant_id = request.data.get("merchant_id")
-        updated_by = request.data.get("updated_by")
+        full_name = res.get("full_name")
+        account_number = res.get("account_number")
+        ifsc_code = res.get("ifsc_code")
+        upi_id=res.get("upi_id")
+        merchant_id = res.get("merchant_id")
+        updated_by = res.get("updated_by")
         created_at = bene[0].created_at
         updated_at = datetime.now()
-        service = Beneficiary_Model_Services(full_name=full_name,account_number=account_number,ifsc_code=ifsc_code,merchant_id=merchant_id)
+        service = Beneficiary_Model_Services(upiId=upi_id,full_name=full_name,account_number=account_number,ifsc_code=ifsc_code,merchant_id=merchant_id)
         service.update(id=id,updated_at=updated_at,updated_by=updated_by,created_at=created_at)
         return Response({"msg":"done","response_code":'1'},status=status.HTTP_200_OK)
 
 class deleteBeneficiary(APIView):
     def delete(self,request):
-        id = request.data.get("id")
+        auth_token = request.headers.get("auth_token")
+        merchantId = auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(auth_token)
+        clientModel = Client_model_service.Client_Model_Service.fetch_by_id(
+                id=merchantId, created_by="merchantid :: "+merchantId, client_ip_address=request.META['REMOTE_ADDR'])
+        authKey = clientModel.auth_key
+        authIV = clientModel.auth_iv
+        decResp = str(request.data.get("query"))
+        if  clientModel.is_encrypt  :
+                decResp = auth.AESCipher(authKey, authIV).decrypt(decResp)
+        res = ast.literal_eval(decResp)
+        id = res.get("id")
         bene = BeneficiaryModel.objects.filter(id=id)
         if(len(bene)==0):
             return Response({"msg":"not found","response_code":'0'},status=status.HTTP_404_NOT_FOUND)
         
-        BeneficiaryModel.objects.filter(id=id).delete()
+        Beneficiary_Model_Services.soft_delete_by_id(id)
         return Response({"msg":"done","response_code":'1'},status=status.HTTP_200_OK)
 
 class addSingleBeneficiary(APIView):
@@ -168,11 +189,11 @@ class addSingleBeneficiary(APIView):
                 decResp = auth.AESCipher(authKey, authIV).decrypt(decResp)
             res = ast.literal_eval(decResp)
             print(res.get("full_name"))
-            resultSet = BeneficiaryModel.objects.filter(merchant_id=int(merchantId),account_number=res.get("account_number"),ifsc_code=res.get("ifsc_code"))
+            resultSet = BeneficiaryModel.objects.filter(merchant_id=int(merchantId),account_number=res.get("account_number"),ifsc_code=res.get("ifsc_code"),upi_id=res.get("upi_id"))
             if(len(resultSet)>0):
                 return Response({"Message":"data already exist","response_code":'0'},status=status.HTTP_406_NOT_ACCEPTABLE)
             
-            service = Beneficiary_Model_Services(full_name=res.get("full_name"),account_number=res.get("account_number"),ifsc_code=res.get("ifsc_code"),merchant_id=merchantId)
+            service = Beneficiary_Model_Services(upiId=res.get("upi_id"),full_name=res.get("full_name"),account_number=res.get("account_number"),ifsc_code=res.get("ifsc_code"),merchant_id=merchantId)
             resp = service.save()
             return Response({"msg":"data saved to database","response_code":'1'},status=status.HTTP_200_OK)
         except Exception as e:
@@ -212,10 +233,11 @@ class saveBeneficiary(APIView):
                     account_number = d[1]
                     ifsc_code = d[2]
                     merchant_id = d[3]
-                    resultSet = BeneficiaryModel.objects.filter(merchant_id=int(merchantId),account_number=account_number,ifsc_code=ifsc_code)
+                    upi_id=d[4]
+                    resultSet = BeneficiaryModel.objects.filter(merchant_id=int(merchantId),account_number=account_number,ifsc_code=ifsc_code,upi_id=upi_id)
                     if(len(resultSet)==0 and merchant_id==int(merchantId)):
                         print("true")
-                        service = Beneficiary_Model_Services(full_name=full_name,account_number=account_number,ifsc_code=ifsc_code,merchant_id=merchant_id)
+                        service = Beneficiary_Model_Services(full_name=full_name,account_number=account_number,ifsc_code=ifsc_code,merchant_id=merchant_id,upiId=upi_id)
                         service.save()
             return Response({"msg":"data parsed and saved to database","response_code":'1'},status=status.HTTP_200_OK)
         except Exception as e:

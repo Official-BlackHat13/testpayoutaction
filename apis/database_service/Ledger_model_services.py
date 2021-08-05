@@ -29,7 +29,7 @@ import pytz
 
 from apis import Utils
 class Ledger_Model_Service:
-    def __init__(self,id=None, is_tax_inclusive=None,status_code=None,tax=None,merchant=None,charge_id=None,client_code=None,linked_ledger_id=None,payout_trans_id=None,trans_amount_type=None, type_status=None, amount=None, van=None, trans_type=None, trans_status=None, bank_ref_no=None, customer_ref_no=None, bank_id=None, trans_time=None, bene_account_name=None, bene_account_number=None, bene_ifsc=None, request_header=None, createdBy=None, updatedBy=None, deletedBy=None, created_at=None, deleted_at=None, updated_at=None, status=True, mode=None, charge=None):
+    def __init__(self,id=None, is_tax_inclusive=None,upiId=None,status_code=None,tax=None,merchant=None,charge_id=None,client_code=None,linked_ledger_id=None,payout_trans_id=None,trans_amount_type=None, type_status=None, amount=None, van=None, trans_type=None, trans_status=None, bank_ref_no=None, customer_ref_no=None, bank_id=None, trans_time=None, bene_account_name=None, bene_account_number=None, bene_ifsc=None, request_header=None, createdBy=None, updatedBy=None, deletedBy=None, created_at=None, deleted_at=None, updated_at=None, status=True, mode=None, charge=None):
         self.id = id
         self.merchant=merchant
         self.client_code=client_code
@@ -50,6 +50,7 @@ class Ledger_Model_Service:
         self.payout_trans_id=payout_trans_id
         self.charge_id=charge_id
         self.status_code=status_code
+        self.upiId=upiId
         self.request_header=request_header
         self.van=van
         self.createdBy=createdBy
@@ -94,9 +95,12 @@ class Ledger_Model_Service:
         ledgermodel.trans_date=date.today()
         ledgermodel.trans_amount_type = self.trans_amount_type
         ledgermodel.van=self.van
-        ledgermodel.bene_account_name=self.bene_account_name
-        ledgermodel.bene_account_number=self.bene_account_number
-        ledgermodel.bene_ifsc=self.bene_ifsc
+        if self.bene_account_name!=None:
+            ledgermodel.bene_account_name=self.bene_account_name
+        if self.bene_account_number!=None:
+            ledgermodel.bene_account_number=self.bene_account_number
+        if self.bene_ifsc!=None:
+            ledgermodel.bene_ifsc=self.bene_ifsc
         ledgermodel.request_header=self.request_header
         ledgermodel.createdBy=self.createdBy
         ledgermodel.updatedBy = self.updatedBy
@@ -113,6 +117,8 @@ class Ledger_Model_Service:
         ledgermodel.charge = self.charge
         if self.charge_id!=None:
             ledgermodel.charge_id=self.charge_id
+        if self.upiId!=None:
+            ledgermodel.upi_id=self.upiId
         ledgermodel.save()
 
         #start
@@ -134,18 +140,28 @@ class Ledger_Model_Service:
         tax=0
         taxmodel=TaxModel.objects.filter(status=True)
         ls=[]
+        total_charge=0
         for i in charges:
+            
             if is_inclusive:
-                base=formulas.calulate_base(i.charge,taxmodel[0].tax)
-                tax_temp=i.charge-base
+                base=formulas.calulate_base(i[0],taxmodel[0].tax)
+                tax_temp=i[0]-base
+                i[0]=base
                 tax=tax+tax_temp
-                ls.append([i.id,tax_temp,base])
+                total_charge+=base
+                ls.append([i[1].id,tax_temp,base])
             else:
-                tax_temp=formulas.calulate_tax_exclusive(i.charge,taxmodel[0].tax)
+                tax_temp=formulas.calulate_tax_exclusive(i[0],taxmodel[0].tax)
                 tax=tax+tax_temp
-                ls.append([i.id,tax_temp,i.charge])
-        return [tax,ls]
-
+                total_charge+=i[0]
+                ls.append([i[1].id,tax_temp,i[1].charge])
+        return [tax,ls,total_charge]
+    @staticmethod
+    def fetch_by_customer_ref_no(merchant_id,customer_ref):
+        ledger=LedgerModel.objects.filter(merchant_id=merchant_id,customer_ref_no=customer_ref)
+        if len(ledger)>0:
+            return None
+        return ledger
     def fetch_by_clientid(self,client_id,client_ip_address,created_by):
         log_service = Log_model_services.Log_Model_Service(log_type="fetch",table_name="apis_ledgermodel",remarks="fetching all records from ledger table by client id",client_ip_address=client_ip_address,server_ip_address=const.server_ip,created_by=created_by)
         ledgerModels=LedgerModel.objects.filter(client_id=client_id)
@@ -192,7 +208,7 @@ class Ledger_Model_Service:
     @staticmethod
     def fetch_customer_ref_no(merchant,customer_ref_no,client_ip_address,created_by):
         log_service=Log_model_services.Log_Model_Service(log_type="fetch",table_name="apis_ledgermodel",remarks="fetching all records from ledger table by van ",client_ip_address=client_ip_address,server_ip_address=const.server_ip,created_by=created_by)
-        ledgerModels=LedgerModel.objects.filter(merchant_id=merchant,customer_ref_no=customer_ref_no)
+        ledgerModels=LedgerModel.objects.filter(merchant_id=merchant,customer_ref_no=customer_ref_no,trans_type="payout")
         log_service.save()
         return ledgerModels
 

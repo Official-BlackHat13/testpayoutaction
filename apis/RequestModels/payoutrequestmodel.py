@@ -1,11 +1,12 @@
 class PayoutRequestModel:
-    def __init__(self,orderId=None,beneficiaryName=None,mode=None,beneficiaryAccount=None,beneficiaryIFSC=None,amount=None,purpose=None):
+    def __init__(self,orderId=None,beneficiaryName=None,upiId=None,mode=None,beneficiaryAccount=None,beneficiaryIFSC=None,amount=None,purpose=None):
         self.orderId=orderId
         self.beneficiaryName=beneficiaryName
         self.beneficiaryAccount=beneficiaryAccount
         self.beneficiaryIFSC=beneficiaryIFSC
         self.amount=amount
         self.purpose=purpose
+        self.upiId=upiId
         self.mode=mode
         # self.userName=userName
         # self.password=password
@@ -42,17 +43,13 @@ class PayoutRequestModel:
              return [None,False,"orderId is missing"]
             else:
              requestModel.orderId=json["orderId"]
-            if json['beneficiaryName']=="":
-                return [None,False,"beneficiaryName is missing"]
-            else:
+            if "beneficiaryName" in json :
              requestModel.beneficiaryName=json["beneficiaryName"]
-            if json["beneficiaryAccount"]=="":
-                return [None,False,"beneficiaryAccount is missing"]
-            else:
+            if "beneficiaryAccount" in json:
+                
              requestModel.beneficiaryAccount=json["beneficiaryAccount"]
-            if json['beneficiaryIFSC']=="":
-                return [None,False,"beneficiaryIFSC is missing"]
-            else:
+            if 'beneficiaryIFSC' in json:
+                
              requestModel.beneficiaryIFSC=json["beneficiaryIFSC"]
             if json["amount"]=="":
                 return [None,False,"amount is missing"]
@@ -62,10 +59,12 @@ class PayoutRequestModel:
              return [None,False,"purpose is missing"]
             else:
                 requestModel.purpose=json["purpose"]
-            if json['mode']=="":
+            if "mode" not in json:
                 return [None,False,"mode is missing"]
             else:
                 requestModel.mode=json["mode"]
+            if "upiId" in json:
+                requestModel.upiId=json["upiId"]
             # if json['txnAmount']=="":
             #     return [None,False,"Transaction amount is missing"]
             # else:
@@ -161,6 +160,7 @@ class PayoutRequestModel:
         json['beneficiaryIFSC']=payoutrequestmodel.beneficiaryIFSC
         json['amount']=payoutrequestmodel.amount
         json['purpose']=payoutrequestmodel.purpose
+        json["upiId"]=payoutrequestmodel.upiId
         # json['txnAmount']=payoutrequestmodel.txnAmount
         # json['returnUrl']=payoutrequestmodel.returnUrl
         # json['creditAccountNumber']=payoutrequestmodel.creditAccountNumber
