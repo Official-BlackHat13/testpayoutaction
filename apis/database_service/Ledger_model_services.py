@@ -1,6 +1,10 @@
+from typing import Text
+
+from django.views.generic import base
 from apis.database_models.ClientModel import MerchantModel
 from requests.api import request
 from apis import const
+from apis.Utils import *
 import string
 import random
 from rest_framework import status
@@ -22,6 +26,8 @@ from django.db import connection
 from sabpaisa import main
 from ..database_models.TaxModel import TaxModel
 import pytz
+
+from apis import Utils
 class Ledger_Model_Service:
     def __init__(self,id=None, is_tax_inclusive=None,status_code=None,tax=None,merchant=None,charge_id=None,client_code=None,linked_ledger_id=None,payout_trans_id=None,trans_amount_type=None, type_status=None, amount=None, van=None, trans_type=None, trans_status=None, bank_ref_no=None, customer_ref_no=None, bank_id=None, trans_time=None, bene_account_name=None, bene_account_number=None, bene_ifsc=None, request_header=None, createdBy=None, updatedBy=None, deletedBy=None, created_at=None, deleted_at=None, updated_at=None, status=True, mode=None, charge=None):
         self.id = id
@@ -435,10 +441,13 @@ class Ledger_Model_Service:
             ledgerModel.save()
             return True
         return False
-
-    def addBal(decResp, client_ip_address,admin,amount):
+    @staticmethod
+    def addAmount(decResp, client_ip_address,admin,amount):
         log_service = Log_model_services.Log_Model_Service(log_type="create", table_name="apis_ledgermodel", remarks="saving records in apis_ledgermodel table",
                                                            client_ip_address=client_ip_address, server_ip_address=const.server_ip, created_by=decResp.get("created_by"))
+        linkedId = generate_token()
+        charge = Ledger_Model_Service.addCharge(decResp, client_ip_address,admin,amount,linkedId)
+        
         ledgermodel = LedgerModel()
         ledgermodel.amount = amount
         modeOfTrans = decResp.get("mode")
@@ -457,7 +466,7 @@ class Ledger_Model_Service:
         ledgermodel.client_code = "null"
         #CR06e65070-dbd6-11eb-9816-507b9d006cb8
         ledgermodel.customer_ref_no = generate_unique_customerRef()
-        ledgermodel.bank_partner_id = const.bank
+        ledgermodel.bank_partner_id = decResp.get("bank_partner_id")
         ledgermodel.van = " "
         startYear = int(decResp.get("credit_date")[0:4])
         startMonth = int(decResp.get("credit_date")[5:7])
@@ -474,12 +483,91 @@ class Ledger_Model_Service:
         ledgermodel.created_at = datetime.now()
         ledgermodel.status = True
         ledgermodel.trans_status = "Success"#success
-        ledgermodel.payout_trans_id = generate_token()
-        ledgermodel.charge = decResp.get("charge")
+        ledgermodel.payout_trans_id = linkedId
+        ledgermodel.charge = charge.get("charge")
+        ledgermodel.tax = charge.get("tax")
+        ledgermodel.is_tax_inclusive = decResp.get("is_tax_inclusive")
         ledgermodel.save()  
         log_service.table_id = ledgermodel.id
         log_service.save()
         return str(ledgermodel.id)
+    @staticmethod
+    def addCharge(decResp, client_ip_address,admin,amount,linkedId):
+        charge = int()
+        tax = TaxModel.objects.filter(status=True).values()[0].get("tax")
+        
+        total_tax = int()
+        bank_charge =  decResp.get("bank_charge")
+        sabpaisa_convenience_fee =  decResp.get("sabpaisa_convenience_fee")
+        sabpaisa_convenience_fee_tax  = int()
+        bankTax = int()
+        if(decResp.get("is_tax_inclusive")==False):
+            if(bank_charge!="" and sabpaisa_convenience_fee!=""):
+                bank_charge =  int(bank_charge)
+                sabpaisa_convenience_fee =  int(sabpaisa_convenience_fee)
+                charge = bank_charge+sabpaisa_convenience_fee
+                bankTax = formulas.calulate_tax_exclusive(bank_charge,int(tax))
+                sabpaisa_convenience_fee_tax = formulas.calulate_tax_exclusive(sabpaisa_convenience_fee,int(tax)) 
+                total_tax = bankTax+sabpaisa_convenience_fee_tax
+                Ledger_Model_Service().saveCharge(decResp=decResp,admin=admin,amount=sabpaisa_convenience_fee,client_ip_address=client_ip_address,tax=sabpaisa_convenience_fee_tax,trans_type="charge",linkedId=linkedId) 
+                Ledger_Model_Service().saveCharge(decResp=decResp,admin=admin,amount=bank_charge,client_ip_address=client_ip_address,tax=bankTax,is_chargedBy_bank=decResp.get("is_chargedBy_bank"),trans_type="charge",linkedId=linkedId)
+            elif(bank_charge!="" and sabpaisa_convenience_fee!=""):
+                pass
+            elif(bank_charge!="" or sabpaisa_convenience_fee!=""):
+                if(bank_charge==""and sabpaisa_convenience_fee!=""):
+                    sabpaisa_convenience_fee =  int(sabpaisa_convenience_fee)
+                    bank_charge = 0
+                    bankTax = 0
+                    sabpaisa_convenience_fee_tax = formulas.calulate_tax_exclusive(sabpaisa_convenience_fee,int(tax)) 
+                    Ledger_Model_Service().saveCharge(decResp=decResp,admin=admin,amount=sabpaisa_convenience_fee,client_ip_address=client_ip_address,tax=sabpaisa_convenience_fee_tax,trans_type="charge",linkedId=linkedId) 
+                if(sabpaisa_convenience_fee=="" and bank_charge!=""):
+                    bank_charge =  int(bank_charge)
+                    sabpaisa_convenience_fee=0
+                    sabpaisa_convenience_fee_tax=0
+                    bankTax = formulas.calulate_tax_exclusive(bank_charge,int(tax))
+                    Ledger_Model_Service().saveCharge(decResp=decResp,admin=admin,amount=bank_charge,client_ip_address=client_ip_address,tax=bankTax,is_chargedBy_bank=decResp.get("is_chargedBy_bank"),trans_type="charge",linkedId=linkedId)
+                charge = bank_charge+sabpaisa_convenience_fee
+                total_tax = sabpaisa_convenience_fee_tax+bankTax
+            print("total tax "+str(total_tax)+" charge "+str(charge))
+        else:
+                if(bank_charge!="" and sabpaisa_convenience_fee!=""):
+                    bank_charge =  int(bank_charge)
+                    sabpaisa_convenience_fee =  int(sabpaisa_convenience_fee)
+                    base_sabpaisa_convenience_fee= formulas.calulate_base(int(sabpaisa_convenience_fee),int(tax))
+                    base_bank_charge = formulas.calulate_base(int(bank_charge),int(tax))
+                    charge = base_bank_charge+base_sabpaisa_convenience_fee
+                    bankTax = bank_charge-base_bank_charge
+                    sabpaisa_convenience_fee_tax = sabpaisa_convenience_fee-base_sabpaisa_convenience_fee
+                    total_tax = bankTax+sabpaisa_convenience_fee_tax
+                    Ledger_Model_Service().saveCharge(decResp=decResp,admin=admin,amount=base_sabpaisa_convenience_fee,client_ip_address=client_ip_address,tax=sabpaisa_convenience_fee_tax,trans_type="charge",linkedId=linkedId) 
+                    Ledger_Model_Service().saveCharge(decResp=decResp,admin=admin,amount=base_bank_charge,client_ip_address=client_ip_address,tax=bankTax,is_chargedBy_bank=decResp.get("is_chargedBy_bank"),trans_type="charge",linkedId=linkedId)
+                elif(bank_charge!="" and sabpaisa_convenience_fee!=""):
+                    pass
+                elif(bank_charge!="" or sabpaisa_convenience_fee!=""):
+                    
+                    if(bank_charge==""and sabpaisa_convenience_fee!=""):
+                        sabpaisa_convenience_fee =  int(sabpaisa_convenience_fee)
+                        base_sabpaisa_convenience_fee= formulas.calulate_base(int(sabpaisa_convenience_fee),int(tax))
+                        bank_charge = 0
+                        bankTax = 0
+                        sabpaisa_convenience_fee_tax = sabpaisa_convenience_fee-base_sabpaisa_convenience_fee
+                        Ledger_Model_Service().saveCharge(decResp=decResp,admin=admin,amount=base_sabpaisa_convenience_fee,client_ip_address=client_ip_address,tax=sabpaisa_convenience_fee_tax,trans_type="charge",linkedId=linkedId) 
+                   
+                    if(sabpaisa_convenience_fee=="" and bank_charge!=""):
+                        bank_charge =  int(bank_charge)
+                        base_bank_charge = formulas.calulate_base(int(bank_charge),int(tax))
+                        sabpaisa_convenience_fee=0
+                        sabpaisa_convenience_fee_tax=0
+                        bankTax = bank_charge-base_bank_charge
+                        Ledger_Model_Service().saveCharge(decResp=decResp,admin=admin,amount=base_bank_charge,client_ip_address=client_ip_address,tax=bankTax,is_chargedBy_bank=decResp.get("is_chargedBy_bank"),trans_type="charge",linkedId=linkedId)
+                
+                    charge = bank_charge+sabpaisa_convenience_fee
+                    total_tax = sabpaisa_convenience_fee_tax+bankTax
+                    
+        Ledger_Model_Service().saveCharge(decResp=decResp,admin=admin,amount=total_tax,client_ip_address=client_ip_address,trans_type="tax",linkedId=linkedId) 
+        return {"charge":charge,
+        "tax":total_tax}  
+                
 
     def fetchInfo():
         cursors = connection.cursor()
@@ -517,4 +605,51 @@ class Ledger_Model_Service:
             "transacting_merchant":transacting_merchant
         }
         return resp
-
+    @staticmethod
+    def saveCharge(decResp,amount,admin,client_ip_address,linkedId,is_chargedBy_bank=None,tax = None,trans_type = None):
+        log_service = Log_model_services.Log_Model_Service(log_type="create", table_name="apis_ledgermodel", remarks="saving records in apis_ledgermodel table",
+                                                           client_ip_address=client_ip_address, server_ip_address=const.server_ip, created_by=decResp.get("created_by"))
+        ledgermodel = LedgerModel()
+        ledgermodel.amount = amount
+        modeOfTrans = decResp.get("mode")
+        m = ModeModel.objects.filter(mode = modeOfTrans)
+        ledgermodel.payment_mode_id = m[0].id
+        ledgermodel.bank_ref_no = decResp.get("bank_ref_no")
+        ledgermodel.trans_amount_type = "debited"
+        ledgermodel.trans_type = trans_type
+        ledgermodel.type_status = "Generated"
+        ledgermodel.trans_date=date.today()
+        ledgermodel.request_header = "request header"
+        bankResp = "NULL"
+        ledgermodel.purpose = "DEBITED FOR "+trans_type
+        ledgermodel.remarks = decResp.get("remarks")
+        ledgermodel.merchant_id = decResp.get("merchant_id")
+        ledgermodel.client_code = "null"
+        #CR06e65070-dbd6-11eb-9816-507b9d006cb8
+        ledgermodel.customer_ref_no = generate_unique_customerRef()
+        ledgermodel.bank_partner_id = decResp.get("bank_partner_id")
+        ledgermodel.van = " "
+        startYear = int(decResp.get("credit_date")[0:4])
+        startMonth = int(decResp.get("credit_date")[5:7])
+        startDay = int(decResp.get("credit_date")[8:10])
+        startHours = int(decResp.get("credit_date")[11:13])
+        startMinute = int(decResp.get("credit_date")[14:16])
+        dt = datetime.now()
+        start = dt.replace(year=startYear, day=startDay, month=startMonth, hour=startHours, minute=startMinute, second=0, microsecond=0)
+        ledgermodel.credit_transaction_date=start
+        ledgermodel.bene_account_name = const.bene_account_name
+        ledgermodel.bene_account_number = const.bene_account_number
+        ledgermodel.linked_Txn_id = linkedId
+        ledgermodel.bene_ifsc = const.bene_ifsc
+        ledgermodel.createdBy = "adminID :: "+str(admin)
+        ledgermodel.created_at = datetime.now()
+        ledgermodel.status = True
+        ledgermodel.trans_status = "Success"#success
+        ledgermodel.tax = tax
+        ledgermodel.payout_trans_id = generate_token()
+        ledgermodel.is_chargedBy_bank = is_chargedBy_bank
+        ledgermodel.is_tax_inclusive = decResp.get("is_tax_inclusive")
+        ledgermodel.save()  
+        log_service.table_id = ledgermodel.id
+        log_service.save()
+        return str(ledgermodel.id)

@@ -17,3 +17,16 @@ class Mode_Model_Service:
         if len(modemodel)==0:
             return None
         return modemodel[0]
+    @staticmethod
+    def fetchAllMerchant():
+        resp = ModeModel.objects.filter().all().values()
+        if(len(resp)==0):
+            return -1
+        response =  list()
+        for data in resp:
+            dict = {
+                "mode_id":data.get("id"),
+                "mode":data.get("mode"),
+            }
+            response.append(dict)
+        return response

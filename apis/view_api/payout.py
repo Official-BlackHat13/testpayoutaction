@@ -262,23 +262,17 @@ class addBalance(APIView):
                 Log_model_services.Log_Model_Service.update_response(
                 logid, {"Message": "admin code missing", "response_code": "0"})
                 return Response({"message":"admin id does not exist", "Response code":"0"},status=status.HTTP_404_NOT_FOUND)
-            # res = ast.literal_eval(request.data.get("query")) 
-            if(admin.is_encrypt == True):
-                query = request.data.get("query")
-                decrypted_query = auth.AESCipher(admin.auth_key,admin.auth_iv).decrypt(query)
-                requestBody = ast.literal_eval(decrypted_query)
-                response = Ledger_Model_Service.addBal(requestBody,client_ip_address=request.META['REMOTE_ADDR'],
-                admin= adminId,amount=requestBody.get("amount"))
-                if(requestBody.get("charge")>0):
-                    response2 = Ledger_Model_Service.addBal(requestBody,client_ip_address=request.META['REMOTE_ADDR'],
-                admin= adminId,amount=requestBody.get("charge"))
-                return Response({"message":"balance added","response_code":"1"},status=status.HTTP_201_CREATED)
             requestBody = request.data.get("query")
-            response = Ledger_Model_Service.addBal(requestBody,client_ip_address=request.META['REMOTE_ADDR'],
+            if(admin.is_encrypt==True):
+                decRequest = auth.AESCipher(admin.auth_key,admin.auth_iv).decrypt(requestBody)
+                requestBody = ast.literal_eval(str(decRequest))
+                response = Ledger_Model_Service.addAmount(requestBody,client_ip_address=request.META['REMOTE_ADDR'],
              admin= adminId,amount=requestBody.get("amount"))
-            if(requestBody.get("charge")>0):
-                 response2 = Ledger_Model_Service.addBal(requestBody,client_ip_address=request.META['REMOTE_ADDR'],
-             admin= adminId,amount=requestBody.get("charge"))
+                return Response({"message":"balance added","response_code":"1"},status=status.HTTP_201_CREATED)
+            
+            response = Ledger_Model_Service.addAmount(requestBody,client_ip_address=request.META['REMOTE_ADDR'],
+             admin= adminId,amount=requestBody.get("amount"))
+            
             return Response({"message":"balance added","response_code":"1"},status=status.HTTP_201_CREATED)
         except Exception as e:
             import traceback

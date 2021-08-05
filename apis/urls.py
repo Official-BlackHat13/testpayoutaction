@@ -1,4 +1,4 @@
-from apis.view_api import client, ledger, payout, slab
+from apis.view_api import client, extras, ledger, payout, slab
 from django.urls import path
 from drf_yasg import views
 from rest_framework import permissions
@@ -65,7 +65,11 @@ urlpatterns = [
     path("getLedgersMerchant/",views.ledger.GetLedgerForMerchant.as_view()),
     path("getTransactionHistory/<slug:page>/<slug:length>",views.ledger.GetTransactionHistory.as_view()),
     path("getAllMerchants/<slug:page>/<slug:length>/",views.client.allMerchants.as_view()),
-    path("todayInfo/",views.ledger.fetchInfo.as_view())
+    path("todayInfo/",views.ledger.fetchInfo.as_view()),
+    path("bankPartnerInfo/",views.extras.bankFilter.as_view()),
+    path("allModes/",views.extras.AllMode.as_view()),
+    path("modesByMerchantId/",views.extras.MerchantModes.as_view()),
+    path("getTax/",views.extras.tax.as_view())
    #  path("testicic/",)
    #  path("createTest",views.getTest.as_view()),
    #  path("updateTest/<int:id>",views.updateTest.as_view()),

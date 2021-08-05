@@ -2,6 +2,9 @@
 # Create your views here.
 
 
+from apis.database_service import Merchant_mode_services
+from apis.database_service.Merchant_mode_services import Merchant_Mode_Service
+from apis.database_models.MerchantModeModel import MercahantModeModel
 from django.db.models import query
 
 
@@ -20,7 +23,7 @@ from rest_framework.response import *
 from rest_framework import status
 from drf_yasg.utils import swagger_auto_schema
 
-from apis.database_service import Beneficiary_model_services
+from apis.database_service import Beneficiary_model_services, Mode_model_services
 from ..API_docs import payout_docs,auth_docs,login_docs,payoutTransactionEnquiry_docs,addBalance_docs,addBeneficiary_docs,log_docs,ledgers_docs
 from datetime import datetime
 from ..serializersFolder.serializers import LogsSerializer
@@ -28,7 +31,7 @@ from ..serializersFolder.serializers import LogsSerializer
 # from .models import *
 import ast
 from ..other_service import payout_service
-from ..database_models import LedgerModel,ModeModel
+from ..database_models import LedgerModel,ModeModel,BankModel
 from apis.database_service.Ledger_model_services import *
 from django.http.response import JsonResponse
 from apis.other_service.enquiry_service import *
@@ -60,7 +63,7 @@ from ..bank_services import ICICI_service
 
 from ..other_service import login_service,signup_service
 
-
+import ast
 from sabpaisa import auth
 
 
@@ -208,4 +211,133 @@ class bankApiEnquiryView(APIView):
         pass
 
 
+class bankFilter(APIView):
+    def get(self,request):
+        request_obj = "path:: "+request.path+" :: headers::" + \
+            str(request.headers)+" :: meta_data:: " + \
+            str(request.META)+"data::"+str(request.data)
+        log = Log_model_services.Log_Model_Service(log_type="fetch modes request at "+request.path+" slug",
+                                                   client_ip_address=request.META['REMOTE_ADDR'], server_ip_address=const.server_ip, full_request=request_obj)
+        logid = log.save()
+        try:
+            header = request.headers.get("auth_token")
+            adminId = auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(header)
+            admin = BO_user_services.BO_User_Service.fetch_by_id(adminId)
+            if(admin==None):
+                Log_model_services.Log_Model_Service.update_response(
+                logid, {"Message": "admin code missing", "response_code": "0"})
+                return Response({"message":"admin id does not exist", "Response code":"0"},status=status.HTTP_404_NOT_FOUND)
+            
+            resp = BankModel.BankPartnerModel.objects.filter().all().values()
+            if(len(resp)==0):
+                return Response({"message":"no data found","response_code":"0"})
+            response =  list()
+            for data in resp:
+                dict = {
+                    "bank_id":data.get("id"),
+                    "bank_name":data.get("bank_name"),
+                    "bank_code":data.get("bank_code")
+                }
+                response.append(dict)
+            if(admin.is_encrypt==True):
+                encResp = auth.AESCipher(admin.auth_key,admin.auth_iv).encrypt(str(response))
+                return Response({"message":"data found","data":encResp})  
+            
+            return Response({"message":"data found","data":response})
+        except Exception as e:
+            import traceback
+            print(traceback.format_exc())
+            Log_model_services.Log_Model_Service.update_response(logid,{"message":"Some error occured","Error_Code":e.args,"response_code":"2"})
+           
+    
+class AllMode(APIView):
+    def get(self,request):
+        request_obj = "path:: "+request.path+" :: headers::" + \
+            str(request.headers)+" :: meta_data:: " + \
+            str(request.META)+"data::"+str(request.data)
+        log = Log_model_services.Log_Model_Service(log_type="fetch modes request at "+request.path+" slug",
+                                                   client_ip_address=request.META['REMOTE_ADDR'], server_ip_address=const.server_ip, full_request=request_obj)
+        logid = log.save()
+        try:
+            header = request.headers.get("auth_token")
+            adminId = auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(header)
+            admin = BO_user_services.BO_User_Service.fetch_by_id(adminId)
+            if(admin==None):
+                Log_model_services.Log_Model_Service.update_response(
+                logid, {"Message": "admin code missing", "response_code": "0"})
+                return Response({"message":"admin id does not exist", "Response code":"0"},status=status.HTTP_404_NOT_FOUND)
+            
+            response = Mode_model_services.Mode_Model_Service.fetchAllMerchant()
+            
+            if(response==-1):
+                return Response({"message":"data not found","data":None,"response_code":"0"},status=status.HTTP_404_NOT_FOUND)
+            if(admin.is_encrypt==True):
+                encResp = auth.AESCipher(admin.auth_key,admin.auth_iv).encrypt(str(response))
+                return Response({"message":"data found","data":encResp})  
+            return Response({"message":"data found","data":response,"response_code":"1"},status=status.HTTP_200_OK)
+        except Exception as e:
+            import traceback
+            print(traceback.format_exc())
+            Log_model_services.Log_Model_Service.update_response(logid,{"message":"Some error occured","Error_Code":e.args,"response_code":"2"})
+            return Response({"Message":"some error","Error":e.args})
 
+class MerchantModes(APIView):
+    def post(self,request):
+        request_obj = "path:: "+request.path+" :: headers::" + \
+            str(request.headers)+" :: meta_data:: " + \
+            str(request.META)+"data::"+str(request.data)
+        log = Log_model_services.Log_Model_Service(log_type="fetch merchants modes request at "+request.path+" slug",
+                                                   client_ip_address=request.META['REMOTE_ADDR'], server_ip_address=const.server_ip, full_request=request_obj)
+        logid = log.save()
+        try:
+            query = request.data.get("query")
+            header = request.headers.get("auth_token")
+            adminId = auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(header)
+            admin = BO_user_services.BO_User_Service.fetch_by_id(adminId)
+            if(admin==None):
+                Log_model_services.Log_Model_Service.update_response(
+                logid, {"Message": "admin code missing", "response_code": "0"})
+                return Response({"message":"admin id does not exist", "Response code":"0"},status=status.HTTP_404_NOT_FOUND)
+            if(admin.is_encrypt==True):
+                decRequest = auth.AESCipher(admin.auth_key,admin.auth_iv).decrypt(query)
+                # merchantId = decRequest.get("merchant_id")
+                merchantId = ast.literal_eval(decRequest)
+                merchantId = merchantId.get("merchant_id")   
+            else:
+                merchantId = query.get("merchant_id")
+            
+            merchantId = auth.AESCipher(admin.auth_key,admin.auth_iv).decrypt(str(merchantId))
+            resp = Merchant_mode_services.Merchant_Mode_Service.fetchModesByMerchantId(merchantId)
+            if(len(resp)==0):
+                return Response({"message":"data not found","data":None})    
+            if(admin.is_encrypt==True):
+                encResp = auth.AESCipher(admin.auth_key,admin.auth_iv).encrypt(str(resp))
+                return Response({"message":"data found","data":encResp})    
+            return Response({"message":"data found","data":resp})
+        except Exception as e:
+            import traceback
+            print(traceback.format_exc())
+            Log_model_services.Log_Model_Service.update_response(logid,{"message":"Some error occured","Error_Code":e.args,"response_code":"2"})
+            return Response({"Message":"some error","Error":e.args})
+
+
+class tax(APIView):
+    def get(self,request):
+        request_obj = "path:: "+request.path+" :: headers::" + \
+            str(request.headers)+" :: meta_data:: " + \
+            str(request.META)+"data::"+str(request.data)
+        log = Log_model_services.Log_Model_Service(log_type="fetchCharges request at "+request.path+" slug",
+                                                   client_ip_address=request.META['REMOTE_ADDR'], server_ip_address=const.server_ip, full_request=request_obj)
+        logid = log.save()
+        header = request.headers.get("auth_token")
+        adminId = auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(header)
+        admin = BO_user_services.BO_User_Service.fetch_by_id(adminId)
+        if(admin==None):
+            Log_model_services.Log_Model_Service.update_response(
+                logid, {"Message": "admin code missing", "response_code": "0"})
+            return Response({"message":"admin id does not exist", "Response code":"0"},status=status.HTTP_404_NOT_FOUND)
+        resp = TaxModel.objects.filter(status=True).values()[0].get("tax")
+        if(admin.is_encrypt==True):
+                encResp = auth.AESCipher(admin.auth_key,admin.auth_iv).encrypt(str(resp))
+                return Response({"message":"data found","data":encResp})    
+        return Response({"message":"data found","data":resp})
