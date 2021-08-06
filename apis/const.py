@@ -2,6 +2,7 @@ import abc
 import socket
 import ifaddr
 from variables import domain
+from bank_api import paytm
 ipwhitelisting=False
 
 server_ip = socket.gethostbyname(socket.gethostname())
@@ -30,6 +31,9 @@ AuthKey = "pMoG4Nsp54LGYV7a"
 AuthIV = "4OqmI5rR7KOm6RmY"
 # admin_AuthKey="zDoSTQHGKAcQfYCY"
 # admin_AuthIV="BMifRscmnSWlnhmx"
+
+paytm_link_transaction=paytm.staging_paytmPaymentAPI()
+paytm_link_enquiry=paytm.staging_paytmEnquiryAPI()
 paytm_subwalletGuid = "4957c207-dafa-11eb-bbc6-fa163e429e83"
 paytm_merchant_id = "SubPai61513678214850"
 paytm_merchant_key = "@B0h97BGQ#YC_lIE"

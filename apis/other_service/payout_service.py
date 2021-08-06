@@ -199,7 +199,7 @@ class PayoutService:
              post_data = json.dumps(request_model.to_json())
              checksum = paytmchecksum.generateSignature(post_data, const.paytm_merchant_key)
              
-             response = requests.post(bank_api.paytm.staging_paytmPaymentAPI(),json=request_model.to_json(),headers={"Content-type": "application/json", "x-mid": const.paytm_merchant_id, "x-checksum":checksum})
+             response = requests.post(const.paytm_link_transaction,json=request_model.to_json(),headers={"Content-type": "application/json", "x-mid": const.paytm_merchant_id, "x-checksum":checksum})
              print(response.json())
              Log_Model_Service.update_response(log_id,response=str(response.json()))
              response_model = paytm_response_model.Payment_Response_Model.from_json(response.json())
@@ -255,7 +255,7 @@ class PayoutService:
                          logid=log.save()
                          time.sleep(40)
                          checksum=paytmchecksum.generateSignature(json.dumps({"orderId":payoutrequestmodel.orderId}), const.paytm_merchant_key)
-                         response = requests.post(bank_api.paytm.staging_paytmEnquiryAPI(),json={"orderId":payoutrequestmodel.orderId},headers={"Content-type": "application/json", "x-mid": const.paytm_merchant_id, "x-checksum":checksum})
+                         response = requests.post(const.paytm_link_enquiry,json={"orderId":payoutrequestmodel.orderId},headers={"Content-type": "application/json", "x-mid": const.paytm_merchant_id, "x-checksum":checksum})
                          log.update_response(logid,response.text)
                          print(response.json())
                          if response.json()['status']=="SUCCESS":
