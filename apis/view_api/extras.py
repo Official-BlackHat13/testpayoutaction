@@ -306,7 +306,7 @@ class MerchantModes(APIView):
             else:
                 merchantId = query.get("merchant_id")
             
-            merchantId = auth.AESCipher(admin.auth_key,admin.auth_iv).decrypt(str(merchantId))
+            merchantId = auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(str(merchantId))
             resp = Merchant_mode_services.Merchant_Mode_Service.fetchModesByMerchantId(merchantId)
             if(len(resp)==0):
                 return Response({"message":"data not found","data":None,"response_code":'0'})    

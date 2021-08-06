@@ -55,10 +55,7 @@ class Beneficiary_Model_Services:
     def fetchBeneficiaryByParams(client_ip_address,created_by,page,length,merchant_id=None):
         log_service=Log_model_services.Log_Model_Service(log_type="fetch",table_name="apis_chargemodel",remarks="fetching records from apis_chargemodel by primary key in the record",client_ip_address=client_ip_address,server_ip_address=const.server_ip,created_by=created_by)
         offSet = (int(page)-1)*int(length)
-        if(merchant_id=="all"):
-            chargeModel=BeneficiaryModel.objects.raw("select * from apis_beneficiarymodel order by id desc  limit "+str(length)+" offset "+str(offSet))
-        else:
-            chargeModel=BeneficiaryModel.objects.raw("select * from apis_beneficiarymodel where merchant_id = "+merchant_id+" order by id desc  limit "+str(length)+" offset "+str(offSet))
+        chargeModel=BeneficiaryModel.objects.raw("select * from apis_beneficiarymodel where merchant_id = "+merchant_id+" order by id desc  limit "+str(length)+" offset "+str(offSet))
         resp=list()
         for data in list(chargeModel.iterator()):
             d={
