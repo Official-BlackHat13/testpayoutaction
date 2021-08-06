@@ -509,21 +509,21 @@ class Ledger_Model_Service:
         return str(ledgermodel.id)
     @staticmethod
     def addCharge(decResp, client_ip_address,admin,amount,linkedId):
-        charge = int()
+        charge = float()
         tax = TaxModel.objects.filter(status=True).values()[0].get("tax")
         
-        total_tax = int()
+        total_tax = float()
         bank_charge =  decResp.get("bank_charge")
         sabpaisa_convenience_fee =  decResp.get("sabpaisa_convenience_fee")
-        sabpaisa_convenience_fee_tax  = int()
-        bankTax = int()
+        sabpaisa_convenience_fee_tax  = float()
+        bankTax = float()
         if(decResp.get("is_tax_inclusive")==False):
             if(bank_charge!="" and sabpaisa_convenience_fee!=""):
-                bank_charge =  int(bank_charge)
-                sabpaisa_convenience_fee =  int(sabpaisa_convenience_fee)
+                bank_charge =  float(bank_charge)
+                sabpaisa_convenience_fee =  float(sabpaisa_convenience_fee)
                 charge = bank_charge+sabpaisa_convenience_fee
-                bankTax = formulas.calulate_tax_exclusive(bank_charge,int(tax))
-                sabpaisa_convenience_fee_tax = formulas.calulate_tax_exclusive(sabpaisa_convenience_fee,int(tax)) 
+                bankTax = formulas.calulate_tax_exclusive(bank_charge,float(tax))
+                sabpaisa_convenience_fee_tax = formulas.calulate_tax_exclusive(sabpaisa_convenience_fee,float(tax)) 
                 total_tax = bankTax+sabpaisa_convenience_fee_tax
                 Ledger_Model_Service().saveCharge(decResp=decResp,admin=admin,amount=sabpaisa_convenience_fee,client_ip_address=client_ip_address,tax=sabpaisa_convenience_fee_tax,trans_type="charge",linkedId=linkedId) 
                 Ledger_Model_Service().saveCharge(decResp=decResp,admin=admin,amount=bank_charge,client_ip_address=client_ip_address,tax=bankTax,is_chargedBy_bank=decResp.get("is_chargedBy_bank"),trans_type="charge",linkedId=linkedId)
@@ -531,26 +531,26 @@ class Ledger_Model_Service:
                 pass
             elif(bank_charge!="" or sabpaisa_convenience_fee!=""):
                 if(bank_charge==""and sabpaisa_convenience_fee!=""):
-                    sabpaisa_convenience_fee =  int(sabpaisa_convenience_fee)
+                    sabpaisa_convenience_fee =  float(sabpaisa_convenience_fee)
                     bank_charge = 0
                     bankTax = 0
-                    sabpaisa_convenience_fee_tax = formulas.calulate_tax_exclusive(sabpaisa_convenience_fee,int(tax)) 
+                    sabpaisa_convenience_fee_tax = formulas.calulate_tax_exclusive(sabpaisa_convenience_fee,float(tax)) 
                     Ledger_Model_Service().saveCharge(decResp=decResp,admin=admin,amount=sabpaisa_convenience_fee,client_ip_address=client_ip_address,tax=sabpaisa_convenience_fee_tax,trans_type="charge",linkedId=linkedId) 
                 if(sabpaisa_convenience_fee=="" and bank_charge!=""):
-                    bank_charge =  int(bank_charge)
+                    bank_charge =  float(bank_charge)
                     sabpaisa_convenience_fee=0
                     sabpaisa_convenience_fee_tax=0
-                    bankTax = formulas.calulate_tax_exclusive(bank_charge,int(tax))
+                    bankTax = formulas.calulate_tax_exclusive(bank_charge,float(tax))
                     Ledger_Model_Service().saveCharge(decResp=decResp,admin=admin,amount=bank_charge,client_ip_address=client_ip_address,tax=bankTax,is_chargedBy_bank=decResp.get("is_chargedBy_bank"),trans_type="charge",linkedId=linkedId)
                 charge = bank_charge+sabpaisa_convenience_fee
                 total_tax = sabpaisa_convenience_fee_tax+bankTax
             print("total tax "+str(total_tax)+" charge "+str(charge))
         else:
                 if(bank_charge!="" and sabpaisa_convenience_fee!=""):
-                    bank_charge =  int(bank_charge)
-                    sabpaisa_convenience_fee =  int(sabpaisa_convenience_fee)
-                    base_sabpaisa_convenience_fee= formulas.calulate_base(int(sabpaisa_convenience_fee),int(tax))
-                    base_bank_charge = formulas.calulate_base(int(bank_charge),int(tax))
+                    bank_charge =  float(bank_charge)
+                    sabpaisa_convenience_fee =  float(sabpaisa_convenience_fee)
+                    base_sabpaisa_convenience_fee= formulas.calulate_base(float(sabpaisa_convenience_fee),float(tax))
+                    base_bank_charge = formulas.calulate_base(float(bank_charge),float(tax))
                     charge = base_bank_charge+base_sabpaisa_convenience_fee
                     bankTax = bank_charge-base_bank_charge
                     sabpaisa_convenience_fee_tax = sabpaisa_convenience_fee-base_sabpaisa_convenience_fee
@@ -562,16 +562,16 @@ class Ledger_Model_Service:
                 elif(bank_charge!="" or sabpaisa_convenience_fee!=""):
                     
                     if(bank_charge==""and sabpaisa_convenience_fee!=""):
-                        sabpaisa_convenience_fee =  int(sabpaisa_convenience_fee)
-                        base_sabpaisa_convenience_fee= formulas.calulate_base(int(sabpaisa_convenience_fee),int(tax))
+                        sabpaisa_convenience_fee =  float(sabpaisa_convenience_fee)
+                        base_sabpaisa_convenience_fee= formulas.calulate_base(float(sabpaisa_convenience_fee),float(tax))
                         bank_charge = 0
                         bankTax = 0
                         sabpaisa_convenience_fee_tax = sabpaisa_convenience_fee-base_sabpaisa_convenience_fee
                         Ledger_Model_Service().saveCharge(decResp=decResp,admin=admin,amount=base_sabpaisa_convenience_fee,client_ip_address=client_ip_address,tax=sabpaisa_convenience_fee_tax,trans_type="charge",linkedId=linkedId) 
                    
                     if(sabpaisa_convenience_fee=="" and bank_charge!=""):
-                        bank_charge =  int(bank_charge)
-                        base_bank_charge = formulas.calulate_base(int(bank_charge),int(tax))
+                        bank_charge =  float(bank_charge)
+                        base_bank_charge = formulas.calulate_base(float(bank_charge),float(tax))
                         sabpaisa_convenience_fee=0
                         sabpaisa_convenience_fee_tax=0
                         bankTax = bank_charge-base_bank_charge
