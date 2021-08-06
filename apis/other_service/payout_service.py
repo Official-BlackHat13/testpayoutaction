@@ -251,11 +251,11 @@ class PayoutService:
                 thread = None   
                 class ServiceThread(threading.Thread):
                      def run(self):
-                         log = Log_Model_Service(log_type="Thread",full_request={"orderId":payoutrequestmodel.orderId},client_ip_address=client_ip_address_temp,server_ip_address=const.server_ip,remarks="Running service thread on paytm enquiry api for merchant id :: "+ merchant_id_temp)
+                         log = Log_Model_Service(log_type="Thread",full_request={"orderId":ledgerModelService.payout_trans_id},client_ip_address=client_ip_address_temp,server_ip_address=const.server_ip,remarks="Running service thread on paytm enquiry api for merchant id :: "+ merchant_id_temp)
                          logid=log.save()
                          time.sleep(40)
-                         checksum=paytmchecksum.generateSignature(json.dumps({"orderId":payoutrequestmodel.orderId}), const.paytm_merchant_key)
-                         response = requests.post(const.paytm_link_enquiry,json={"orderId":payoutrequestmodel.orderId},headers={"Content-type": "application/json", "x-mid": const.paytm_merchant_id, "x-checksum":checksum})
+                         checksum=paytmchecksum.generateSignature(json.dumps({"orderId":ledgerModelService.payout_trans_id}), const.paytm_merchant_key)
+                         response = requests.post(const.paytm_link_enquiry,json={"orderId":ledgerModelService.payout_trans_id},headers={"Content-type": "application/json", "x-mid": const.paytm_merchant_id, "x-checksum":checksum})
                          log.update_response(logid,response.text)
                          print(response.json())
                          if response.json()['status']=="SUCCESS":
