@@ -36,10 +36,7 @@ class charge_model_service:
     def fetch_by_id(client_ip_address,created_by,page,length,merchant_id=None):
         log_service=Log_model_services.Log_Model_Service(log_type="fetch",table_name="apis_chargemodel",remarks="fetching records from apis_chargemodel by primary key in the record",client_ip_address=client_ip_address,server_ip_address=const.server_ip,created_by=created_by)
         offSet = (int(page)-1)*int(length)
-        if(merchant_id=="all"):
-            chargeModel=ChargeModel.objects.raw("select * from apis_chargemodel order by id desc  limit "+str(length)+" offset "+str(offSet))
-        else:
-            chargeModel=ChargeModel.objects.raw("select * from apis_chargemodel where merchant_id = "+merchant_id+" order by id desc  limit "+str(length)+" offset "+str(offSet))
+        chargeModel=ChargeModel.objects.raw("select * from apis_chargemodel where merchant_id = "+merchant_id+" order by id desc  limit "+str(length)+" offset "+str(offSet))
         resp=list()
         for data in list(chargeModel.iterator()):
             d={
