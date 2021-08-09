@@ -528,8 +528,6 @@ class Ledger_Model_Service:
                 total_tax = bankTax+sabpaisa_convenience_fee_tax
                 Ledger_Model_Service().saveCharge(decResp=decResp,admin=admin,amount=sabpaisa_convenience_fee,client_ip_address=client_ip_address,tax=sabpaisa_convenience_fee_tax,trans_type="charge",linkedId=linkedId) 
                 Ledger_Model_Service().saveCharge(decResp=decResp,admin=admin,amount=bank_charge,client_ip_address=client_ip_address,tax=bankTax,is_chargedBy_bank=decResp.get("is_charged_by_bank"),trans_type="charge",linkedId=linkedId)
-            elif(bank_charge=="" and sabpaisa_convenience_fee==""):
-                pass
             elif(bank_charge!="" or sabpaisa_convenience_fee!=""):
                 if(bank_charge==""and sabpaisa_convenience_fee!=""):
                     sabpaisa_convenience_fee =  float(sabpaisa_convenience_fee)
@@ -558,8 +556,6 @@ class Ledger_Model_Service:
                     total_tax = bankTax+sabpaisa_convenience_fee_tax
                     Ledger_Model_Service().saveCharge(decResp=decResp,admin=admin,amount=base_sabpaisa_convenience_fee,client_ip_address=client_ip_address,tax=sabpaisa_convenience_fee_tax,trans_type="charge",linkedId=linkedId) 
                     Ledger_Model_Service().saveCharge(decResp=decResp,admin=admin,amount=base_bank_charge,client_ip_address=client_ip_address,tax=bankTax,is_chargedBy_bank=decResp.get("is_charged_by_bank"),trans_type="charge",linkedId=linkedId)
-                elif(bank_charge=="" and sabpaisa_convenience_fee==""):
-                    pass
                 elif(bank_charge!="" or sabpaisa_convenience_fee!=""):
                     
                     if(bank_charge==""and sabpaisa_convenience_fee!=""):
