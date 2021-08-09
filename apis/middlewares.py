@@ -158,7 +158,9 @@ def MultiTabsRestriction(get_response):
 
 def checkClientStatus(get_response):
     def middleware(req):
-        if req.path!="/api/" and req.path!="/api/addCharge/" and req.path!="/" and "/admin/" not in req.path and req.path!="/api/signup/" and req.path not in "/api/token/" and req.path!="/api/loginrequest/" and req.path!="/api/loginverified/" and req.path!="/api/resendotp/" and req.path!="/api/adminLogin/" and req.path!="/api/adminSignup/" and req.path!="/api/addSlab/" and "/api/getLedgers/" not in req.path and "/api/getTransactionHistory/" not in req.path and req.path!="/api/addBalance/" and "/api/getAllMerchants/" not in req.path and "/api/getLogs/" not in req.path and req.path!="/api/todayInfo/":
+        print(req.path)
+        if req.path!="/api/" and req.path!="/api/addCharge/" and req.path!="/" and "/admin/" not in req.path and req.path!="/api/signup/" and req.path not in "/api/token/" and req.path!="/api/loginrequest/" and req.path!="/api/loginverified/" and req.path!="/api/resendotp/" and req.path!="/api/adminLogin/" and req.path!="/api/adminSignup/" and req.path!="/api/addSlab/" and "/api/getLedgers/" not in req.path and "/api/getTransactionHistory/" not in req.path and req.path!="/api/addBalance/" and "/api/getAllMerchants/" not in req.path and "/api/getLogs/" not in req.path and req.path!="/api/todayInfo/" and req.path!="/api/callDailyLedger/":
+            print("inside if")
             try:
                 merchant_id = req.headers["auth_token"]
                 
@@ -182,7 +184,7 @@ def checkClientStatus(get_response):
 
 def checkBackofficeStatus(get_response):
     def middleware(req):
-        if req.path!="/api/" and req.path!="/api/addBeneficiaries/"and req.path!="/" and "/admin/" not in req.path and req.path!="/api/signup/" and req.path not in "/api/token/" and req.path!="/api/loginrequest/" and req.path!="/api/loginverified/" and req.path!="/api/resendotp/" and req.path!="/api/adminLogin/" and req.path!="/api/adminSignup/" and req.path!="/api/addSlab/":
+        if req.path!="/api/" and req.path!="/api/addBeneficiaries/"and req.path!="/" and "/admin/" not in req.path and req.path!="/api/signup/" and req.path not in "/api/token/" and req.path!="/api/loginrequest/" and req.path!="/api/loginverified/" and req.path!="/api/resendotp/" and req.path!="/api/adminLogin/" and req.path!="/api/adminSignup/" and req.path!="/api/addSlab/" and req.path!="/api/callDailyLedger/":
             try:
                 merchant_id = req.headers["auth_token"]
                 merchant_id=auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(merchant_id)
