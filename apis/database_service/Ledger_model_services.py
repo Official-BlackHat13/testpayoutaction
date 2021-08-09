@@ -193,7 +193,7 @@ class Ledger_Model_Service:
         
         ledgerModels=LedgerModel.objects.get(id=id)
         json={}
-        json["customer_ref_no"]=ledgerModels.customer_ref_no
+        json["order_id"]=ledgerModels.customer_ref_no
         json['amount']=ledgerModels.amount
         json['status']=ledgerModels.trans_status
         json['payoutTransactionId']=ledgerModels.payout_trans_id
