@@ -232,7 +232,8 @@ class PayoutService:
                             print("First Response from webhook :: "+str(response.json()))
                             if response.status_code!=200:
                                 for i in range(webhooks.max_request):
-                                    
+                                    interval=webhooks.time_interval
+                                    time.sleep(60*interval)
                                     response=requests.post(webhooks.webhook,json=transhistoryJson)
                                     print(str(i)+"th response from webhook :: "+response.text)
                                     if response.status_code==200:
