@@ -43,17 +43,16 @@ from ..Utils import randomstring
 from ..database_service import BO_user_services
 
 from ..models import MerchantModel,RoleModel
-
-
-
+# from ..database_models.DailyLedgerModel import DailyLedgerModel
+from ..database_service.DailyLedger_model_services import DailyLedger_Model_Service
 from ..database_service import Mode_model_services
 from ..database_service import Merchant_mode_services
-
+from ..database_models.VariableModel import VariableModel
 
 # from .models import MerchantModel,RoleModel
 from sabpaisa import auth
 
-from datetime import datetime
+from datetime import datetime,date
 
 from ..bank_services import ICICI_service
 
@@ -72,16 +71,22 @@ class bankApiPaymentView(APIView):
             merchant_id=auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(api_key)
             encrypted_code=req.data["encrypted_code"]
             mode = req.data['mode']
+            variable=VariableModel.objects.filter(variable_name="getBalance")
+            if variable[0].variable_value!="first":
+                daily=DailyLedger_Model_Service.fetch_by_date_and_merchant_id(merchant_id,date.today())
+                if daily==None:
+                    return Response({"Message":"Some calculation is proccessing please wait and retry again with same request","response_code":"0"},status=status.HTTP_400_BAD_REQUEST)
+                
             log = Log_model_services.Log_Model_Service(log_type="Post request at "+req.path+" slug",client_ip_address=req.META['REMOTE_ADDR'],server_ip_address=const.server_ip,full_request=request_obj)
             logid=log.save()
             client = Client_model_service.Client_Model_Service.fetch_by_id(merchant_id,req.META['REMOTE_ADDR'],"merchant id :: "+merchant_id)
             print("client bank::"+str(client.bank_id))
             mode_rec = Mode_model_services.Mode_Model_Service.fetch_by_mode(mode)
             if mode_rec==None:
-                return Response({"message":"mode not valid","response_code":"0"})
+                return Response({"message":"mode not valid","response_code":"0"},status=status.HTTP_400_BAD_REQUEST)
             merchant_mode=Merchant_mode_services.Merchant_Mode_Service.fetch_by_merchant_id_and_mode(mode_id=mode_rec.id,merchant_id=merchant_id)
             if len(merchant_mode)==0:
-                return Response({"message":"merchant mode not valid","response_code":"0"})
+                return Response({"message":"merchant mode not valid","response_code":"0"},status=status.HTTP_400_BAD_REQUEST)
             bank = Bank_model_services.Bank_model_services.fetch_by_id(merchant_mode[0].bank_partner_id,req.META['REMOTE_ADDR'],"merchant id :: "+merchant_id)
             # print("bank::"+str(bank))
             payout=payout_service.PayoutService(merchant_id=merchant_id,encrypted_code=encrypted_code,client_ip_address=req.META['REMOTE_ADDR'])

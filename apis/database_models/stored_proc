@@ -122,11 +122,11 @@ DELIMITER &&
 create PROCEDURE getBalancenew(in merchant_id int,out balance float,out cred1 float,out deb1 float)
 begin
 declare bal_temp int;
--- select sum(amount) into cred1 from apis_transactionhistorymodel where trans_amount_type="credited" and merchant_id=merchant_id and trans_status in ("Success","Pending","Requested","Proccesing");
--- select sum(amount) into deb1 from apis_transactionhistorymodel where trans_amount_type="debited" and merchant_id=merchant_id and trans_status in ("Success","Pending","Requested","Proccesing");
+-- select sum(amount) into cred1 from apis_transactionhistorymodel where trans_amount_type="cr" and merchant_id=merchant_id and trans_status in ("Success","Pending","Requested","Proccesing");
+-- select sum(amount) into deb1 from apis_transactionhistorymodel where trans_amount_type="dr" and merchant_id=merchant_id and trans_status in ("Success","Pending","Requested","Proccesing");
 
-Call getAmount2("credited",merchant_id,@cred);
-Call getAmount2("debited",merchant_id,@deb);
+Call getAmount2("cr",merchant_id,@cred);
+Call getAmount2("dr",merchant_id,@deb);
 
 if (isnull(@cred)) then
 set cred1=0;
