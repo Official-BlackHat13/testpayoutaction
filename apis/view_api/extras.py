@@ -230,7 +230,7 @@ class bankFilter(APIView):
             
             resp = BankModel.BankPartnerModel.objects.filter().all().values()
             if(len(resp)==0):
-                return Response({"message":"no data found","data":None,"response_code":"0"})
+                return Response({"message":"no data found","data":None,"response_code":"0"},status=status.HTTP_404_NOT_FOUND)
             response =  list()
             for data in resp:
                 dict = {
@@ -241,9 +241,9 @@ class bankFilter(APIView):
                 response.append(dict)
             if(admin.is_encrypt==True):
                 encResp = auth.AESCipher(admin.auth_key,admin.auth_iv).encrypt(str(response))
-                return Response({"message":"data found","data":encResp})  
+                return Response({"message":"data found","data":encResp},status=status.HTTP_200_OK)  
             
-            return Response({"message":"data found","data":response})
+            return Response({"message":"data found","data":response},status=status.HTTP_200_OK)
         except Exception as e:
             import traceback
             print(traceback.format_exc())
@@ -309,7 +309,7 @@ class MerchantModes(APIView):
             merchantId = auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(str(merchantId))
             resp = Merchant_mode_services.Merchant_Mode_Service.fetchModesByMerchantId(merchantId)
             if(len(resp)==0):
-                return Response({"message":"data not found","data":None,"response_code":'0'})    
+                return Response({"message":"data not found","data":None,"response_code":'0'},status=status.HTTP_404_NOT_FOUND)    
             if(admin.is_encrypt==True):
                 encResp = auth.AESCipher(admin.auth_key,admin.auth_iv).encrypt(str(resp))
                 return Response({"message":"data found","data":encResp,"response_code":'1'},status=status.HTTP_200_OK)    
