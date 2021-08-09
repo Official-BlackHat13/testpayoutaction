@@ -470,7 +470,7 @@ class Ledger_Model_Service:
         m = ModeModel.objects.filter(mode = modeOfTrans)
         ledgermodel.payment_mode_id = m[0].id
         ledgermodel.bank_ref_no = decResp.get("bank_ref_no")
-        ledgermodel.trans_amount_type = "credited"
+        ledgermodel.trans_amount_type = "cr"
         ledgermodel.trans_type = "payin"
         ledgermodel.type_status = "Generated"
         ledgermodel.trans_date=date.today()
@@ -587,11 +587,11 @@ class Ledger_Model_Service:
 
     def fetchInfo():
         cursors = connection.cursor()
-        cursors.execute("select sum(amount) from apis_transactionhistorymodel where trans_amount_type=\"credited\" and trans_date =  CURDATE();")
+        cursors.execute("select sum(amount) from apis_transactionhistorymodel where trans_amount_type=\"cr\" and trans_date =  CURDATE();")
         credit_amount = cursors.fetchone()[0]
         if credit_amount==None:
             credit_amount=0
-        cursors.execute("select sum(amount) from apis_transactionhistorymodel where trans_amount_type=\"debited\" and trans_date =  CURDATE();")
+        cursors.execute("select sum(amount) from apis_transactionhistorymodel where trans_amount_type=\"dr\" and trans_date =  CURDATE();")
         debited_amount = cursors.fetchone()[0]
         if debited_amount==None:
             debited_amount=0
@@ -631,7 +631,7 @@ class Ledger_Model_Service:
         m = ModeModel.objects.filter(mode = modeOfTrans)
         ledgermodel.payment_mode_id = m[0].id
         ledgermodel.bank_ref_no = decResp.get("bank_ref_no")
-        ledgermodel.trans_amount_type = "debited"
+        ledgermodel.trans_amount_type = "dr"
         ledgermodel.trans_type = trans_type
         ledgermodel.type_status = "Generated"
         ledgermodel.trans_date=date.today()
