@@ -115,7 +115,7 @@ class PayoutService:
              ledgerModelService.is_tax_inclusive=clientModel.is_tax_inclusive
              ledgerModelService.tax=taxes[0]
              ledgerModelService.payout_trans_id=generater.generate_token()
-             ledgerModelService.trans_amount_type = "debited"
+             ledgerModelService.trans_amount_type = "dr"
              ledgerModelService.trans_time=datetime.now()
              id=ledgerModelService.save(client_ip_address=self.client_ip_address,createdBy="Merchant Id :: "+ str(self.merchant_id))
              ledgerModelService.update_status(id,'Requested',client_ip_address=self.client_ip_address,created_by="Merchant_Id :: "+str(self.merchant_id))
@@ -147,7 +147,7 @@ class PayoutService:
              tax_ledger.is_tax_inclusive=ledgerModelService.is_tax_inclusive
              tax_ledger.linked_ledger_id=ledgerModelService.payout_trans_id
              tax_ledger.payout_trans_id=generater.generate_token()
-             tax_ledger.trans_amount_type = "debited"
+             tax_ledger.trans_amount_type = "dr"
              tax_ledger.charge_id=0
              #  ledgerModelService.
              tax_ledger.trans_time=datetime.now()
@@ -182,7 +182,7 @@ class PayoutService:
                                     charge_ledger.is_tax_inclusive=ledgerModelService.is_tax_inclusive
                                     charge_ledger.linked_ledger_id=ledgerModelService.payout_trans_id
                                     charge_ledger.payout_trans_id=generater.generate_token()
-                                    charge_ledger.trans_amount_type = "debited"
+                                    charge_ledger.trans_amount_type = "dr"
                                     charge_ledger.charge_id=taxes[1][irt][0]
                                     #  ledgerModelService.
                                     charge_ledger.trans_time=datetime.now()
@@ -336,7 +336,7 @@ class PayoutService:
              ledgerModelService.type_status="Generated"
              ledgerModelService.trans_type=payoutrequestmodel.clientPaymode
              ledgerModelService.van=payoutrequestmodel.van
-             ledgerModelService.trans_amount_type = "debited"
+             ledgerModelService.trans_amount_type = "dr"
              ledgerModelService.trans_time=datetime.now()
              id=ledgerModelService.save(client_ip_address=self.client_ip_address)
              header = icic_payment_model.Header_Request(Username=bank_api.icici.icic_details()["iciciImpsUserName"],Password=bank_api.icici.icic_details()["Password"])

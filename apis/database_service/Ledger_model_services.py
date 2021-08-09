@@ -287,7 +287,7 @@ class Ledger_Model_Service:
         
         cursors = connection.cursor()
        
-        cursors.execute('Call getAmount("debited",'+merchant_id+',@deb)')
+        cursors.execute('Call getAmount("dr",'+merchant_id+',@deb)')
         cursors.execute('select @deb')
 
         # cursors.execute("select @balance")
@@ -303,7 +303,7 @@ class Ledger_Model_Service:
         
         cursors = connection.cursor()
        
-        cursors.execute('Call getAmount("credited",'+merchant_id+',@cred)')
+        cursors.execute('Call getAmount("cr",'+merchant_id+',@cred)')
         cursors.execute('select @cred')
 
         # cursors.execute("select @balance")
