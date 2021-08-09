@@ -219,7 +219,7 @@ class PayoutService:
                         
                         webhooks = Webhook_Model_Service.fetch_by_merchant_id(merchant_id_temp,client_ip_address_temp)
                         print("Webhook Started at :: "+webhooks.webhook)
-                        if not webhooks.is_instant:
+                        if webhooks!=None and not webhooks.is_instant:
                             print("Interval Webhook :: "+str(webhooks.time_interval)+" min ")
                             interval=webhooks.time_interval
                             time.sleep(60*interval)
