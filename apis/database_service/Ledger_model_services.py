@@ -527,17 +527,17 @@ class Ledger_Model_Service:
             if(is_charged_by_bank ==True):
                     base_bank_charge = formulas.calulate_base(bank_charge,tax)
                     bankTax = bank_charge-base_bank_charge
-                    Ledger_Model_Service().saveCharge(decResp=decResp,admin=admin,amount=base_bank_charge,client_ip_address=client_ip_address,tax=bankTax,is_chargedBy_bank=True,trans_type="charge",linkedId=linkedId)
+                    Ledger_Model_Service().saveCharge(decResp=decResp,admin=admin,amount=base_bank_charge,client_ip_address=client_ip_address,tax=bankTax,is_chargedBy_bank=is_charged_by_bank,trans_type="charge",linkedId=linkedId)
             else:
                     if(is_tax_inclusive == True):
                         base_bank_charge = formulas.calulate_base(bank_charge,tax)
                         bankTax = bank_charge-base_bank_charge
                         total_tax = bankTax
-                        Ledger_Model_Service().saveCharge(decResp=decResp,admin=admin,amount=base_bank_charge,client_ip_address=client_ip_address,tax=bankTax,is_chargedBy_bank=True,trans_type="charge",linkedId=linkedId)
+                        Ledger_Model_Service().saveCharge(decResp=decResp,admin=admin,amount=base_bank_charge,client_ip_address=client_ip_address,tax=bankTax,is_chargedBy_bank=is_charged_by_bank,trans_type="charge",linkedId=linkedId)
                     else:
                         base_bank_charge = bank_charge
                         bankTax = formulas.calulate_tax_exclusive(bank_charge,float(tax))
-                        Ledger_Model_Service().saveCharge(decResp=decResp,admin=admin,amount=bank_charge,client_ip_address=client_ip_address,tax=bankTax,is_chargedBy_bank=decResp.get("is_charged_by_bank"),trans_type="charge",linkedId=linkedId)
+                        Ledger_Model_Service().saveCharge(decResp=decResp,admin=admin,amount=bank_charge,client_ip_address=client_ip_address,tax=bankTax,is_chargedBy_bank=is_charged_by_bank,trans_type="charge",linkedId=linkedId)
                 
         if(sabpaisa_convenience_fee!=0 or sabpaisa_convenience_fee!=0.0 or sabpaisa_convenience_fee!=0.00):
             if(is_tax_inclusive == False):
