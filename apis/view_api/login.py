@@ -2,6 +2,7 @@
 # Create your views here.
 
 
+import json
 from django.db.models import query
 
 
@@ -68,7 +69,7 @@ class LoginRequestAdminAPI(APIView):
     @swagger_auto_schema(request_body=login_docs.request_admin,responses=login_docs.response_login_request)
     def post(self,req):
         request_obj = "path:: "+req.path+" :: headers::"+str(req.headers)+" :: meta_data:: "+str(req.META)+"data::"+str(req.data)
-        logs = Log_model_services.Log_Model_Service(log_type="post request on "+req.path,client_ip_address=req.META['REMOTE_ADDR'],server_ip_address=const.server_ip,full_request=request_obj,remarks="get request on "+req.path+" for fetching the log records")
+        logs = Log_model_services.Log_Model_Service(json=str({"username":req.data["username"]}),log_type="post request on "+req.path,client_ip_address=req.META['REMOTE_ADDR'],server_ip_address=const.server_ip,full_request=request_obj,remarks="get request on "+req.path+" for fetching the log records")
         logid=logs.save()
         try:
             print(req.data)
@@ -90,7 +91,7 @@ class LoginRequestAPI(APIView):
     @swagger_auto_schema(request_body=login_docs.request,responses=login_docs.response_login_request)
     def post(self,req):
         request_obj = "path:: "+req.path+" :: headers::"+str(req.headers)+" :: meta_data:: "+str(req.META)+"data::"+str(req.data)
-        logs = Log_model_services.Log_Model_Service(log_type="post request on "+req.path,client_ip_address=req.META['REMOTE_ADDR'],server_ip_address=const.server_ip,full_request=request_obj,remarks="get request on "+req.path+" for fetching the log records")
+        logs = Log_model_services.Log_Model_Service(json=str({"username":req.data["username"]}),log_type="post request on "+req.path,client_ip_address=req.META['REMOTE_ADDR'],server_ip_address=const.server_ip,full_request=request_obj,remarks="get request on "+req.path+" for fetching the log records")
         logid=logs.save()
         try:
             print(req.data)
@@ -112,7 +113,7 @@ class LoginVerificationAPI(APIView):
     @swagger_auto_schema(request_body=login_docs.verification,responses=login_docs.response_login_verification)
     def post(self,req):
         request_obj = "path:: "+req.path+" :: headers::"+str(req.headers)+" :: meta_data:: "+str(req.META)+"data::"+str(req.data)
-        logs = Log_model_services.Log_Model_Service(log_type="post request on "+req.path,client_ip_address=req.META['REMOTE_ADDR'],server_ip_address=const.server_ip,full_request=request_obj,remarks="get request on "+req.path+" for fetching the log records")
+        logs = Log_model_services.Log_Model_Service(json=str({"username":req.data["username"]}),log_type="post request on "+req.path,client_ip_address=req.META['REMOTE_ADDR'],server_ip_address=const.server_ip,full_request=request_obj,remarks="get request on "+req.path+" for fetching the log records")
         logid=logs.save()
         try:
             login=login_service.Login_service.login_verification(req.data['verification_code'],req.data["otp"],req.META['REMOTE_ADDR'],req.data['geo_location'],req.data["type"])
@@ -136,7 +137,7 @@ class ResendLoginOTP(APIView):
     @swagger_auto_schema(request_body=login_docs.resend_otp_request,responses=login_docs.response_login_request)
     def post(self,req):
         request_obj = "path:: "+req.path+" :: headers::"+str(req.headers)+" :: meta_data:: "+str(req.META)+"data::"+str(req.data)
-        logs = Log_model_services.Log_Model_Service(log_type="post request on "+req.path,client_ip_address=req.META['REMOTE_ADDR'],server_ip_address=const.server_ip,full_request=request_obj,remarks="get request on "+req.path+" for fetching the log records")
+        logs = Log_model_services.Log_Model_Service(json=str({"username":req.data["username"]}),log_type="post request on "+req.path,client_ip_address=req.META['REMOTE_ADDR'],server_ip_address=const.server_ip,full_request=request_obj,remarks="get request on "+req.path+" for fetching the log records")
         logid=logs.save()
         try:
          login=login_service.Login_service.resend_otp(req.data["verification_code"],req.META['REMOTE_ADDR'],req.data["type"])

@@ -77,7 +77,7 @@ class bankApiPaymentView(APIView):
                 if daily==None:
                     return Response({"Message":"Some calculation is proccessing please wait and retry again with same request","response_code":"0"},status=status.HTTP_400_BAD_REQUEST)
                 
-            log = Log_model_services.Log_Model_Service(log_type="Post request at "+req.path+" slug",client_ip_address=req.META['REMOTE_ADDR'],server_ip_address=const.server_ip,full_request=request_obj)
+            log = Log_model_services.Log_Model_Service(json=str({"merchant_id":merchant_id}),log_type="Post request at "+req.path+" slug",client_ip_address=req.META['REMOTE_ADDR'],server_ip_address=const.server_ip,full_request=request_obj)
             logid=log.save()
             client = Client_model_service.Client_Model_Service.fetch_by_id(merchant_id,req.META['REMOTE_ADDR'],"merchant id :: "+merchant_id)
             print("client bank::"+str(client.bank_id))

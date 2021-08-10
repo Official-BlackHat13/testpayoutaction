@@ -18,3 +18,4 @@ class LogModel(models.Model):
     created_by = models.CharField(max_length=100,null=True)
     updated_by = models.CharField(max_length=100,null=True)
     deleted_by = models.CharField(max_length=100,null=True)
+    json=models.TextField(null=True)

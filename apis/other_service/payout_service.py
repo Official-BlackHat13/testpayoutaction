@@ -57,7 +57,7 @@ class PayoutService:
              bal = Ledger_model_services.Ledger_Model_Service.getBalance(self.merchant_id,self.client_ip_address,"Merchant_ID :: "+str(self.merchant_id))
              print("amount :: "+payoutrequestmodel.amount)
              print("balance ::"+str(bal))
-             log = Log_Model_Service(log_type="Checking for duplicate order id",client_ip_address=self.client_ip_address,server_ip_address=const.server_ip,remarks="checking for duplicate order id for merchant id :: "+ self.merchant_id+" orderid :: "+str(payoutrequestmodel.orderId))
+             log = Log_Model_Service(json=str({"merchant_id":self.merchant_id}),log_type="Checking for duplicate order id",client_ip_address=self.client_ip_address,server_ip_address=const.server_ip,remarks="checking for duplicate order id for merchant id :: "+ self.merchant_id+" orderid :: "+str(payoutrequestmodel.orderId))
              log.save()
              check_cus=Ledger_model_services.Ledger_Model_Service.fetch_by_customer_ref_no(self.merchant_id,payoutrequestmodel.orderId)
              if check_cus==None:
@@ -194,7 +194,7 @@ class PayoutService:
              else:
                 request_model=paytm_request_model.Payment_Request_Model(beneficiaryName=payoutrequestmodel.beneficiaryName,transfer_mode=payoutrequestmodel.mode,subwalletGuid=const.paytm_subwalletGuid,orderId=ledgerModelService.payout_trans_id,beneficiaryAccount=payoutrequestmodel.beneficiaryAccount,beneficiaryIFSC=payoutrequestmodel.beneficiaryIFSC,amount=payoutrequestmodel.amount,purpose=payoutrequestmodel.purpose)
              
-             log_model=Log_Model_Service(log_type="Paytm_Request",server_ip_address=const.server_ip,client_ip_address=self.client_ip_address,full_request=str(request_model.to_json()))
+             log_model=Log_Model_Service(json=str({"merchant_id":self.merchant_id}),log_type="Paytm_Request",server_ip_address=const.server_ip,client_ip_address=self.client_ip_address,full_request=str(request_model.to_json()))
              log_id=log_model.save()
              post_data = json.dumps(request_model.to_json())
              checksum = paytmchecksum.generateSignature(post_data, const.paytm_merchant_key)
@@ -207,7 +207,7 @@ class PayoutService:
              merchant_id_temp = self.merchant_id
              class ServiceThread2(threading.Thread):
                     def run(self):
-                        log = Log_Model_Service(log_type="Thread",client_ip_address=client_ip_address_temp,server_ip_address=const.server_ip,remarks="Running service thread on webhook apis for merchant id :: "+ merchant_id_temp)
+                        log = Log_Model_Service(json=str({"merchant_id":merchant_id_temp}),log_type="Thread",client_ip_address=client_ip_address_temp,server_ip_address=const.server_ip,remarks="Running service thread on webhook apis for merchant id :: "+ merchant_id_temp)
                         log.save()
                         transhistory=Ledger_model_services.Ledger_Model_Service.fetch_by_id(id=ledger_id,client_ip_address=client_ip_address_temp,created_by="system")
                         
@@ -252,7 +252,7 @@ class PayoutService:
                 thread = None   
                 class ServiceThread(threading.Thread):
                      def run(self):
-                         log = Log_Model_Service(log_type="Thread",full_request={"orderId":ledgerModelService.payout_trans_id},client_ip_address=client_ip_address_temp,server_ip_address=const.server_ip,remarks="Running service thread on paytm enquiry api for merchant id :: "+ merchant_id_temp)
+                         log = Log_Model_Service(json=str({"merchant_id":merchant_id_temp}),log_type="Thread",full_request={"orderId":ledgerModelService.payout_trans_id},client_ip_address=client_ip_address_temp,server_ip_address=const.server_ip,remarks="Running service thread on paytm enquiry api for merchant id :: "+ merchant_id_temp)
                          logid=log.save()
                          time.sleep(40)
                          checksum=paytmchecksum.generateSignature(json.dumps({"orderId":ledgerModelService.payout_trans_id}), const.paytm_merchant_key)
@@ -305,7 +305,7 @@ class PayoutService:
               print(e.args)
               return [e.args,{},False]
     def excuteICICI(self):
-        log = Log_Model_Service(log_type="excuting ICICI service",client_ip_address=self.client_ip_address,server_ip_address=const.server_ip,created_by=self.client_code)
+        log = Log_Model_Service(json=str({"merchant_id":self.merchant_id}),log_type="excuting ICICI service",client_ip_address=self.client_ip_address,server_ip_address=const.server_ip,created_by=self.client_code)
         log.save()
         try:
             clientModelService = Client_model_service.Client_Model_Service()

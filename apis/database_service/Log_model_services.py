@@ -3,7 +3,7 @@ from ..models import LogModel
 from datetime import datetime
 import math
 class Log_Model_Service:
-    def __init__(self,log_type=None,client_ip_address=None,table_id=None,table_name=None,server_ip_address=None,remarks=None,full_request=None,created_by=None):
+    def __init__(self,log_type=None,client_ip_address=None,json={},table_id=None,table_name=None,server_ip_address=None,remarks=None,full_request=None,created_by=None):
         
         self.log_type=log_type
         self.client_ip_address=client_ip_address
@@ -12,6 +12,7 @@ class Log_Model_Service:
         self.table_name=table_name
         self.remarks = remarks
         self.full_request = full_request
+        self.json=json
         # self.full_response = full_response
         self.created_by=created_by
     def save(self)->int:
@@ -23,6 +24,7 @@ class Log_Model_Service:
         logmodel.server_ip_address=self.server_ip_address
         logmodel.remarks=self.remarks
         logmodel.full_request=self.full_request
+        logmodel.json=self.json
         # logmodel.full_response=self.full_response
         logmodel.created_by=self.created_by
         logmodel.save()
