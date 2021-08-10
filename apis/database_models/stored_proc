@@ -69,7 +69,7 @@ end
 # fetch merchant
 --CREATE DEFINER=`root`@`localhost` PROCEDURE `fetchMerchants`(in length int, in page int)
 --begin
---select * from apis_merchantmodel limit length offset page;
+--select * from apis_merchantmodel order by id desc limit length offset page;
 --end
 # get daily balance
 DELIMITER &&
