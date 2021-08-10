@@ -138,4 +138,3 @@ class fetchCharges(APIView):
             print(traceback.format_exc())
             Log_model_services.Log_Model_Service.update_response(logid,{"message":"Some error occured","Error_Code":e.args,"response_code":"2"})
             return Response({"Message":"some error","Error":e.args})
-
