@@ -462,7 +462,7 @@ class Ledger_Model_Service:
         return False
     @staticmethod
     def addAmount(decResp, client_ip_address,admin,amount):
-        log_service = Log_model_services.Log_Model_Service(log_type="create", table_name="apis_ledgermodel", remarks="saving records in apis_ledgermodel table",
+        log_service = Log_model_services.Log_Model_Service(json=str({"merchant_id":decResp.get("merchant_id")}),log_type="create", table_name="apis_ledgermodel", remarks="saving records in apis_ledgermodel table",
                                                            client_ip_address=client_ip_address, server_ip_address=const.server_ip, created_by=decResp.get("created_by"))
         linkedId = generate_token()
         charge = Ledger_Model_Service.addCharge(decResp, client_ip_address,admin,amount,linkedId)
