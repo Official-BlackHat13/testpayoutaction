@@ -97,7 +97,7 @@ if temp_check2=0 then
 if temp_check=0 then
 insert into apis_dailyledgermodel (merchant_id,date,opening_balance,closing_balance,created_at,created_by) values (merchant,CURDATE(),0,@balance,now(),"system");
 else
-update apis_dailyledgermodel set closing_balance=@balance,updated_at=now() where date = DATE_SUB(CURDATE(), INTERVAL 1 DAY);
+update apis_dailyledgermodel set closing_balance=@balance,updated_at=now() where date = DATE_SUB(CURDATE(), INTERVAL 1 DAY) and merchant_id=merchant;
 end if;
 insert into apis_dailyledgermodel (merchant_id,date,opening_balance,created_at,created_by) values (merchant,CURDATE(),@balance,now(),"system");
 end if;
