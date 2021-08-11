@@ -112,6 +112,7 @@ class PayoutService:
              ledgerModelService.van="null"
              ledgerModelService.status_code=statuscodes.statuscodes["Initiated"]
              ledgerModelService.mode=mode.id
+             ledgerModelService.purpose=payoutrequestmodel.purpose
              ledgerModelService.is_tax_inclusive=clientModel.is_tax_inclusive
              ledgerModelService.tax=taxes[0]
              ledgerModelService.payout_trans_id=generater.generate_token()
@@ -189,10 +190,10 @@ class PayoutService:
                                     charge_ledger.save("Merchant Id :: "+str(self.merchant_id),self.client_ip_address)
                                     irt+=1
              if mode_rec=="UPI":
-                 request_model=paytm_request_model.Payment_Request_Model(transfer_mode=payoutrequestmodel.mode,subwalletGuid=const.paytm_subwalletGuid,orderId=ledgerModelService.payout_trans_id,beneficiaryVPA=payoutrequestmodel.upiId,amount=payoutrequestmodel.amount,purpose=payoutrequestmodel.purpose)
+                 request_model=paytm_request_model.Payment_Request_Model(transfer_mode=payoutrequestmodel.mode,subwalletGuid=const.paytm_subwalletGuid,orderId=ledgerModelService.payout_trans_id,beneficiaryVPA=payoutrequestmodel.upiId,amount=payoutrequestmodel.amount,purpose="OTHERS")
              
              else:
-                request_model=paytm_request_model.Payment_Request_Model(beneficiaryName=payoutrequestmodel.beneficiaryName,transfer_mode=payoutrequestmodel.mode,subwalletGuid=const.paytm_subwalletGuid,orderId=ledgerModelService.payout_trans_id,beneficiaryAccount=payoutrequestmodel.beneficiaryAccount,beneficiaryIFSC=payoutrequestmodel.beneficiaryIFSC,amount=payoutrequestmodel.amount,purpose=payoutrequestmodel.purpose)
+                request_model=paytm_request_model.Payment_Request_Model(beneficiaryName=payoutrequestmodel.beneficiaryName,transfer_mode=payoutrequestmodel.mode,subwalletGuid=const.paytm_subwalletGuid,orderId=ledgerModelService.payout_trans_id,beneficiaryAccount=payoutrequestmodel.beneficiaryAccount,beneficiaryIFSC=payoutrequestmodel.beneficiaryIFSC,amount=payoutrequestmodel.amount,purpose="OTHERS")
              
              log_model=Log_Model_Service(json=str({"merchant_id":self.merchant_id}),log_type="Paytm_Request",server_ip_address=const.server_ip,client_ip_address=self.client_ip_address,full_request=str(request_model.to_json()))
              log_id=log_model.save()

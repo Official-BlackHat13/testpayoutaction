@@ -29,11 +29,12 @@ import pytz
 
 from apis import Utils
 class Ledger_Model_Service:
-    def __init__(self,id=None, is_tax_inclusive=None,upiId=None,status_code=None,tax=None,merchant=None,charge_id=None,client_code=None,linked_ledger_id=None,payout_trans_id=None,trans_amount_type=None, type_status=None, amount=None, van=None, trans_type=None, trans_status=None, bank_ref_no=None, customer_ref_no=None, bank_id=None, trans_time=None, bene_account_name=None, bene_account_number=None, bene_ifsc=None, request_header=None, createdBy=None, updatedBy=None, deletedBy=None, created_at=None, deleted_at=None, updated_at=None, status=True, mode=None, charge=None):
+    def __init__(self,id=None,purpose=None, is_tax_inclusive=None,upiId=None,status_code=None,tax=None,merchant=None,charge_id=None,client_code=None,linked_ledger_id=None,payout_trans_id=None,trans_amount_type=None, type_status=None, amount=None, van=None, trans_type=None, trans_status=None, bank_ref_no=None, customer_ref_no=None, bank_id=None, trans_time=None, bene_account_name=None, bene_account_number=None, bene_ifsc=None, request_header=None, createdBy=None, updatedBy=None, deletedBy=None, created_at=None, deleted_at=None, updated_at=None, status=True, mode=None, charge=None):
         self.id = id
         self.merchant=merchant
         self.client_code=client_code
         self.amount=amount
+        self.purpose=purpose
         self.trans_type=trans_type
         self.trans_status = trans_status
         self.is_tax_inclusive=is_tax_inclusive
@@ -102,6 +103,7 @@ class Ledger_Model_Service:
         if self.bene_ifsc!=None:
             ledgermodel.bene_ifsc=self.bene_ifsc
         ledgermodel.request_header=self.request_header
+        ledgermodel.purpose=self.purpose
         ledgermodel.createdBy=self.createdBy
         ledgermodel.updatedBy = self.updatedBy
         ledgermodel.tax=self.tax
