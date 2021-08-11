@@ -195,12 +195,12 @@ class Ledger_Model_Service:
         
         ledgerModels=LedgerModel.objects.get(id=id)
         json={}
-        json["orderId"]=ledgerModels.customer_ref_no
-        json['amount']=ledgerModels.amount
-        json['status']=ledgerModels.trans_status
-        json['payoutTransactionId']=ledgerModels.payout_trans_id
-        json['bankRefNo']=ledgerModels.bank_ref_no
-        json['transactionCompletionDate']=ledgerModels.trans_completed_time
+        json["orderId"]=str(ledgerModels.customer_ref_no)
+        json['amount']=str(ledgerModels.amount)
+        json['status']=str(ledgerModels.trans_status)
+        json['payoutTransactionId']=str(ledgerModels.payout_trans_id)
+        json['bankRefNo']=str(ledgerModels.bank_ref_no)
+        json['transactionCompletionDate']=str(ledgerModels.trans_completed_time)
         log_service.table_id=ledgerModels.id
         log_service.save()
         return json
