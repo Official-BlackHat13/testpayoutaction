@@ -501,6 +501,8 @@ class Ledger_Model_Service:
         ledgermodel.createdBy = "adminID :: "+str(admin)
         ledgermodel.created_at = datetime.now()
         ledgermodel.status = True
+        ledgermodel.charge=charge.get("charge")
+        ledgermodel.tax=charge.get("tax")
         ledgermodel.trans_status = "Success"#success
         ledgermodel.payout_trans_id = linkedId
         ledgermodel.is_tax_inclusive = decResp.get("is_tax_inclusive")
@@ -518,6 +520,8 @@ class Ledger_Model_Service:
         is_charged_by_bank =  float(decResp.get("is_charged_by_bank"))
         sabpaisa_convenience_fee =  float(decResp.get("sabpaisa_convenience_fee"))
         sabpaisa_convenience_fee_tax  = float()
+        base_sabpaisa_convenience_fee = float()
+        base_sabpaisa_convenience_fee=0.0
         bankTax = float()
         base_bank_charge = float()
         base_bank_charge = 0.0
@@ -541,21 +545,19 @@ class Ledger_Model_Service:
                 
         if(sabpaisa_convenience_fee!=0 or sabpaisa_convenience_fee!=0.0 or sabpaisa_convenience_fee!=0.00):
             if(is_tax_inclusive == False):
-                sabpaisa_convenience_fee =  float(sabpaisa_convenience_fee)
-                charge = base_bank_charge+sabpaisa_convenience_fee
-                sabpaisa_convenience_fee_tax = formulas.calulate_tax_exclusive(sabpaisa_convenience_fee,float(tax)) 
-                total_tax = bankTax+sabpaisa_convenience_fee_tax
-                Ledger_Model_Service().saveCharge(decResp=decResp,admin=admin,amount=sabpaisa_convenience_fee,client_ip_address=client_ip_address,tax=sabpaisa_convenience_fee_tax,trans_type="charge",linkedId=linkedId) 
+                base_sabpaisa_convenience_fee =  float(sabpaisa_convenience_fee)
+                # charge = base_bank_charge+base_sabpaisa_convenience_fee
+                sabpaisa_convenience_fee_tax = formulas.calulate_tax_exclusive(base_sabpaisa_convenience_fee,float(tax)) 
+                # total_tax = bankTax+sabpaisa_convenience_fee_tax
+                Ledger_Model_Service().saveCharge(decResp=decResp,admin=admin,amount=base_sabpaisa_convenience_fee,client_ip_address=client_ip_address,tax=sabpaisa_convenience_fee_tax,trans_type="charge",linkedId=linkedId) 
             else:
                 sabpaisa_convenience_fee =  float(sabpaisa_convenience_fee)
                 base_sabpaisa_convenience_fee= formulas.calulate_base(float(sabpaisa_convenience_fee),float(tax))
-                charge = base_bank_charge+base_sabpaisa_convenience_fee
+                
                 sabpaisa_convenience_fee_tax = sabpaisa_convenience_fee-base_sabpaisa_convenience_fee
-                total_tax = bankTax+sabpaisa_convenience_fee_tax
+                
                 Ledger_Model_Service().saveCharge(decResp=decResp,admin=admin,amount=base_sabpaisa_convenience_fee,client_ip_address=client_ip_address,tax=sabpaisa_convenience_fee_tax,trans_type="charge",linkedId=linkedId) 
                     
-
-
         # if(decResp.get("is_tax_inclusive")==False):
         #     if(bank_charge!="" and sabpaisa_convenience_fee!=""):
         #         bank_charge =  float(bank_charge)
@@ -614,7 +616,8 @@ class Ledger_Model_Service:
                 
                     # charge = bank_charge+sabpaisa_convenience_fee
                     # total_tax = sabpaisa_convenience_fee_tax+bankTax
-                    
+        charge = base_bank_charge+base_sabpaisa_convenience_fee
+        total_tax = bankTax+sabpaisa_convenience_fee_tax            
         Ledger_Model_Service().saveCharge(decResp=decResp,admin=admin,amount=total_tax,client_ip_address=client_ip_address,trans_type="tax",linkedId=linkedId) 
         return {"charge":charge,
         "tax":total_tax}  
