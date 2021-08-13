@@ -7,14 +7,15 @@ class IpWhiteListing_Model_Service:
         self.ip_add=ip_add
         self.clientip=clientip
     def save(self)->int:
-        log = Log_Model_Service(log_type="create",client_ip_address=self.clientip,server_ip_address=const.server_ip,table_name="apis_ipwhitelistedmodel",remarks="adding records into apis_ipwhitelistedmodel")
+        # log = Log_Model_Service(log_type="create",client_ip_address=self.clientip,server_ip_address=const.server_ip,table_name="apis_ipwhitelistedmodel",remarks="adding records into apis_ipwhitelistedmodel")
         
         ipmodel = IpWhiteListedModel()
         ipmodel.merchant_id=self.merchant_id
         ipmodel.ip_address=self.ip_add
+        ipmodel.created_by = "merchant id :: "+self.merchant_id
         ipmodel.save()
-        log.table_id=ipmodel.id
-        log.save()
+        # log.table_id=ipmodel.id
+        # log.save()
         return ipmodel.id
     @staticmethod
     def saveMultipleIp(merchant_id,ips,clientip)->bool:
@@ -24,3 +25,13 @@ class IpWhiteListing_Model_Service:
             print("ip --> "+ip)
             IpWhiteListing_Model_Service(merchant_id=merchant_id,ip_add=ip,clientip=clientip).save()
         return True
+    
+    def deleteIp(self):
+        ipModel = IpWhiteListedModel
+        try:
+            ipModel = IpWhiteListedModel.objects.get(merchant_id=self.merchant_id,ip_address=self.ip_add)
+        except IpWhiteListedModel.DoesNotExist:
+            return 0
+        ipModel.status = False
+        ipModel.save()
+        return 1

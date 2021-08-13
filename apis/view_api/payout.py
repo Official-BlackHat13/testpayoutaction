@@ -256,7 +256,7 @@ class addBalance(APIView):
         request_obj = "path:: "+request.path+" :: headers::" + \
             str(request.headers)+" :: meta_data:: " + \
             str(request.META)+"data::"+str(request.data)
-        log = Log_model_services.Log_Model_Service(log_type="fetchCharges request at "+request.path+" slug",
+        log = Log_model_services.Log_Model_Service(log_type="addBalance request at "+request.path+" slug",
                                                    client_ip_address=request.META['REMOTE_ADDR'], server_ip_address=const.server_ip, full_request=request_obj)
         logid = log.save()
         try:

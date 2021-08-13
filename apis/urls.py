@@ -70,7 +70,9 @@ urlpatterns = [
     path("allModes/",views.extras.AllMode.as_view()),
     path("modesByMerchantId/",views.extras.MerchantModes.as_view()),
     path("getTax/",views.extras.tax.as_view()),
-    path("callDailyLedger/",views.dailyLedger.DailyLedgerViewApi.as_view())
+    path("callDailyLedger/",views.dailyLedger.DailyLedgerViewApi.as_view()),
+    path("addIp/",views.IpWhitelisting.CreateIpWhiteList.as_view()),
+    path("deleteIp/",views.IpWhitelisting.DeleteIp.as_view())
    #  path("testicic/",)
    #  path("createTest",views.getTest.as_view()),
    #  path("updateTest/<int:id>",views.updateTest.as_view()),

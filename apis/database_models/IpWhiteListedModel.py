@@ -9,5 +9,8 @@ class IpWhiteListedModel(models.Model):
     created_at=models.DateTimeField(default=datetime.now())
     deleted_at=models.DateTimeField(default=None,null=True)
     updated_at=models.DateTimeField(default=None,null=True)
+    created_by = models.CharField(default=None,null=True,max_length=50)
+    deleted_by = models.CharField(default=None,null=True,max_length=50)
+    updated_by = models.CharField(default=None,null=True,max_length=50)
     def __str__(self):
         return str(self.id)

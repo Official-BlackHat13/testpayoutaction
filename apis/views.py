@@ -1,4 +1,4 @@
-from .view_api import auth,beneficiary,extras,ledger,login,logs,payout,test,charge,slab,client,dailyLedger
+from .view_api import auth,beneficiary,extras,ledger,login,logs,payout,test,charge,slab,client,dailyLedger,IpWhitelisting
 from threading import Thread
 
 

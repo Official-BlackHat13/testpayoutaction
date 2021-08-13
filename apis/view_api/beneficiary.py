@@ -99,8 +99,8 @@ class merchantFetchBeneficiary(APIView):
                 id=merchantId, created_by="merchantid :: "+merchantId, client_ip_address=request.META['REMOTE_ADDR'])
             if(clientModel==None):
                 Log_model_services.Log_Model_Service.update_response(
-                logid, {"Message": "admin code missing", "response_code": "0"})
-                return Response({"message":"admin id does not exist", "Response code":"0"},status=status.HTTP_404_NOT_FOUND)
+                logid, {"Message": "merchant code missing", "response_code": "0"})
+                return Response({"message":"merchant id does not exist", "Response code":"0"},status=status.HTTP_404_NOT_FOUND)
             if page=="all" and length != "all":
                 return JsonResponse({"Message":"page and length format does not match"},status=status.HTTP_406_NOT_ACCEPTABLE)
             
