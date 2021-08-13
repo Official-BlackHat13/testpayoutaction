@@ -1,3 +1,5 @@
+import re
+from rest_framework import status
 from ..database_models.IpWhiteListedModel import IpWhiteListedModel
 from ..database_service.Log_model_services import Log_Model_Service
 from .. import const
@@ -35,3 +37,18 @@ class IpWhiteListing_Model_Service:
         ipModel.status = False
         ipModel.save()
         return 1
+    @staticmethod
+    def fetchIpsByMerchant(merchant_id):
+        ipModel = IpWhiteListedModel.objects.filter(merchant_id=merchant_id,status=True).values()
+        if(len(ipModel)==0):
+            return 0
+        resp = list()
+        for data in ipModel:
+            d = {
+                "s.no":data.get("id"),
+                "ip_address":data.get("ip_address")
+            }
+            resp.append(d)
+        if(len(resp)==0):
+            return 0
+        return resp

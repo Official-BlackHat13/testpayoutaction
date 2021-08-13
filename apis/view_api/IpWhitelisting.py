@@ -1,3 +1,4 @@
+import re
 from django.db.models import query
 
 
@@ -113,8 +114,41 @@ class DeleteIp(APIView):
             service = IpWhiteListing_Model_Service(ip_add=ip,merchant_id=merchantId)
             resp = service.deleteIp()
             if(resp == 0):
-                return Response({"message":"deleted unsuccessfully ip not found","response_code":"1"},status=status.HTTP_404_NOT_FOUND)
+                return Response({"message":"deleted unsuccessfully ip not found","response_code":"0"},status=status.HTTP_404_NOT_FOUND)
             return Response({"message":"deleted successfully","response_code":"1"},status=status.HTTP_201_CREATED)
+        except Exception as e:
+            import traceback
+            print(traceback.format_exc())
+            Log_model_services.Log_Model_Service.update_response(logid,{"message":"Some error occured","Error_Code":e.args,"response_code":"2"})
+            return Response({"Message":"some error","Error":e.args})
+
+    
+class fetchIpsByMerchantId(APIView):
+    def get(self,request):
+        request_obj = "path:: "+request.path+" :: headers::" + \
+            str(request.headers)+" :: meta_data:: " + \
+            str(request.META)+"data::"+str(request.data)
+
+        log = Log_model_services.Log_Model_Service(log_type="delete ip whitelisting request at "+request.path+" slug",
+                                                   client_ip_address=request.META['REMOTE_ADDR'], server_ip_address=const.server_ip, full_request=request_obj)
+        logid = log.save()
+        try:
+            auth_token = request.headers.get("auth_token")
+            merchantId = auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(auth_token)
+            clientModel = Client_model_service.Client_Model_Service.fetch_by_id(
+                id=merchantId, created_by="merchantid :: "+merchantId, client_ip_address=request.META['REMOTE_ADDR'])
+            if(clientModel==None):
+                Log_model_services.Log_Model_Service.update_response(
+                logid, {"Message": "merchant code missing", "response_code": "0"})
+                return Response({"message":"merchant id does not exist", "Response code":"0"},status=status.HTTP_404_NOT_FOUND)
+            service = IpWhiteListing_Model_Service()
+            resp = service.fetchIpsByMerchant(merchantId)
+            if(resp==0):
+                return Response({"message":"data found","data":None,"response_code": "0"},status=status.HTTP_404_NOT_FOUND)
+            if(clientModel.is_encrypt==True):
+                encResp = auth.AESCipher(clientModel.auth_key,clientModel.auth_iv).encrypt(str(resp))
+                return Response({"message":"data found","data":encResp,"response_code": "1"},status=status.HTTP_200_OK)
+            return Response({"message":"data found","data":resp,"response_code": "1"},status=status.HTTP_200_OK)
         except Exception as e:
             import traceback
             print(traceback.format_exc())
