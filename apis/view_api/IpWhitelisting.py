@@ -81,6 +81,8 @@ class CreateIpWhiteList(APIView):
             ip  = query.get("ip_address")
             service = IpWhiteListing_Model_Service(ip_add=ip,merchant_id=merchantId)
             resp = service.save()
+            if(resp ==0):
+                return Response({"message":"duplicate entry found","response_code": "0"},status=status.HTTP_406_NOT_ACCEPTABLE)
             return Response({"message":"data saved","response_code":"1"},status=status.HTTP_201_CREATED)
         except Exception as e:
             import traceback
@@ -114,7 +116,7 @@ class DeleteIp(APIView):
             service = IpWhiteListing_Model_Service(ip_add=ip,merchant_id=merchantId)
             resp = service.deleteIp()
             if(resp == 0):
-                return Response({"message":"deleted unsuccessfully ip not found","response_code":"0"},status=status.HTTP_404_NOT_FOUND)
+                return Response({"message":"deleted unsuccessfully IP not found","response_code":"0"},status=status.HTTP_404_NOT_FOUND)
             return Response({"message":"deleted successfully","response_code":"1"},status=status.HTTP_201_CREATED)
         except Exception as e:
             import traceback

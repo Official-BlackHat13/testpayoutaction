@@ -1,3 +1,4 @@
+from datetime import date, datetime
 import re
 from rest_framework import status
 from ..database_models.IpWhiteListedModel import IpWhiteListedModel
@@ -10,7 +11,9 @@ class IpWhiteListing_Model_Service:
         self.clientip=clientip
     def save(self)->int:
         # log = Log_Model_Service(log_type="create",client_ip_address=self.clientip,server_ip_address=const.server_ip,table_name="apis_ipwhitelistedmodel",remarks="adding records into apis_ipwhitelistedmodel")
-        
+        resp = IpWhiteListedModel.objects.filter(merchant_id=self.merchant_id,ip_address=self.ip_add,status=True)
+        if(len(resp)!=0):
+            return 0
         ipmodel = IpWhiteListedModel()
         ipmodel.merchant_id=self.merchant_id
         ipmodel.ip_address=self.ip_add
@@ -31,10 +34,12 @@ class IpWhiteListing_Model_Service:
     def deleteIp(self):
         ipModel = IpWhiteListedModel
         try:
-            ipModel = IpWhiteListedModel.objects.get(merchant_id=self.merchant_id,ip_address=self.ip_add)
+            ipModel = IpWhiteListedModel.objects.get(merchant_id=self.merchant_id,ip_address=self.ip_add,status=True)
         except IpWhiteListedModel.DoesNotExist:
             return 0
         ipModel.status = False
+        ipModel.deleted_by = "merchant ID :: "+str(self.merchant_id)
+        ipModel.deleted_at = datetime.now()
         ipModel.save()
         return 1
     @staticmethod
