@@ -13,3 +13,4 @@ class MercahantModeModel(models.Model):
     created_by = models.CharField(max_length=100,null=True)
     updated_by = models.CharField(max_length=100,null=True)
     deleted_by = models.CharField(max_length=100,null=True)
+    status = models.BooleanField(null=True,default=True)

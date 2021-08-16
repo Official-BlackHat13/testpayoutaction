@@ -1,5 +1,4 @@
 from datetime import date, datetime
-import re
 from rest_framework import status
 from ..database_models.IpWhiteListedModel import IpWhiteListedModel
 from ..database_service.Log_model_services import Log_Model_Service
@@ -32,9 +31,9 @@ class IpWhiteListing_Model_Service:
         return True
     
     def deleteIp(self):
-        ipModel = IpWhiteListedModel
+        ipModel = IpWhiteListedModel()
         try:
-            ipModel = IpWhiteListedModel.objects.get(merchant_id=self.merchant_id,ip_address=self.ip_add,status=True)
+            ipModel = IpWhiteListedModel.objects.get(merchant_id=self.merchant_id,ip_address=self.ip_add)
         except IpWhiteListedModel.DoesNotExist:
             return 0
         ipModel.status = False
@@ -50,7 +49,7 @@ class IpWhiteListing_Model_Service:
         resp = list()
         for data in ipModel:
             d = {
-                "s.no":data.get("id"),
+                "id":data.get("id"),
                 "ip_address":data.get("ip_address")
             }
             resp.append(d)
