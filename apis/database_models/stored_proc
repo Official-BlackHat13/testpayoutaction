@@ -1,35 +1,39 @@
 #get balance
--- DELIMITER &&
--- create PROCEDURE getBalance(in merchant_id int,out balance int,out cred1 int,out deb1 int)
--- begin
--- Call getAmount("cr",merchant_id,@cred);
--- Call getAmount("dr",merchant_id,@deb);
+DELIMITER &&
+create PROCEDURE getBalance(in merchant_id int,out balance float,out cred1 float,out deb1 float)
+begin
 
--- if (isnull(@cred)) then
--- set cred1=0;
+-- select sum(amount) into cred1 from apis_transactionhistorymodel where trans_amount_type="credited" and merchant_id=merchant_id and trans_status in ("Success","Pending","Requested","Proccesing");
+-- select sum(amount) into deb1 from apis_transactionhistorymodel where trans_amount_type="debited" and merchant_id=merchant_id and trans_status in ("Success","Pending","Requested","Proccesing");
 
--- else
--- set cred1 = @cred;
--- end if;
--- if (isnull(@deb)) then
--- set deb1=0;
+Call getAmount("cr",merchant_id,@cred);
+Call getAmount("dr",merchant_id,@deb);
 
--- else
--- set deb1 = @deb;
--- end if;
+if (isnull(@cred)) then
+set cred1=0;
 
--- select cred1-deb1 into balance;
+else
+set cred1 = @cred;
+end if;
+if (isnull(@deb)) then
+set deb1=0;
 
--- end 
--- && DELIMITER ;
+else
+set deb1 = @deb;
+end if;
+
+select cred1-deb1 into balance;
+
+end 
+&& DELIMITER ;
 #get amount
--- DELIMITER &&
--- create PROCEDURE getAmount(in type1 varchar(20),in merchant_id int,out value1 float)
--- begin
--- select sum(amount) into value1 from apis_transactionhistorymodel where trans_amount_type=type1 and apis_transactionhistorymodel.merchant_id=merchant_id and trans_status in ("Success","Pending","Requested","Proccesing");
+DELIMITER &&
+create PROCEDURE getAmount(in type1 varchar(20),in merchant_id int,out value1 float)
+begin
+select sum(total_amount) into value1 from apis_transactionhistorymodel where trans_amount_type=type1 and apis_transactionhistorymodel.merchant_id=merchant_id and trans_status in ("Success","Pending","Requested","Proccesing");
 
--- end 
--- && DELIMITER ;
+end 
+&& DELIMITER ;
 --DELIMITER $$
 --CREATE DEFINER=`root`@`localhost` PROCEDURE `fet`(IN n varchar(1000), m int(11))
 --BEGIN
@@ -55,8 +59,8 @@ declare page_val int;
 
 -- select (page*length) into endpage;
 select (page-1)*length into page_val;
-create view tempcredview as select sum(amount) as amount,count(*) as totaltrans,merchant_id as merchant  from apis_transactionhistorymodel where trans_amount_type="cr" and trans_status in ("Success","Pending","Requested","Proccesing") group by merchant;
-create view tempdebview as select sum(amount) as amount,count(*) as totaltrans,merchant_id as merchant  from apis_transactionhistorymodel where trans_amount_type="dr" and trans_status in ("Success","Pending","Requested","Proccesing") group by merchant;
+create view tempcredview as select sum(total_amount) as amount,count(*) as totaltrans,merchant_id as merchant  from apis_transactionhistorymodel where trans_amount_type="cr" and trans_status in ("Success","Pending","Requested","Proccesing") group by merchant;
+create view tempdebview as select sum(total_amount) as amount,count(*) as totaltrans,merchant_id as merchant  from apis_transactionhistorymodel where trans_amount_type="dr" and trans_status in ("Success","Pending","Requested","Proccesing") group by merchant;
 
 create view tempview as select tempcredview.amount-ifnull(tempdebview.amount,0) as balance, tempcredview.totaltrans+ifnull(tempdebview.totaltrans,0) as totaltrans,tempcredview.merchant from tempcredview left join tempdebview on tempcredview.merchant=tempdebview.merchant;
 select apis_merchantmodel.client_username,tempview.balance,tempview.totaltrans,apis_merchantmodel.id from tempview inner join apis_merchantmodel on tempview.merchant=apis_merchantmodel.id where apis_merchantmodel.status=true limit page_val,length;
@@ -66,6 +70,7 @@ drop view tempview;
 -- select endpage;
 end 
 && DELIMITER ;
+
 # fetch merchant
 --CREATE DEFINER=`root`@`localhost` PROCEDURE `fetchMerchants`(in length int, in page int)
 --begin
@@ -116,7 +121,7 @@ DELIMITER &&
 create PROCEDURE getAmount2(in type1 varchar(20),in merchant_id int,out value1 float)
 begin
 -- select type1;
-select sum(amount) into value1 from apis_transactionhistorymodel where trans_amount_type=type1 and trans_date=current_date() and apis_transactionhistorymodel.merchant_id=merchant_id and trans_status in ("Success","Pending","Requested","Proccesing");
+select sum(total_amount) into value1 from apis_transactionhistorymodel where trans_amount_type=type1 and trans_date=current_date() and apis_transactionhistorymodel.merchant_id=merchant_id and trans_status in ("Success","Pending","Requested","Proccesing");
 -- select value1;
 end 
 && DELIMITER ;
@@ -125,8 +130,8 @@ DELIMITER &&
 create PROCEDURE getBalancenew(in merchant_id int,out balance float,out cred1 float,out deb1 float)
 begin
 declare bal_temp int;
--- select sum(amount) into cred1 from apis_transactionhistorymodel where trans_amount_type="cr" and merchant_id=merchant_id and trans_status in ("Success","Pending","Requested","Proccesing");
--- select sum(amount) into deb1 from apis_transactionhistorymodel where trans_amount_type="dr" and merchant_id=merchant_id and trans_status in ("Success","Pending","Requested","Proccesing");
+-- select sum(amount) into cred1 from apis_transactionhistorymodel where trans_amount_type="credited" and merchant_id=merchant_id and trans_status in ("Success","Pending","Requested","Proccesing");
+-- select sum(amount) into deb1 from apis_transactionhistorymodel where trans_amount_type="debited" and merchant_id=merchant_id and trans_status in ("Success","Pending","Requested","Proccesing");
 
 Call getAmount2("cr",merchant_id,@cred);
 Call getAmount2("dr",merchant_id,@deb);
