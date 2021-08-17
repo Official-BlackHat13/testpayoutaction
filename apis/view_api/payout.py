@@ -69,13 +69,13 @@ class bankApiPaymentView(APIView):
             # payment_service=IFDC_service.payment.Payment()
             api_key = req.headers['auth_token']
             merchant_id=auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(api_key)
-            encrypted_code=req.data["encrypted_code"]
+            encrypted_code=req.data["query"]
             mode = req.data['mode']
             variable=VariableModel.objects.filter(variable_name="getBalance")
             if variable[0].variable_value!="first":
                 daily=DailyLedger_Model_Service.fetch_by_date_and_merchant_id(merchant_id,date.today())
                 if daily==None:
-                    return Response({"Message":"Some calculation is proccessing please wait and retry again with same request","response_code":"0"},status=status.HTTP_400_BAD_REQUEST)
+                    return Response({"message":"Some calculation is proccessing please wait and retry again with same request","responseCode":"0"},status=status.HTTP_400_BAD_REQUEST)
                 
             log = Log_model_services.Log_Model_Service(json=str({"merchant_id":merchant_id}),log_type="Post request at "+req.path+" slug",client_ip_address=req.META['REMOTE_ADDR'],server_ip_address=const.server_ip,full_request=request_obj)
             logid=log.save()
@@ -83,10 +83,10 @@ class bankApiPaymentView(APIView):
             print("client bank::"+str(client.bank_id))
             mode_rec = Mode_model_services.Mode_Model_Service.fetch_by_mode(mode)
             if mode_rec==None:
-                return Response({"message":"mode not valid","response_code":"0"},status=status.HTTP_400_BAD_REQUEST)
+                return Response({"message":"mode not valid","responseCode":"0"},status=status.HTTP_400_BAD_REQUEST)
             merchant_mode=Merchant_mode_services.Merchant_Mode_Service.fetch_by_merchant_id_and_mode(mode_id=mode_rec.id,merchant_id=merchant_id)
             if len(merchant_mode)==0:
-                return Response({"message":"merchant mode not valid","response_code":"0"},status=status.HTTP_400_BAD_REQUEST)
+                return Response({"message":"merchant mode not valid","responseCode":"0"},status=status.HTTP_400_BAD_REQUEST)
             bank = Bank_model_services.Bank_model_services.fetch_by_id(merchant_mode[0].bank_partner_id,req.META['REMOTE_ADDR'],"merchant id :: "+merchant_id)
             # print("bank::"+str(bank))
             payout=payout_service.PayoutService(merchant_id=merchant_id,encrypted_code=encrypted_code,client_ip_address=req.META['REMOTE_ADDR'])
@@ -105,22 +105,22 @@ class bankApiPaymentView(APIView):
                 if client.is_encrypt:
                  enc_str=str(auth.AESCipher(client.auth_key,client.auth_iv).encrypt(str(res[1])))[2:].replace("'","")
                 
-                Log_model_services.Log_Model_Service.update_response(logid,{"Message":res,"response_code":"1"})
-                return Response({"Message":"Payout Done",'resData':enc_str,"response_code":"1"},status=status.HTTP_200_OK)
+                Log_model_services.Log_Model_Service.update_response(logid,{"message":res,"responseCode":"1"})
+                return Response({"message":"Payout Done",'resData':enc_str,"responseCode":"1"},status=status.HTTP_200_OK)
             elif not res[2]:
-                Log_model_services.Log_Model_Service.update_response(logid,{"Message":res,"response_code":"0"})
-                return Response({"Message":res[0],"response_code":"0"},status=status.HTTP_400_BAD_REQUEST)
+                Log_model_services.Log_Model_Service.update_response(logid,{"message":res,"responseCode":"0"})
+                return Response({"message":res[0],"responseCode":"0"},status=status.HTTP_400_BAD_REQUEST)
             elif res[0]==False:
-                Log_model_services.Log_Model_Service.update_response(logid,{"Message":"credential not matched","response_code":"3"})
-                return Response({"Message":"credential not matched","response_code":"3"},status=status.HTTP_401_UNAUTHORIZED)
+                Log_model_services.Log_Model_Service.update_response(logid,{"message":"credential not matched","responseCode":"3"})
+                return Response({"message":"credential not matched","responseCode":"3"},status=status.HTTP_401_UNAUTHORIZED)
             else:
-                Log_model_services.Log_Model_Service.update_response(logid,{"Message":res,"response_code":"2"})
-                return Response({"Message":res,"response_code":"2"},status=status.HTTP_204_NO_CONTENT)
+                Log_model_services.Log_Model_Service.update_response(logid,{"message":res,"responseCode":"2"})
+                return Response({"message":res,"responseCode":"2"},status=status.HTTP_204_NO_CONTENT)
         except Exception as e:
          import traceback
          print(traceback.format_exc())
-         Log_model_services.Log_Model_Service.update_response(logid,{"Message":e.args,"response_code":"2"})
-         return Response({"Message":"Some Technical error","response_code":"2"},status=status.HTTP_204_NO_CONTENT)
+         Log_model_services.Log_Model_Service.update_response(logid,{"message":e.args,"responseCode":"2"})
+         return Response({"message":"Some Technical error","responseCode":"2"},status=status.HTTP_204_NO_CONTENT)
 
 
 
@@ -164,7 +164,7 @@ class paymentEnc(APIView):
                             'beneficiaryIFSC': rec.bene_ifsc,
                             "upiId":rec.upi_id,
                             'transStatus': rec.trans_status,
-                            'payment_mode': payments_mode.mode
+                            'mode': payments_mode.mode
                         }
                     response.append(res)
                     
@@ -176,7 +176,7 @@ class paymentEnc(APIView):
                 #     enc = str(auth.AESCipher(authKey,authIV).encrypt(str(res)))[2:].replace("'","")
                 return Response({"message": "data found","resData": enc,"responseCode": "1"})
             else:
-                return Response({"message":"NOT_FOUND","response_code":"0"})
+                return Response({"message":"NOT_FOUND","responseCode":"0"})
         except Exception as e:
             import traceback
             print(traceback.format_exc())
@@ -196,8 +196,8 @@ class addBalanceApi(APIView):
         merchant = request.headers["auth_token"]
         if(merchant == ""):
             Log_model_services.Log_Model_Service.update_response(
-                logid, {"Message": "merchant code missing", "response_code": "0"})
-            return Response({"message": "merchant code missing", "data": None, "response_code": "3"}, status=status.HTTP_400_BAD_REQUEST)
+                logid, {"message": "merchant code missing", "responseCode": "0"})
+            return Response({"message": "merchant code missing", "data": None, "responseCode": "3"}, status=status.HTTP_400_BAD_REQUEST)
         decMerchant = auth.AESCipher(authKey, authIV).decrypt(merchant)
         created_by = "merchant ::"+decMerchant
         query = request.data.get("query")
@@ -221,8 +221,8 @@ class addBalanceApi(APIView):
         print(authKey+" "+authIV)
         encResponse = str(auth.AESCipher(authKey, authIV).encrypt(response))[2:].replace("'","")
         Log_model_services.Log_Model_Service.update_response(
-            logid, {"Message": str(encResponse), "response_code": "1"})
-        return Response({"message": "data saved succefully", "data": str(encResponse), "response_code": "1"}, status=status.HTTP_200_OK)
+            logid, {"message": str(encResponse), "responseCode": "1"})
+        return Response({"message": "data saved succefully", "data": str(encResponse), "responseCode": "1"}, status=status.HTTP_200_OK)
 
 
 # class adminAddBalance(APIView):
@@ -240,7 +240,7 @@ class addBalanceApi(APIView):
 #             admin = BO_user_services.BO_User_Service.fetch_by_id(adminId)
 #             if(admin==None):
 #                 Log_model_services.Log_Model_Service.update_response(
-#                 logid, {"Message": "admin code missing", "response_code": "0"})
+#                 logid, {"message": "admin code missing", "responseCode": "0"})
 #                 return Response({"message":"admin id does not exist", "Response code":"0"},status=status.HTTP_404_NOT_FOUND)
 #             authKey = admin.auth_key
 #             authIV = admin.auth_iv
@@ -249,8 +249,8 @@ class addBalanceApi(APIView):
 #         except Exception as e:
 #             import traceback
 #             print(traceback.format_exc())
-#             Log_model_services.Log_Model_Service.update_response(logid,{"message":"Some error occured","Error_Code":e.args,"response_code":"2"})
-#             return Response({"Message":"some error","Error":e.args})
+#             Log_model_services.Log_Model_Service.update_response(logid,{"message":"Some error occured","Error_Code":e.args,"responseCode":"2"})
+#             return Response({"message":"some error","Error":e.args})
 
 
 
@@ -269,7 +269,7 @@ class addBalance(APIView):
             admin = BO_user_services.BO_User_Service.fetch_by_id(adminId)
             if(admin==None):
                 Log_model_services.Log_Model_Service.update_response(
-                logid, {"Message": "admin code missing", "response_code": "0"})
+                logid, {"message": "admin code missing", "responseCode": "0"})
                 return Response({"message":"admin id does not exist", "Response code":"0"},status=status.HTTP_404_NOT_FOUND)
             requestBody = request.data.get("query")
             if(admin.is_encrypt==True):
@@ -277,14 +277,14 @@ class addBalance(APIView):
                 requestBody = ast.literal_eval(str(decRequest))
                 response = Ledger_Model_Service.addAmount(requestBody,client_ip_address=request.META['REMOTE_ADDR'],
              admin= adminId,amount=requestBody.get("amount"))
-                return Response({"message":"balance added","response_code":"1"},status=status.HTTP_201_CREATED)
+                return Response({"message":"balance added","responseCode":"1"},status=status.HTTP_201_CREATED)
             
             response = Ledger_Model_Service.addAmount(requestBody,client_ip_address=request.META['REMOTE_ADDR'],
              admin= adminId,amount=requestBody.get("amount"))
             
-            return Response({"message":"balance added","response_code":"1"},status=status.HTTP_201_CREATED)
+            return Response({"message":"balance added","responseCode":"1"},status=status.HTTP_201_CREATED)
         except Exception as e:
             import traceback
             print(traceback.format_exc())
-            Log_model_services.Log_Model_Service.update_response(logid,{"message":"Some error occured","Error_Code":e.args,"response_code":"2"})
-            return Response({"Message":"some error","Error":e.args}) 
+            Log_model_services.Log_Model_Service.update_response(logid,{"message":"Some error occured","Error_Code":e.args,"responseCode":"2"})
+            return Response({"message":"some error","Error":e.args}) 
