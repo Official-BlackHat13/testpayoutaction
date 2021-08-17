@@ -216,7 +216,7 @@ class saveBeneficiary(APIView):
         try:
             excel_file = request.FILES["files"]
         except MultiValueDictKeyError:
-            return Response({"msg":"not done","response_code":'0'},status=status.HTTP_400_BAD_REQUEST)
+            return Response({"msg":"check format of the file uploaded","response_code":'0'},status=status.HTTP_400_BAD_REQUEST)
         try:
             if (str(excel_file).split(".")[-1] == "xls"):
                 data = xls_get(excel_file, column_limit=4)
@@ -240,6 +240,40 @@ class saveBeneficiary(APIView):
                         service = Beneficiary_Model_Services(full_name=full_name,account_number=account_number,ifsc_code=ifsc_code,merchant_id=merchant_id,upiId=upi_id)
                         service.save()
             return Response({"msg":"data parsed and saved to database","response_code":'1'},status=status.HTTP_200_OK)
+        except Exception as e:
+            import traceback
+            print(traceback.format_exc())
+            Log_model_services.Log_Model_Service.update_response(logid,{"message":"Some error occured","Error_Code":e.args,"response_code":"2"})
+            return Response({"Message":"some error","Error":e.args})
+
+#new beneficiary
+class addingSingleBeneficiary(APIView):
+    @swagger_auto_schema(request_body=addBeneficiary_docs.single_bene,responses=addBeneficiary_docs.single_bene_response)
+    def post(self, request):
+        request_obj = "path:: "+request.path+" :: headers::" + \
+            str(request.headers)+" :: meta_data:: " + \
+            str(request.META)+"data::"+str(request.data)
+        log = Log_model_services.Log_Model_Service(log_type="addSingleBeneficiary request at "+request.path+" slug",
+                                                   client_ip_address=request.META['REMOTE_ADDR'], server_ip_address=const.server_ip, full_request=request_obj)
+        logid = log.save()
+        try:
+            auth_token = request.headers.get("auth_token")
+            merchantId = auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(auth_token)
+            clientModel = Client_model_service.Client_Model_Service.fetch_by_id(
+                id=merchantId, created_by="merchantid :: "+merchantId, client_ip_address=request.META['REMOTE_ADDR'])
+            authKey = clientModel.auth_key
+            authIV = clientModel.auth_iv
+            decResp = str(request.data.get("query"))
+            if  clientModel.is_encrypt  :
+                decResp = auth.AESCipher(authKey, authIV).decrypt(decResp)
+            res = ast.literal_eval(decResp)
+            resultSet = BeneficiaryModel.objects.filter(merchant_id=int(merchantId),account_number=res.get("account_number"),ifsc_code=res.get("ifsc_code"),upi_id=res.get("upi_id"))
+            if(len(resultSet)>0):
+                return Response({"Message":"data already exist","response_code":'0'},status=status.HTTP_406_NOT_ACCEPTABLE)
+            
+            service = Beneficiary_Model_Services(upiId=res.get("upiId"),full_name=res.get("fullName"),account_number=res.get("accountNumber"),ifsc_code=res.get("ifsCode"),merchant_id=merchantId)
+            resp = service.save()
+            return Response({"msg":"data saved to database","response_code":'1'},status=status.HTTP_200_OK)
         except Exception as e:
             import traceback
             print(traceback.format_exc())

@@ -1,4 +1,4 @@
-from apis.view_api import client, extras, ledger, payout, slab
+from apis.view_api import beneficiary, client, extras, ledger, payout, slab
 from django.urls import path
 from drf_yasg import views
 from rest_framework import permissions
@@ -50,6 +50,7 @@ urlpatterns = [
     path("loginverified/",views.login.LoginVerificationAPI.as_view()),
     path("resendotp/",views.login.ResendLoginOTP.as_view()),
     path("addBeneficiary/",views.beneficiary.addSingleBeneficiary.as_view()),
+    path("addSingleBeneficiary/",views.beneficiary.addSingleBeneficiary.as_view()),
     path("adminFetchBeneficiary/<slug:page>/<slug:length>",views.beneficiary.adminFetchBeneficiary.as_view()),
     path("merchantFetchBeneficiary/<slug:page>/<slug:length>",views.beneficiary.merchantFetchBeneficiary.as_view()),
     path("updateBeneficiary/",views.beneficiary.updateBeneficiary.as_view()),
