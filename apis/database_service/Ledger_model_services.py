@@ -547,9 +547,16 @@ class Ledger_Model_Service:
         base_sabpaisa_convenience_fee=0.0
         bankTax = float()
         base_bank_charge = float()
+        charge=0.0
+        total_tax=0.0
         base_bank_charge = 0.0
         if(bank_charge<0.01 and sabpaisa_convenience_fee <0.01):
-            return
+            return {"total_charge":charge,
+        "base_bank_charge":base_bank_charge,
+        "base_sabpaisa_convenience_fee":base_sabpaisa_convenience_fee,
+        "bankTax":bankTax,
+        "sabpaisa_convenience_fee_tax":sabpaisa_convenience_fee_tax,
+        "total_tax":total_tax}
         if(bank_charge!=0 or bank_charge != 0.0 or bank_charge!=0.00):
             if(is_charged_by_bank ==True):
                     base_bank_charge = formulas.calulate_base(bank_charge,tax)
