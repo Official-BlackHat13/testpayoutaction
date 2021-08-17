@@ -11,7 +11,7 @@ class Merchant_mode_service:
         self.mode_id=mode_id
 
     def save(self,admin_id):
-        resp = MercahantModeModel.objects.filter(merchant_id=self.merchant_id,mode_id=self.mode_id)
+        resp = MercahantModeModel.objects.filter(merchant_id=self.merchant_id,mode_id=self.mode_id,bank_partner_id=self.bank_partner_id)
         if(len(resp)!=0):
             return 0
         merchantModeModel = MercahantModeModel()
@@ -51,10 +51,10 @@ class Merchant_mode_service:
             resp.append(d)
         return resp
     @staticmethod
-    def deleteMerchantMode(merchant_id,admin_id,mode_id):
+    def deleteMerchantMode(merchant_id,admin_id,mode_id,bank_partner_id):
         merchantModeModel = MercahantModeModel()
         try:
-            merchantModeModel = MercahantModeModel.objects.filter(merchant_id=merchant_id,status=True,mode_id=mode_id)
+            merchantModeModel = MercahantModeModel.objects.filter(merchant_id=merchant_id,status=True,mode_id=mode_id,bank_partner_id=bank_partner_id)
         except MercahantModeModel.DoesNotExist:
             return 0
         print("merchant model "+str(len(merchantModeModel))+"    "+str(merchantModeModel))

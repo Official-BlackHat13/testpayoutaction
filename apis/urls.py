@@ -75,8 +75,11 @@ urlpatterns = [
     path("deleteIp/",views.IpWhitelisting.DeleteIp.as_view()),
     path("fetchIpsByMerchantId/",views.IpWhitelisting.fetchIpsByMerchantId.as_view()),
     path("addMerchantMode/",views.merchantMode.addMerchantMode.as_view()),
-    path("fetchAllMerchantModes/",views.merchantMode.fetchAllMerchantMode.as_view()),
-    path("deleteMerchantMode/",views.merchantMode.deleteMerchantMode.as_view())
+    path("fetchAllMerchantModes/",views.merchantMode.fetchMerchantModes.as_view()),
+    path("deleteMerchantMode/",views.merchantMode.deleteMerchantMode.as_view()),
+    path("addWebhook/",views.webhook.addWebhook.as_view()),
+    path("deleteWebhook/",views.webhook.deleteWebhook.as_view()),
+    path("fetchWebhookById/",views.webhook.fetchWebhookByMerchantId.as_view())
    #  path("testicic/",)
    #  path("createTest",views.getTest.as_view()),
    #  path("updateTest/<int:id>",views.updateTest.as_view()),
