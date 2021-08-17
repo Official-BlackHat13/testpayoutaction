@@ -2,6 +2,7 @@ from typing import Text
 
 from django.views.generic import base
 from apis.database_models.ClientModel import MerchantModel
+from ..database_service.Charge_breaking_model_services import Charge_Breaking_model_services
 from requests.api import request
 from apis import const
 from apis.Utils import *
@@ -20,6 +21,7 @@ from ..Utils.numbers import get_number
 
 from ..models import ChargeModel
 from ..database_models.VariableModel import VariableModel
+from ..database_models.ChargeBreakingModel import ChargeBreakingModel
 from . import Log_model_services
 from ..Utils import formulas
 from django.db import connection
@@ -505,12 +507,29 @@ class Ledger_Model_Service:
         ledgermodel.createdBy = "adminID :: "+str(admin)
         ledgermodel.created_at = datetime.now()
         ledgermodel.status = True
-        ledgermodel.charge=charge.get("charge")
-        ledgermodel.tax=charge.get("tax")
+        ledgermodel.charge=charge.get("total_charge")
+        ledgermodel.tax=charge.get("total_tax")
         ledgermodel.trans_status = "Success"#success
         ledgermodel.payout_trans_id = linkedId
         ledgermodel.is_tax_inclusive = decResp.get("is_tax_inclusive")
-        ledgermodel.save()  
+        ledgermodel.total_amount= amount-float(charge.get("total_charge")+charge.get("total_tax"))
+        ledgermodel.save() 
+        # {"total_charge":charge,
+        # "base_bank_charge":base_bank_charge,
+        # "base_sabpaisa_convenience_fee":base_sabpaisa_convenience_fee,
+        # "bankTax":bankTax,
+        # "sabpaisa_convenience_fee_tax":sabpaisa_convenience_fee_tax,
+        # "total_tax":total_tax}  
+        if(charge.get("base_bank_charge")>0):
+            chargeBreakService=Charge_Breaking_model_services(charge_amount=charge.get("base_bank_charge"),transaction_id=ledgermodel.id,charge_type="bank charge",payout_transaction_id=ledgermodel.payout_trans_id,tax_amount=charge.get("bankTax"),charge_id=0)
+            chargeBreakService.save()
+        if(charge.get("base_sabpaisa_convenience_fee")>0):
+            chargeBreakService=Charge_Breaking_model_services(charge_amount=charge.get("base_sabpaisa_convenience_fee"),transaction_id=ledgermodel.id,charge_type="sp convinience charge",payout_transaction_id=ledgermodel.payout_trans_id,tax_amount=charge.get("sabpaisa_convenience_fee_tax"),charge_id=0)
+            chargeBreakService.save()
+        if(charge.get("base_bank_charge")>0 or charge.get("base_sabpaisa_convenience_fee")>0):
+            chargeBreakService=Charge_Breaking_model_services(charge_amount=charge.get("total_tax"),transaction_id=ledgermodel.id,charge_type="total tax",payout_transaction_id=ledgermodel.payout_trans_id,tax_amount=0,charge_id=0)
+            chargeBreakService.save()            
+        
         log_service.table_id = ledgermodel.id
         log_service.save()
         return str(ledgermodel.id)
@@ -535,17 +554,17 @@ class Ledger_Model_Service:
             if(is_charged_by_bank ==True):
                     base_bank_charge = formulas.calulate_base(bank_charge,tax)
                     bankTax = bank_charge-base_bank_charge
-                    Ledger_Model_Service().saveCharge(decResp=decResp,admin=admin,amount=base_bank_charge,client_ip_address=client_ip_address,tax=bankTax,is_chargedBy_bank=is_charged_by_bank,trans_type="charge",linkedId=linkedId)
+                    
             else:
                     if(is_tax_inclusive == True):
                         base_bank_charge = formulas.calulate_base(bank_charge,tax)
                         bankTax = bank_charge-base_bank_charge
                         total_tax = bankTax
-                        Ledger_Model_Service().saveCharge(decResp=decResp,admin=admin,amount=base_bank_charge,client_ip_address=client_ip_address,tax=bankTax,is_chargedBy_bank=is_charged_by_bank,trans_type="charge",linkedId=linkedId)
+                        
                     else:
                         base_bank_charge = bank_charge
                         bankTax = formulas.calulate_tax_exclusive(bank_charge,float(tax))
-                        Ledger_Model_Service().saveCharge(decResp=decResp,admin=admin,amount=bank_charge,client_ip_address=client_ip_address,tax=bankTax,is_chargedBy_bank=is_charged_by_bank,trans_type="charge",linkedId=linkedId)
+                        
                 
         if(sabpaisa_convenience_fee!=0 or sabpaisa_convenience_fee!=0.0 or sabpaisa_convenience_fee!=0.00):
             if(is_tax_inclusive == False):
@@ -553,15 +572,13 @@ class Ledger_Model_Service:
                 # charge = base_bank_charge+base_sabpaisa_convenience_fee
                 sabpaisa_convenience_fee_tax = formulas.calulate_tax_exclusive(base_sabpaisa_convenience_fee,float(tax)) 
                 # total_tax = bankTax+sabpaisa_convenience_fee_tax
-                Ledger_Model_Service().saveCharge(decResp=decResp,admin=admin,amount=base_sabpaisa_convenience_fee,client_ip_address=client_ip_address,tax=sabpaisa_convenience_fee_tax,trans_type="charge",linkedId=linkedId) 
+                
             else:
                 sabpaisa_convenience_fee =  float(sabpaisa_convenience_fee)
                 base_sabpaisa_convenience_fee= formulas.calulate_base(float(sabpaisa_convenience_fee),float(tax))
                 
                 sabpaisa_convenience_fee_tax = sabpaisa_convenience_fee-base_sabpaisa_convenience_fee
-                
-                Ledger_Model_Service().saveCharge(decResp=decResp,admin=admin,amount=base_sabpaisa_convenience_fee,client_ip_address=client_ip_address,tax=sabpaisa_convenience_fee_tax,trans_type="charge",linkedId=linkedId) 
-                    
+                 
         # if(decResp.get("is_tax_inclusive")==False):
         #     if(bank_charge!="" and sabpaisa_convenience_fee!=""):
         #         bank_charge =  float(bank_charge)
@@ -622,9 +639,12 @@ class Ledger_Model_Service:
                     # total_tax = sabpaisa_convenience_fee_tax+bankTax
         charge = base_bank_charge+base_sabpaisa_convenience_fee
         total_tax = bankTax+sabpaisa_convenience_fee_tax            
-        Ledger_Model_Service().saveCharge(decResp=decResp,admin=admin,amount=total_tax,client_ip_address=client_ip_address,trans_type="tax",linkedId=linkedId) 
-        return {"charge":charge,
-        "tax":total_tax}  
+        return {"total_charge":charge,
+        "base_bank_charge":base_bank_charge,
+        "base_sabpaisa_convenience_fee":base_sabpaisa_convenience_fee,
+        "bankTax":bankTax,
+        "sabpaisa_convenience_fee_tax":sabpaisa_convenience_fee_tax,
+        "total_tax":total_tax}  
                 
 
     def fetchInfo():

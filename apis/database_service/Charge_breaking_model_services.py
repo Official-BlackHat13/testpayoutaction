@@ -23,3 +23,6 @@ class Charge_Breaking_model_services:
         chargebreakingmodel.tax_amount=self.tax_amount
         chargebreakingmodel.created_on=datetime.now()
         chargebreakingmodel.created_by="system"
+        chargebreakingmodel.save()
+        return chargebreakingmodel
+        

@@ -137,10 +137,11 @@ class fetchWebhookByMerchantId(APIView):
             merchant_id=query.get("merchant_id")
             service = Webhook_model_service.Webhook_Model_Service()            
             resp = service.fetch_by_merchant_id(merchant_id=merchant_id,client_ip_address=request.META['REMOTE_ADDR'])
-            if(admin.is_encrypt==True):
-                resp = auth.AESCipher(admin.auth_key,admin.auth_iv).encrypt(str(resp))
             if(resp == 0):
                 return Response({"message":"data not found","data":None,"response_code":"0"},status=status.HTTP_406_NOT_ACCEPTABLE)
+            
+            if(admin.is_encrypt==True):
+                resp = auth.AESCipher(admin.auth_key,admin.auth_iv).encrypt(str(resp))
             return Response({"message":"data found","data":resp,"response_code":"1"},status=status.HTTP_200_OK)
         except Exception as e:
             import traceback
