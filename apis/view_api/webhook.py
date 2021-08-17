@@ -82,7 +82,7 @@ class deleteWebhook(APIView):
             str(request.headers)+" :: meta_data:: " + \
             str(request.META)+"data::"+str(request.data)
 
-        log = Log_model_services.Log_Model_Service(log_type="add webhook request at "+request.path+" slug",
+        log = Log_model_services.Log_Model_Service(log_type="delete webhook request at "+request.path+" slug",
                                                    client_ip_address=request.META['REMOTE_ADDR'], server_ip_address=const.server_ip, full_request=request_obj)
         logid = log.save()
         try:
@@ -118,7 +118,7 @@ class fetchWebhookByMerchantId(APIView):
             str(request.headers)+" :: meta_data:: " + \
             str(request.META)+"data::"+str(request.data)
 
-        log = Log_model_services.Log_Model_Service(log_type="add webhook request at "+request.path+" slug",
+        log = Log_model_services.Log_Model_Service(log_type="fetch webhook request at "+request.path+" slug",
                                                    client_ip_address=request.META['REMOTE_ADDR'], server_ip_address=const.server_ip, full_request=request_obj)
         logid = log.save()
         try:
