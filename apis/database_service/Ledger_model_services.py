@@ -29,7 +29,7 @@ import pytz
 
 from apis import Utils
 class Ledger_Model_Service:
-    def __init__(self,id=None,purpose=None, is_tax_inclusive=None,upiId=None,status_code=None,tax=None,merchant=None,charge_id=None,client_code=None,linked_ledger_id=None,payout_trans_id=None,trans_amount_type=None, type_status=None, amount=None, van=None, trans_type=None, trans_status=None, bank_ref_no=None, customer_ref_no=None, bank_id=None, trans_time=None, bene_account_name=None, bene_account_number=None, bene_ifsc=None, request_header=None, createdBy=None, updatedBy=None, deletedBy=None, created_at=None, deleted_at=None, updated_at=None, status=True, mode=None, charge=None):
+    def __init__(self,id=None,purpose=None, total_amount=None,is_tax_inclusive=None,upiId=None,status_code=None,tax=None,merchant=None,charge_id=None,client_code=None,linked_ledger_id=None,payout_trans_id=None,trans_amount_type=None, type_status=None, amount=None, van=None, trans_type=None, trans_status=None, bank_ref_no=None, customer_ref_no=None, bank_id=None, trans_time=None, bene_account_name=None, bene_account_number=None, bene_ifsc=None, request_header=None, createdBy=None, updatedBy=None, deletedBy=None, created_at=None, deleted_at=None, updated_at=None, status=True, mode=None, charge=None):
         self.id = id
         self.merchant=merchant
         self.client_code=client_code
@@ -58,6 +58,7 @@ class Ledger_Model_Service:
         self.updatedBy=updatedBy
         self.deletedBy=deletedBy
         self.tax=tax
+        self.total_amount=total_amount
         self.created_at=created_at
         self.deleted_at = deleted_at
         self.updated_at=updated_at
@@ -91,6 +92,7 @@ class Ledger_Model_Service:
         ledgermodel.bank_ref_no=self.bank_ref_no
         ledgermodel.customer_ref_no=self.customer_ref_no
         ledgermodel.bank_partner_id=self.bank_id
+        ledgermodel.total_amount=self.total_amount
         ledgermodel.trans_init_time = self.trans_time
         ledgermodel.payout_trans_id=self.payout_trans_id
         ledgermodel.trans_date=date.today()

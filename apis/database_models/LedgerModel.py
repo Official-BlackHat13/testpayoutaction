@@ -53,6 +53,7 @@ class TransactionHistoryModel(models.Model):
     tax=models.FloatField(null=True)
     is_tax_inclusive=models.BooleanField(default=False)
     upi_id=models.CharField(null=True,max_length=3000)
+    total_amount=models.FloatField(null=True)
     objects = models.Manager()
     def __str__(self):
         return str(self.id)
