@@ -629,11 +629,11 @@ class Ledger_Model_Service:
 
     def fetchInfo():
         cursors = connection.cursor()
-        cursors.execute("select sum(amount) from apis_transactionhistorymodel where trans_amount_type=\"cr\" and trans_date =  CURDATE();")
+        cursors.execute("select sum(total_amount) from apis_transactionhistorymodel where trans_amount_type=\"cr\" and trans_date =  CURDATE();")
         credit_amount = cursors.fetchone()[0]
         if credit_amount==None:
             credit_amount=0
-        cursors.execute("select sum(amount) from apis_transactionhistorymodel where trans_amount_type=\"dr\" and trans_date =  CURDATE();")
+        cursors.execute("select sum(total_amount) from apis_transactionhistorymodel where trans_amount_type=\"dr\" and trans_date =  CURDATE();")
         debited_amount = cursors.fetchone()[0]
         if debited_amount==None:
             debited_amount=0
