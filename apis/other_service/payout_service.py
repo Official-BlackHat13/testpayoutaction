@@ -1,3 +1,4 @@
+from apis.database_service.Charge_breaking_model_services import Charge_Breaking_model_services
 from apis.database_service.Webhook_Request_model_service import Webhook_Request_Model_Service
 from datetime import date, datetime
 import time
@@ -118,76 +119,82 @@ class PayoutService:
              ledgerModelService.payout_trans_id=generater.generate_token()
              ledgerModelService.trans_amount_type = "dr"
              ledgerModelService.trans_time=datetime.now()
+             ledgerModelService.total_amount=ledgerModelService.amount+ledgerModelService.charge+ledgerModelService.tax
              id=ledgerModelService.save(client_ip_address=self.client_ip_address,createdBy="Merchant Id :: "+ str(self.merchant_id))
              ledgerModelService.update_status(id,'Requested',client_ip_address=self.client_ip_address,created_by="Merchant_Id :: "+str(self.merchant_id))
              ledger_id=id
-             tax_ledger=Ledger_model_services.Ledger_Model_Service()
-             tax_ledger.client_id=clientModel.id
-             tax_ledger.merchant=self.merchant_id
-             tax_ledger.client_code=clientModel.client_code
-             tax_ledger.amount=taxes[0]
-             tax_ledger.bank_id=clientmodel.bank_id
-             tax_ledger.bank_ref_no="null"
-             tax_ledger.customer_ref_no=payoutrequestmodel.orderId
-             tax_ledger.trans_status="Pending"
-             if mode_rec!="UPI":
-                print("if ledger")
-                tax_ledger.bene_account_name=payoutrequestmodel.beneficiaryName
-                tax_ledger.bene_account_number=payoutrequestmodel.beneficiaryAccount
-                tax_ledger.bene_ifsc=payoutrequestmodel.beneficiaryIFSC
-             else:
-                 print("else ledger")
-                 tax_ledger.upiId=payoutrequestmodel.upiId
-             tax_ledger.type_status="Generated"
-             tax_ledger.trans_type="tax"
-             tax_ledger.request_header="null"
-             tax_ledger.mode=mode.id
-             tax_ledger.van=""
-             tax_ledger.charge=0
-             tax_ledger.tax=0
-             tax_ledger.is_tax_inclusive=ledgerModelService.is_tax_inclusive
-             tax_ledger.linked_ledger_id=ledgerModelService.payout_trans_id
-             tax_ledger.payout_trans_id=generater.generate_token()
-             tax_ledger.trans_amount_type = "dr"
-             tax_ledger.charge_id=0
-             #  ledgerModelService.
-             tax_ledger.trans_time=datetime.now()
-             tax_ledger.save("Merchant Id :: "+str(self.merchant_id),self.client_ip_address)
+             tax_charges=Charge_Breaking_model_services(charge_amount=taxes[0],charge_id=0,transaction_id=ledger_id,payout_transaction_id=ledgerModelService.payout_trans_id,tax_amount=0,charge_type="tax")
+             tax_charges.save()
+            #  tax_ledger=Ledger_model_services.Ledger_Model_Service()
+            #  tax_ledger.client_id=clientModel.id
+            #  tax_ledger.merchant=self.merchant_id
+            #  tax_ledger.client_code=clientModel.client_code
+            #  tax_ledger.amount=taxes[0]
+            #  tax_ledger.bank_id=clientmodel.bank_id
+            #  tax_ledger.bank_ref_no="null"
+            #  tax_ledger.customer_ref_no=payoutrequestmodel.orderId
+            #  tax_ledger.trans_status="Pending"
+            #  if mode_rec!="UPI":
+            #     print("if ledger")
+            #     tax_ledger.bene_account_name=payoutrequestmodel.beneficiaryName
+            #     tax_ledger.bene_account_number=payoutrequestmodel.beneficiaryAccount
+            #     tax_ledger.bene_ifsc=payoutrequestmodel.beneficiaryIFSC
+            #  else:
+            #      print("else ledger")
+            #      tax_ledger.upiId=payoutrequestmodel.upiId
+            #  tax_ledger.type_status="Generated"
+            #  tax_ledger.trans_type="tax"
+            #  tax_ledger.request_header="null"
+            #  tax_ledger.mode=mode.id
+            #  tax_ledger.van=""
+            #  tax_ledger.charge=0
+            #  tax_ledger.tax=0
+            #  tax_ledger.is_tax_inclusive=ledgerModelService.is_tax_inclusive
+            #  tax_ledger.linked_ledger_id=ledgerModelService.payout_trans_id
+            #  tax_ledger.payout_trans_id=generater.generate_token()
+            #  tax_ledger.trans_amount_type = "dr"
+            #  tax_ledger.charge_id=0
+            #  #  ledgerModelService.
+            #  tax_ledger.trans_time=datetime.now()
+            #  tax_ledger.save("Merchant Id :: "+str(self.merchant_id),self.client_ip_address)
              irt=0
              for i in charge[1]:
                                     print(i)
-                                    charge_ledger=Ledger_model_services.Ledger_Model_Service()
-                                    charge_ledger.client_id=clientModel.id
-                                    charge_ledger.merchant=self.merchant_id
-                                    charge_ledger.client_code=clientModel.client_code
-                                    charge_ledger.amount=i[0]
-                                    charge_ledger.bank_id=clientmodel.bank_id
-                                    charge_ledger.bank_ref_no="null"
-                                    charge_ledger.customer_ref_no=payoutrequestmodel.orderId
-                                    charge_ledger.trans_status="Pending"
-                                    if mode_rec!="UPI":
-                                        print("if ledger")
-                                        charge_ledger.bene_account_name=payoutrequestmodel.beneficiaryName
-                                        charge_ledger.bene_account_number=payoutrequestmodel.beneficiaryAccount
-                                        charge_ledger.bene_ifsc=payoutrequestmodel.beneficiaryIFSC
-                                    else:
-                                        print("else ledger")
-                                        charge_ledger.upiId=payoutrequestmodel.upiId
-                                    charge_ledger.type_status="Generated"
-                                    charge_ledger.trans_type="charge"
-                                    charge_ledger.request_header="null"
-                                    charge_ledger.mode=mode.id
-                                    charge_ledger.van=""
-                                    charge_ledger.charge=0
-                                    charge_ledger.tax=taxes[1][irt][1]
-                                    charge_ledger.is_tax_inclusive=ledgerModelService.is_tax_inclusive
-                                    charge_ledger.linked_ledger_id=ledgerModelService.payout_trans_id
-                                    charge_ledger.payout_trans_id=generater.generate_token()
-                                    charge_ledger.trans_amount_type = "dr"
-                                    charge_ledger.charge_id=taxes[1][irt][0]
-                                    #  ledgerModelService.
-                                    charge_ledger.trans_time=datetime.now()
-                                    charge_ledger.save("Merchant Id :: "+str(self.merchant_id),self.client_ip_address)
+                                    charge_ledger=Charge_Breaking_model_services(charge_amount=i[0],charge_id=taxes[1][irt][0],transaction_id=ledger_id,payout_transaction_id=ledgerModelService.payout_trans_id,tax_amount=taxes[1][irt][1],charge_type="charge")
+                                    charge_ledger.save()
+                                    # charge_ledger=Ledger_model_services.Ledger_Model_Service()
+                                    # charge_ledger.client_id=clientModel.id
+                                    # charge_ledger.merchant=self.merchant_id
+                                    # charge_ledger.client_code=clientModel.client_code
+                                    # charge_ledger.amount=i[0]
+                                    # charge_ledger.bank_id=clientmodel.bank_id
+                                    # charge_ledger.bank_ref_no="null"
+                                    # charge_ledger.customer_ref_no=payoutrequestmodel.orderId
+                                    # charge_ledger.trans_status="Pending"
+                                    # if mode_rec!="UPI":
+                                    #     print("if ledger")
+                                    #     charge_ledger.bene_account_name=payoutrequestmodel.beneficiaryName
+                                    #     charge_ledger.bene_account_number=payoutrequestmodel.beneficiaryAccount
+                                    #     charge_ledger.bene_ifsc=payoutrequestmodel.beneficiaryIFSC
+                                    # else:
+                                    #     print("else ledger")
+                                    #     charge_ledger.upiId=payoutrequestmodel.upiId
+                                    # charge_ledger.type_status="Generated"
+                                    # charge_ledger.trans_type="charge"
+                                    # charge_ledger.request_header="null"
+                                    # charge_ledger.mode=mode.id
+                                    # charge_ledger.van=""
+                                    # charge_ledger.charge=0
+                                    # charge_ledger.tax=taxes[1][irt][1]
+                                    # charge_ledger.is_tax_inclusive=ledgerModelService.is_tax_inclusive
+                                    # charge_ledger.linked_ledger_id=ledgerModelService.payout_trans_id
+                                    # charge_ledger.payout_trans_id=generater.generate_token()
+                                    # charge_ledger.trans_amount_type = "dr"
+                                    # charge_ledger.charge_id=taxes[1][irt][0]
+                                    # #  ledgerModelService.
+                                    # charge_ledger.trans_time=datetime.now()
+                                    # charge_ledger.save("Merchant Id :: "+str(self.merchant_id),self.client_ip_address)
+
                                     irt+=1
              if mode_rec=="UPI":
                  request_model=paytm_request_model.Payment_Request_Model(transfer_mode=payoutrequestmodel.mode,subwalletGuid=const.paytm_subwalletGuid,orderId=ledgerModelService.payout_trans_id,beneficiaryVPA=payoutrequestmodel.upiId,amount=payoutrequestmodel.amount,purpose="OTHERS")

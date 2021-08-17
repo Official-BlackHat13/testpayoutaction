@@ -23,3 +23,4 @@ from .database_models.DailyLedgerModel import DailyLedgerModel
 from .database_models.WebhookRequestModel import WebhookRequestModel
 from .database_models.VariableModel import VariableModel
 from .database_models.TaxModel import TaxModel
+from .database_models.ChargeBreakingModel import ChargeBreakingModel

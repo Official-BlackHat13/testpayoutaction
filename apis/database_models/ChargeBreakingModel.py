@@ -8,6 +8,7 @@ class ChargeBreakingModel(models.Model):
     transaction_id=models.IntegerField()
     payout_transaction_id=models.CharField(max_length=3000)
     tax_amount=models.FloatField()
+    charge_type=models.CharField(max_length=3000)
     created_on=models.DateTimeField()
     deleted_on=models.DateTimeField(null=True)
     updated_on=models.DateTimeField(null=True)
