@@ -146,10 +146,13 @@ class paymentEnc(APIView):
             customer_ref = encResp.split(":")[1].replace('"','')
             recs =enquiry_service.get_enc(merchant_id,customer_ref,req.META['REMOTE_ADDR'],created_by="Merchant id :: "+str(merchant_id))
             response = []
+            
             if recs!=None:
                 for rec in recs:
+                    payments_mode=ModeModel.objects.get(id=rec.payment_mode_id)
                     
                     res = {
+                        
                             'payoutTransactionId':rec.payout_trans_id,
                             'amount': rec.amount,
                             'transType': rec.trans_type,
@@ -159,8 +162,9 @@ class paymentEnc(APIView):
                             'beneficiaryAccountName': rec.bene_account_name,
                             'beneficiaryAccountNumber': rec.bene_account_number,
                             'beneficiaryIFSC': rec.bene_ifsc,
+                            "upiId":rec.upi_id,
                             'transStatus': rec.trans_status,
-                            'payment_mode_id': rec.payment_mode_id
+                            'payment_mode': payments_mode.mode
                         }
                     response.append(res)
                     
