@@ -28,6 +28,8 @@ class Bank_model_services:
         
         bankModel=BankModel.objects.filter(bank_code=bank_code)
         log_service.save()
+        if len(bankModel)==0:
+            return None
         return bankModel[0]
     @staticmethod
     def fetch_by_id(id,client_ip_address,created_by)->BankModel:

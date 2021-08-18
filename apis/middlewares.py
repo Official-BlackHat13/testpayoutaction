@@ -159,7 +159,7 @@ def MultiTabsRestriction(get_response):
 def checkClientStatus(get_response):
     def middleware(req):
         print(req.path)
-        if req.path!="/api/" and req.path!="/api/addCharge/" and req.path!="/" and "/admin/" not in req.path and req.path!="/api/signup/" and req.path not in "/api/token/" and req.path!="/api/loginrequest/" and req.path!="/api/loginverified/" and req.path!="/api/resendotp/" and req.path!="/api/adminLogin/" and req.path!="/api/adminSignup/" and req.path!="/api/addSlab/" and "/api/getLedgers/" not in req.path and "/api/getTransactionHistory/" not in req.path and req.path!="/api/addBalance/" and "/api/getAllMerchants/" not in req.path and "/api/getLogs/" not in req.path and req.path!="/api/todayInfo/" and req.path!="/api/callDailyLedger/" and req.path!="/api/getTax/" and req.path!="/api/allModes/" and req.path!="/api/bankPartnerInfo/":
+        if req.path!="/api/" and req.path!="/api/addCharge/" and req.path!="/" and "/admin/" not in req.path and req.path!="/api/signup/" and req.path not in "/api/token/" and req.path!="/api/loginrequest/" and req.path!="/api/loginverified/" and req.path!="/api/resendotp/" and req.path!="/api/adminLogin/" and req.path!="/api/adminSignup/" and req.path!="/api/addSlab/" and "/api/getLedgers/" not in req.path and "/api/getTransactionHistory/" not in req.path and req.path!="/api/addBalance/" and "/api/getAllMerchants/" not in req.path and "/api/getLogs/" not in req.path and req.path!="/api/todayInfo/" and req.path!="/api/callDailyLedger/" and req.path!="/api/getTax/" and req.path!="/api/allModes/" and req.path!="/api/bankPartnerInfo/" and req.path!="/api/saveBankPartner/":
             print("inside if")
             try:
                 merchant_id = req.headers["auth_token"]

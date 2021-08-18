@@ -80,7 +80,8 @@ urlpatterns = [
     path("deleteMerchantMode/",views.merchantMode.deleteMerchantMode.as_view()),
     path("addWebhook/",views.webhook.addWebhook.as_view()),
     path("deleteWebhook/",views.webhook.deleteWebhook.as_view()),
-    path("fetchWebhookById/",views.webhook.fetchWebhookByMerchantId.as_view())
+    path("fetchWebhookById/",views.webhook.fetchWebhookByMerchantId.as_view()),
+    path("saveBankPartner/",views.bankpartner.BankPartnerApiSave.as_view())
    #  path("testicic/",)
    #  path("createTest",views.getTest.as_view()),
    #  path("updateTest/<int:id>",views.updateTest.as_view()),
