@@ -119,7 +119,7 @@ class PayoutService:
              ledgerModelService.payout_trans_id=generater.generate_token()
              ledgerModelService.trans_amount_type = "dr"
              ledgerModelService.trans_time=datetime.now()
-             ledgerModelService.total_amount=ledgerModelService.amount+ledgerModelService.charge+ledgerModelService.tax
+             ledgerModelService.total_amount=float(ledgerModelService.amount)+float(ledgerModelService.charge)+float(ledgerModelService.tax)
              id=ledgerModelService.save(client_ip_address=self.client_ip_address,createdBy="Merchant Id :: "+ str(self.merchant_id))
              ledgerModelService.update_status(id,'Requested',client_ip_address=self.client_ip_address,created_by="Merchant_Id :: "+str(self.merchant_id))
              ledger_id=id
@@ -225,8 +225,8 @@ class PayoutService:
                         webhookrequest.status=False
                         id=webhookrequest.save()
                         
-                        webhooks = Webhook_Model_Service.fetch_by_merchant_id(merchant_id_temp,client_ip_address_temp)
-                        print("Webhook Started at :: "+webhooks.webhook)
+                        webhooks = Webhook_Model_Service.fetch_by_merchant_id_payout(merchant_id_temp,client_ip_address_temp)
+                        print("Webhook Started at :: "+str(webhooks.webhook))
                         if webhooks!=None and not webhooks.is_instant:
                             print("Interval Webhook :: "+str(webhooks.time_interval)+" min ")
                             interval=webhooks.time_interval
@@ -270,23 +270,23 @@ class PayoutService:
                          if response.json()['status']=="SUCCESS":
                              ledgerModelService.update_status(id,"Success",client_ip_address_temp,"Merchant :: "+str(merchant_id_temp))
                              ledgerModelService.update_trans_time(id,datetime.now(),client_ip_address_temp,"Merchant :: "+str(merchant_id_temp))
-                             charge = Ledger_model_services.Ledger_Model_Service.fetch_by_linked_id(ledgerModelService.payout_trans_id)
-                             if clientModel.is_charge:
+                            #  charge = Ledger_model_services.Ledger_Model_Service.fetch_by_linked_id(ledgerModelService.payout_trans_id)
+                            #  if clientModel.is_charge:
                                 
-                                for i in charge:
-                                    ledgerModelService.update_status(i.id,"Success",client_ip_address_temp,"Merchant :: "+str(merchant_id_temp))
-                             else:
-                                 for i in charge:
-                                    ledgerModelService.update_status(i.id,"Failed",client_ip_address_temp,"Merchant :: "+str(merchant_id_temp))
+                            #     for i in charge:
+                            #         ledgerModelService.update_status(i.id,"Success",client_ip_address_temp,"Merchant :: "+str(merchant_id_temp))
+                            #  else:
+                            #      for i in charge:
+                            #         ledgerModelService.update_status(i.id,"Failed",client_ip_address_temp,"Merchant :: "+str(merchant_id_temp))
                                 
                          elif response.json()["status"]=="PENDING":
                              ledgerModelService.update_status(id,"Pending",client_ip_address_temp,"Merchant :: "+str(merchant_id_temp))
                              
                              ServiceThread().start()
                          else:
-                             charge = Ledger_model_services.Ledger_Model_Service.fetch_by_linked_id(ledgerModelService.payout_trans_id)
-                             for i in charge:
-                                    ledgerModelService.update_status(i.id,"Failed",client_ip_address_temp,"Merchant :: "+str(merchant_id_temp))
+                            #  charge = Ledger_model_services.Ledger_Model_Service.fetch_by_linked_id(ledgerModelService.payout_trans_id)
+                            #  for i in charge:
+                            #         ledgerModelService.update_status(i.id,"Failed",client_ip_address_temp,"Merchant :: "+str(merchant_id_temp))
                              
                              ledgerModelService.update_status(id,"Failed",client_ip_address_temp,"Merchant :: "+str(merchant_id_temp))
                          print("Service Done")

@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-r0qb-hl8+la(qma%+fb2&)hd3ty9)0!l(gdtd_1l_y(sad-m6=
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["192.168.34.42","127.0.0.1","localhost","192.168.34.15","192.168.34.43"]
+ALLOWED_HOSTS = ["192.168.34.42","127.0.0.1","localhost","192.168.34.15","192.168.34.43","192.168.34.36"]
 
 
 # Application definition
@@ -144,15 +144,15 @@ DATABASES = {
     #     # 'socket': '/Applications/XAMPP/xamppfiles/var/mysql/mysql.sock'
     # }
 
-    #  'default': {
-    #     'ENGINE': 'django.db.backends.mysql',
-    #     'NAME': 'payout_for_development',
-    #     'USER': 'payout_for_development',
-    #     'PASSWORD': 'payout@123',
-    #     'HOST': 'localhost',
-    #     'PORT': '3306',
-    #     # 'socket': '/Applications/XAMPP/xamppfiles/var/mysql/mysql.sock'
-    # }
+     'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'payout_for_development',
+        'USER': 'payout_for_development',
+        'PASSWORD': 'payout@123',
+        'HOST': 'localhost',
+        'PORT': '3306',
+        # 'socket': '/Applications/XAMPP/xamppfiles/var/mysql/mysql.sock'
+    }
     #  'default': {
     #     'ENGINE': 'django.db.backends.mysql',
     #     'NAME': 'stagingPayout',
@@ -203,14 +203,14 @@ DATABASES = {
     #     # 'socket': '/Applications/XAMPP/xamppfiles/var/mysql/mysql.sock'
     # }
     #kunal local db
-    'default': {
-         'ENGINE': 'django.db.backends.mysql',
-         'NAME': 'payoutdb',
-         'USER': 'root',
-         'PASSWORD': "root",
-         'HOST': "127.0.0.1",
-         'PORT': "3306",
-     }
+    # 'default': {
+    #      'ENGINE': 'django.db.backends.mysql',
+    #      'NAME': 'payoutdb',
+    #      'USER': 'root',
+    #      'PASSWORD': "root",
+    #      'HOST': "127.0.0.1",
+    #      'PORT': "3306",
+    #  }
 }
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators

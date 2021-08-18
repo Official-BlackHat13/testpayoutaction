@@ -16,7 +16,7 @@ class IpWhiteListing_Model_Service:
         ipmodel = IpWhiteListedModel()
         ipmodel.merchant_id=self.merchant_id
         ipmodel.ip_address=self.ip_add
-        ipmodel.created_by = "merchant id :: "+self.merchant_id
+        ipmodel.created_by = "merchant id :: "+str(self.merchant_id)
         ipmodel.save()
         # log.table_id=ipmodel.id
         # log.save()
@@ -33,7 +33,7 @@ class IpWhiteListing_Model_Service:
     def deleteIp(self):
         ipModel = IpWhiteListedModel()
         try:
-            ipModel = IpWhiteListedModel.objects.get(merchant_id=self.merchant_id,ip_address=self.ip_add)
+            ipModel = IpWhiteListedModel.objects.get(merchant_id=self.merchant_id,ip_address=self.ip_add,status=True)
         except IpWhiteListedModel.DoesNotExist:
             return 0
         ipModel.status = False
