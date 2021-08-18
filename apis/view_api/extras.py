@@ -345,3 +345,26 @@ class tax(APIView):
                 encResp = auth.AESCipher(admin.auth_key,admin.auth_iv).encrypt(str(resp))
                 return Response({"message":"data found","data":encResp,"response_code":'1'})    
         return Response({"message":"data found","data":resp,"response_code":'1'},status=status.HTTP_200_OK)
+
+class AddTax(APIView):
+    def post(self,request):
+        request_obj = "path:: "+request.path+" :: headers::" + \
+            str(request.headers)+" :: meta_data:: " + \
+            str(request.META)+"data::"+str(request.data)
+        log = Log_model_services.Log_Model_Service(log_type="fetchCharges request at "+request.path+" slug",
+                                                   client_ip_address=request.META['REMOTE_ADDR'], server_ip_address=const.server_ip, full_request=request_obj)
+        logid = log.save()
+        header = request.headers.get("auth_token")
+        adminId = auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(header)
+        admin = BO_user_services.BO_User_Service.fetch_by_id(adminId)
+        if(admin==None):
+            Log_model_services.Log_Model_Service.update_response(
+                logid, {"Message": "admin code missing", "response_code": "0"})
+            return Response({"message":"admin id does not exist", "Response code":"0"},status=status.HTTP_404_NOT_FOUND)
+        query = request.data.get("query")
+        
+        tax=TaxModel()
+        tax.tax=query.get("tax")
+        tax.start_date=datetime.now()
+        tax.save()
+        return Response({"message":"data saved","response_code":"1"},status=status.HTTP_201_CREATED)

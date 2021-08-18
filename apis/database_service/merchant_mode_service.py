@@ -11,7 +11,7 @@ class Merchant_mode_service:
         self.mode_id=mode_id
 
     def save(self,admin_id):
-        resp = MercahantModeModel.objects.filter(merchant_id=self.merchant_id,mode_id=self.mode_id,bank_partner_id=self.bank_partner_id)
+        resp = MercahantModeModel.objects.filter(merchant_id=self.merchant_id,mode_id=self.mode_id,bank_partner_id=self.bank_partner_id,status=True)
         if(len(resp)!=0):
             return 0
         merchantModeModel = MercahantModeModel()
