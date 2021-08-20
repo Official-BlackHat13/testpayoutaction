@@ -85,13 +85,17 @@ class addCharge(APIView):
             charge_percentage_or_fix=query.get("charge_percentage_or_fix")
             charge=query.get("charge")
             merchant_id=query.get("merchant_id")
+            charge_type=query.get("charge_type")
+            partner_id = query.get("partner_id")
             merchant = Client_model_service.Client_Model_Service.fetch_by_id(id=merchant_id,created_by="admin :: "+adminId,client_ip_address=request.META['REMOTE_ADDR'])
             if(merchant==None):
                 Log_model_services.Log_Model_Service.update_response(
                 logid, {"Message": "merchant code missing", "response_code": "0"})
                 return Response({"message":"merchant id does not exist", "Response code":"0"},status=status.HTTP_404_NOT_FOUND)
-            service = charge_model_service(merchant_id=merchant_id,mode=mode,min_amount=min_amount,max_amount=max_amount,charge_percentage_or_fix=charge_percentage_or_fix,charge=charge)
+            service = charge_model_service(merchant_id=merchant_id,mode=mode,charge_type=charge_type,partner_id=partner_id,min_amount=min_amount,max_amount=max_amount,charge_percentage_or_fix=charge_percentage_or_fix,charge=charge)
             resp = service.save(client_ip_address=request.META['REMOTE_ADDR'])
+            if(resp==0):
+                return Response({"message":"duplicate data found","response_code":"0"},status=status.HTTP_400_BAD_REQUEST)
             Log_model_services.Log_Model_Service.update_response(
                 logid, {"Message": "data saved","data":str(resp), "response_code": "1"})
             return Response({"message":"data saved", "response_code": "1"},status=status.HTTP_200_OK)

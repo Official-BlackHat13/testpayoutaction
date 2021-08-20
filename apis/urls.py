@@ -81,6 +81,10 @@ urlpatterns = [
     path("addWebhook/",views.webhook.addWebhook.as_view()),
     path("deleteWebhook/",views.webhook.deleteWebhook.as_view()),
     path("fetchWebhookById/",views.webhook.fetchWebhookByMerchantId.as_view()),
+    path("addTax/",views.extras.AddTax.as_view()),
+    path("addRole/",views.Role.addRole.as_view()),
+    path("fetchRoles/",views.Role.fetchRoles.as_view()),
+    path("deleteRole/",views.Role.deleteRole.as_view()),
     path("saveBankPartner/",views.bankpartner.BankPartnerApiSave.as_view())
    #  path("testicic/",)
    #  path("createTest",views.getTest.as_view()),

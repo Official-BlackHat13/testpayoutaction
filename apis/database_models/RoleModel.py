@@ -12,5 +12,6 @@ class RoleModel(models.Model):
     created_by=models.CharField(null=True,max_length=500)
     deleted_by=models.CharField(null=True,max_length=500)
     updated_by=models.CharField(null=True,max_length=500)
+    status = models.BooleanField(null=True,default=True)
     def __str__(self):
         return str(self.id)
