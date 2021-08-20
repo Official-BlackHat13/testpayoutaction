@@ -100,7 +100,7 @@ select count(*) into temp_check from apis_dailyledgermodel where merchant_id=mer
 select count(*) into temp_check2 from apis_dailyledgermodel where merchant_id=merchant and date=CURDATE();
 if temp_check2=0 then
 if temp_check=0 then
-insert into apis_dailyledgermodel (merchant_id,date,opening_balance,closing_balance,created_at,created_by) values (merchant,CURDATE(),0,@balance,now(),"system");
+insert into apis_dailyledgermodel (merchant_id,date,opening_balance,closing_balance,created_at,created_by) values (merchant,DATE_SUB(CURDATE(), INTERVAL 1 DAY),0,@balance,now(),"system");
 else
 update apis_dailyledgermodel set closing_balance=@balance,updated_at=now() where date = DATE_SUB(CURDATE(), INTERVAL 1 DAY) and merchant_id=merchant;
 end if;
