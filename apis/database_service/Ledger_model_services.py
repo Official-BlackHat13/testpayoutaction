@@ -664,7 +664,15 @@ class Ledger_Model_Service:
         debited_amount = cursors.fetchone()[0]
         if debited_amount==None:
             debited_amount=0
-        total_balance = credit_amount-debited_amount
+        cursors.execute('select sum(total_amount) from apis_transactionhistorymodel where trans_amount_type="cr" and  trans_status in ("Success");')
+        credit_amount_1 = cursors.fetchone()[0]
+        if credit_amount_1==None:
+            credit_amount_1=0
+        cursors.execute('select sum(total_amount) from apis_transactionhistorymodel where trans_amount_type="dr" and  trans_status not in ("Success","Pending","Requested","Proccesing");')
+        debited_amount_1 = cursors.fetchone()[0]
+        if debited_amount_1==None:
+            debited_amount_1=0
+        total_balance = credit_amount_1-debited_amount_1
         cursors.execute("select count(merchant_id) as c from apis_transactionhistorymodel where trans_date =  CURDATE();")
        
 
