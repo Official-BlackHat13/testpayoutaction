@@ -168,3 +168,28 @@ select count(*) from info;
 drop view info;
 END$$
 DELIMITER ;
+
+
+DELIMITER &&
+create PROCEDURE getLedger(in length int,in page int)
+begin
+
+-- DECLARE  balance int;
+-- DECLARE  merchants int;
+-- DECLARE  totaltrans int;
+declare endpage int;
+declare page_val int;
+
+-- select (page*length) into endpage;
+select (page-1)*length into page_val;
+create view tempcredview as select sum(total_amount) as amount,count(*) as totaltrans,merchant_id as merchant  from apis_transactionhistorymodel where trans_amount_type="cr" and trans_status in ("Success","Pending","Requested","Proccesing") group by merchant;
+create view tempdebview as select sum(total_amount) as amount,count(*) as totaltrans,merchant_id as merchant  from apis_transactionhistorymodel where trans_amount_type="dr" and trans_status in ("Success","Pending","Requested","Proccesing") group by merchant;
+
+create view tempview as select tempcredview.amount-ifnull(tempdebview.amount,0) as balance, tempcredview.totaltrans+ifnull(tempdebview.totaltrans,0) as totaltrans,tempcredview.merchant,tempcredview.amount as credited_amount,ifnull(tempdebview.amount,0) as debited_amount from tempcredview left join tempdebview on tempcredview.merchant=tempdebview.merchant;
+select apis_merchantmodel.client_username,tempview.balance,tempview.totaltrans,apis_merchantmodel.id,credited_amount,debited_amount from tempview inner join apis_merchantmodel on tempview.merchant=apis_merchantmodel.id where apis_merchantmodel.status=true limit page_val,length;
+drop view tempcredview;
+drop view tempdebview;
+drop view tempview;
+-- select endpage;
+end 
+&& DELIMITER ;
