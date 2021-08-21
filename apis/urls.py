@@ -85,7 +85,9 @@ urlpatterns = [
     path("addRole/",views.Role.addRole.as_view()),
     path("fetchRoles/",views.Role.fetchRoles.as_view()),
     path("deleteRole/",views.Role.deleteRole.as_view()),
-    path("saveBankPartner/",views.bankpartner.BankPartnerApiSave.as_view())
+    path("saveBankPartner/",views.bankpartner.BankPartnerApiSave.as_view()),
+    path("fetchBeneficiaryfor/<int:merchantId>",views.beneficiary.FetchBeniAdminAPIView.as_view()),
+    path("saveBeneficiaryfor/",views.beneficiary.addSingleBeneficiaryfor.as_view())
    #  path("testicic/",)
    #  path("createTest",views.getTest.as_view()),
    #  path("updateTest/<int:id>",views.updateTest.as_view()),

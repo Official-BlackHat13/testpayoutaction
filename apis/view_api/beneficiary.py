@@ -18,7 +18,7 @@ from drf_yasg.utils import swagger_auto_schema
 from apis.database_service import Beneficiary_model_services
 from ..API_docs import payout_docs,auth_docs,login_docs,payoutTransactionEnquiry_docs,addBalance_docs,addBeneficiary_docs,log_docs
 from datetime import datetime
-from ..serializersFolder.serializers import LogsSerializer
+from ..serializersFolder.serializers import BeneSerializer, LogsSerializer
 #from .serializers import *
 # from .models import *
 import ast
@@ -279,3 +279,48 @@ class addingSingleBeneficiary(APIView):
             print(traceback.format_exc())
             Log_model_services.Log_Model_Service.update_response(logid,{"message":"Some error occured","Error_Code":e.args,"response_code":"2"})
             return Response({"Message":"some error","Error":e.args})
+
+
+
+class FetchBeniAdminAPIView(APIView):
+    def get(self,req,merchantId):
+        try:
+            merchant_id=merchantId
+            rec=Beneficiary_Model_Services.fetchBeneficiaryByMerchantId(merchant_id)
+            serl = BeneSerializer(rec,many=True)
+            if rec==None:
+                return Response({"data":[],"message":"NO DATA FOUND","response_code":0},status=status.HTTP_200_OK)
+            return Response({"data":serl.data,"message":"DATA FOUND","response_code":1},status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"message":"some technical error","error":e.args,"response_code":2},status=status.HTTP_400_BAD_REQUEST)
+
+
+class addSingleBeneficiaryfor(APIView):
+    @swagger_auto_schema(request_body=addBeneficiary_docs.single_bene,responses=addBeneficiary_docs.single_bene_response)
+    def post(self, request):
+        request_obj = "path:: "+request.path+" :: headers::" + \
+            str(request.headers)+" :: meta_data:: " + \
+            str(request.META)+"data::"+str(request.data)
+        log = Log_model_services.Log_Model_Service(log_type="addSingleBeneficiary request at "+request.path+" slug",
+                                                   client_ip_address=request.META['REMOTE_ADDR'], server_ip_address=const.server_ip, full_request=request_obj)
+        logid = log.save()
+        try:
+            merchantId = request.data.get("merchant_id")
+            
+            decResp = str(request.data.get("query"))
+            
+            res = ast.literal_eval(decResp)
+            print(res.get("full_name"))
+            resultSet = BeneficiaryModel.objects.filter(merchant_id=int(merchantId),account_number=res.get("account_number"),ifsc_code=res.get("ifsc_code"),upi_id=res.get("upi_id"))
+            if(len(resultSet)>0):
+                return Response({"Message":"data already exist","response_code":'0'},status=status.HTTP_406_NOT_ACCEPTABLE)
+            
+            service = Beneficiary_Model_Services(upiId=res.get("upi_id"),full_name=res.get("full_name"),account_number=res.get("account_number"),ifsc_code=res.get("ifsc_code"),merchant_id=merchantId)
+            resp = service.save()
+            return Response({"msg":"data saved to database","response_code":'1'},status=status.HTTP_200_OK)
+        except Exception as e:
+            import traceback
+            print(traceback.format_exc())
+            Log_model_services.Log_Model_Service.update_response(logid,{"message":"Some error occured","Error_Code":e.args,"response_code":"2"})
+            return Response({"Message":"some error","Error":e.args})
+ 
