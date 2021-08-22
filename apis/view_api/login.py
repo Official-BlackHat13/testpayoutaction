@@ -81,7 +81,7 @@ class LoginRequestAdminAPI(APIView):
             else:
                 if req.data["username"]=="admin":
                     api_key=auth.AESCipher(const.AuthKey,const.AuthIV).encrypt(str(res["user_id"]))
-                    return Response({"auth_token":str(api_key)[2:].replace("'",""),"jwt_token":res["jwt_token"],"username":res["username"],"user_token":res['user_token'],"response_code":"1"},status=status.HTTP_200_OK)
+                    return Response({"auth_token":str(api_key)[2:].replace("'",""),"merchant_id":res["user_id"],"jwt_token":res["jwt_token"],"username":res["username"],"user_token":res['user_token'],"response_code":"1"},status=status.HTTP_200_OK)
                 Log_model_services.Log_Model_Service.update_response(logid,{"message":"OTP sent","verification_token":res,"response_code":"1"})
                 return Response({"message":"OTP sent ","verification_token":res,"response_code":"1"},status=status.HTTP_200_OK)
         except Exception as e:
@@ -107,7 +107,7 @@ class LoginRequestAPI(APIView):
                 Log_model_services.Log_Model_Service.update_response(logid,{"message":"OTP sent","verification_token":res,"response_code":"1"})
                 if req.data["username"]=="DJ_merchant":
                     api_key=auth.AESCipher(const.AuthKey,const.AuthIV).encrypt(str(res["user_id"]))
-                    return Response({"auth_token":str(api_key)[2:].replace("'",""),"jwt_token":res["jwt_token"],"username":res["username"],"user_token":res['user_token'],"response_code":"1"},status=status.HTTP_200_OK)
+                    return Response({"auth_token":str(api_key)[2:].replace("'",""),"merchant_id":res["user_id"],"jwt_token":res["jwt_token"],"username":res["username"],"user_token":res['user_token'],"response_code":"1"},status=status.HTTP_200_OK)
                 return Response({"message":"OTP sent ","verification_token":res,"response_code":"1"},status=status.HTTP_200_OK)
         except Exception as e:
             import traceback
@@ -133,7 +133,7 @@ class LoginVerificationAPI(APIView):
                 # print(str(login[0]))
                 api_key=auth.AESCipher(const.AuthKey,const.AuthIV).encrypt(str(login["user_id"]))
                 Log_model_services.Log_Model_Service.update_response(logid,{"auth_token":str(api_key)[2:].replace("'",""),"response_code":"1"})
-                return Response({"auth_token":str(api_key)[2:].replace("'",""),"jwt_token":login["jwt_token"],"username":login["username"],"user_token":login['user_token'],"response_code":"1"},status=status.HTTP_200_OK)
+                return Response({"auth_token":str(api_key)[2:].replace("'",""),"merchant_id":login["user_id"],"jwt_token":login["jwt_token"],"username":login["username"],"user_token":login['user_token'],"response_code":"1"},status=status.HTTP_200_OK)
         except Exception as e:
             import traceback
             print(traceback.format_exc())
