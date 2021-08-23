@@ -134,7 +134,7 @@ class Client_Model_Service:
         for b in list(record.iterator()):
             d={
                 'id':b.id ,
-                
+                "client_name":b.client_name,
              
                 'role': b.role_id,
                 'client': b.client_id,
@@ -171,6 +171,7 @@ def enc(b):
     d={
                 'auth token':encId[2:].replace("'",""),
                 "id":b["id"],
+                "client_name":b["client_name"],
                 'role':b.get("role"),
                 'client': b.get("client"),
                 'client_code': b.get("client_code"),
