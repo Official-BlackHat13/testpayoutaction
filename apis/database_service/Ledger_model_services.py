@@ -344,7 +344,7 @@ class Ledger_Model_Service:
             # print("record :: ",record)
             def rec(rec):
 
-                json = {"customer_ref_no":rec.customer_ref_no,"trans_completed_time":rec.trans_completed_time,"trans_init_time":rec.trans_init_time,"charge":rec.charge,"payment_mode":rec.payment_mode_id,"bene_account_name":rec.bene_account_name,"bene_account_number":rec.bene_account_number,"bene_ifsc":rec.bene_ifsc,"payout_trans_id":rec.payout_trans_id,"created_at":rec.created_at,"updated_at":rec.updated_at,"deleted_at":rec.deleted_at,"trans_amount_type":rec.trans_amount_type,"merchant_id":rec.merchant_id,"client_username":rec.client_username,"client_name":rec.client_name,"id":rec.id,"amount":rec.amount,"type_status":rec.type_status,"trans_type":rec.trans_type,"trans_status":rec.trans_status,"upi_id":rec.upi_id}
+                json = {"customer_ref_no":rec.customer_ref_no,"trans_completed_time":rec.trans_completed_time,"trans_init_time":rec.trans_init_time,"charge":rec.charge,"payment_mode":rec.payment_mode_id,"bene_account_name":rec.bene_account_name,"bene_account_number":rec.bene_account_number,"bene_ifsc":rec.bene_ifsc,"payout_trans_id":rec.payout_trans_id,"tax_amount":rec.tax,"total_amount":rec.total_amount,"created_at":rec.created_at,"updated_at":rec.updated_at,"deleted_at":rec.deleted_at,"trans_amount_type":rec.trans_amount_type,"merchant_id":rec.merchant_id,"client_username":rec.client_username,"client_name":rec.client_name,"id":rec.id,"amount":rec.amount,"type_status":rec.type_status,"trans_type":rec.trans_type,"trans_status":rec.trans_status,"upi_id":rec.upi_id}
                 return json
             return list(map(rec,list(record.iterator()))) 
         except Exception as e:
@@ -668,7 +668,7 @@ class Ledger_Model_Service:
         credit_amount_1 = cursors.fetchone()[0]
         if credit_amount_1==None:
             credit_amount_1=0
-        cursors.execute('select sum(total_amount) from apis_transactionhistorymodel where trans_amount_type="dr" and  trans_status not in ("Success","Pending","Requested","Proccesing");')
+        cursors.execute('select sum(total_amount) from apis_transactionhistorymodel where trans_amount_type="dr" and  trans_status in ("Success","Pending","Requested","Proccesing");')
         debited_amount_1 = cursors.fetchone()[0]
         if debited_amount_1==None:
             debited_amount_1=0
