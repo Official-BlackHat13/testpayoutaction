@@ -1,3 +1,4 @@
+from apis.database_models.BeneficiaryModel import BeneficiaryModel
 from django.db.models import fields
 from rest_framework import serializers
 from ..models import LogModel
@@ -21,3 +22,9 @@ class LogsSerializer(serializers.ModelSerializer):
     class Meta:
         model=LogModel
         fields="__all__"
+
+
+class BeneSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=BeneficiaryModel
+        fields=("id","full_name","account_number","ifsc_code","upi_id","merchant_id")

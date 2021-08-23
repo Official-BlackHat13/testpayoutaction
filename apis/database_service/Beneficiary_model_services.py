@@ -52,6 +52,12 @@ class Beneficiary_Model_Services:
         beneficiarymodel.updated_by=updated_by
         beneficiarymodel.save()
     @staticmethod
+    def fetchBeneficiaryByMerchantId(merchant_id):
+        beneficarymodel=BeneficiaryModel.objects.filter(merchant_id=merchant_id)
+        if len(beneficarymodel)==0:
+            return None
+        return beneficarymodel
+    @staticmethod
     def fetchBeneficiaryByParams(client_ip_address,created_by,page,length,merchant_id=None):
         log_service=Log_model_services.Log_Model_Service(log_type="fetch",table_name="apis_chargemodel",remarks="fetching records from apis_chargemodel by primary key in the record",client_ip_address=client_ip_address,server_ip_address=const.server_ip,created_by=created_by)
         offSet = (int(page)-1)*int(length)
