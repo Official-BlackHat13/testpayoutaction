@@ -332,7 +332,7 @@ class Ledger_Model_Service:
 
             if start=="all" and end=="all":
                 print("if")
-                record=LedgerModel.objects.raw("select apis_transactionhistorymodel.*,apis_merchantmodel.client_username from apis_transactionhistorymodel inner join apis_merchantmodel on apis_transactionhistorymodel.merchant_id=apis_merchantmodel.id where trans_type in ('payout','payin') and merchant_id="+str(merchant_id)+" order by apis_transactionhistorymodel.id desc limit "+str((page-1)*length)+","+str(length)+"")
+                record=LedgerModel.objects.raw("select apis_transactionhistorymodel.*,apis_merchantmodel.client_username,apis_merchantmodel.client_name from apis_transactionhistorymodel inner join apis_merchantmodel on apis_transactionhistorymodel.merchant_id=apis_merchantmodel.id where trans_type in ('payout','payin') and merchant_id="+str(merchant_id)+" order by apis_transactionhistorymodel.id desc limit "+str((page-1)*length)+","+str(length)+"")
                 # print(list(record.iterator()))
                 print(record.columns)
                 # record=LedgerModel.objects.filter(merchant=merchant_id)
@@ -340,7 +340,7 @@ class Ledger_Model_Service:
                 
             else:
                 print("select apis_transactionhistorymodel.*,apis_merchantmodel.client_username from apis_transactionhistorymodel inner join apis_merchantmodel on apis_transactionhistorymodel.merchant_id=apis_merchantmodel.id where trans_type in ('payout','payin') and merchant_id="+str(merchant_id)+" and  apis_transactionhistorymodel.created_at between '"+str(start)+"' and '"+str(end)+"' order by apis_transactionhistorymodel.id desc limit "+str(length)+" offset "+str((page-1)*length)+"")
-                record=LedgerModel.objects.raw("select apis_transactionhistorymodel.*,apis_merchantmodel.client_username from apis_transactionhistorymodel inner join apis_merchantmodel on apis_transactionhistorymodel.merchant_id=apis_merchantmodel.id where trans_type in ('payout','payin') and merchant_id="+str(merchant_id)+" and  apis_transactionhistorymodel.created_at between '"+str(start)+"' and '"+str(end)+"' order by apis_transactionhistorymodel.id desc limit "+str(length)+" offset "+str((page-1)*length)+"")
+                record=LedgerModel.objects.raw("select apis_transactionhistorymodel.*,apis_merchantmodel.client_username,apis_merchantmodel.client_name from apis_transactionhistorymodel inner join apis_merchantmodel on apis_transactionhistorymodel.merchant_id=apis_merchantmodel.id where trans_type in ('payout','payin') and merchant_id="+str(merchant_id)+" and  apis_transactionhistorymodel.created_at between '"+str(start)+"' and '"+str(end)+"' order by apis_transactionhistorymodel.id desc limit "+str(length)+" offset "+str((page-1)*length)+"")
             # print("record :: ",record)
             def rec(rec):
 
