@@ -1,3 +1,7 @@
+from apis.database_models.BankModel import BankPartnerModel
+from apis.database_models.ModeModel import ModeModel
+from apis.view_api import bankpartner
+from apis.database_models.ClientModel import MerchantModel
 from datetime import date, datetime
 from rest_framework import status
 from ..database_models.MerchantModeModel import MercahantModeModel
@@ -28,11 +32,23 @@ class Merchant_mode_service:
         if(len(merchantModeModel)==0):
             return 0
         resp = list()
+        
         for data in merchantModeModel:
+            merchant=MerchantModel.objects.filter(id=data.get("merchant_id")).values()
+            print("merchant ------ ",str(merchant[0].get("client_username")))
+            bank = BankPartnerModel.objects.filter(id=data.get("bank_partner_id")).values()
+            print("bank ----- ",str(bank))
+            mode = ModeModel.objects.filter(id= data.get("mode_id")).values()
+            print("mode ------- ",str(mode))
             d={
                 "merchant_id":data.get("merchant_id"),
+                "merchant_client_username":merchant[0].get("client_username"),
+                "merchant_client_name":merchant[0].get("client_name"),
                 "bank_partner_id":data.get("bank_partner_id"),
-                "mode_id":data.get("mode_id")
+                "bank_name":bank[0].get("bank_name"),
+                "bank_code":bank[0].get("bank_code"),
+                "mode_id":data.get("mode_id"),
+                "mode_name":mode[0].get("mode")
             }
             resp.append(d)
         return resp
@@ -43,10 +59,21 @@ class Merchant_mode_service:
             return 0
         resp = list()
         for data in merchantModeModel:
+            merchant=MerchantModel.objects.filter(id=data.get("merchant_id")).values()
+            print("merchant ------ ",str(merchant[0].get("client_username")))
+            bank = BankPartnerModel.objects.filter(id=data.get("bank_partner_id")).values()
+            print("bank ----- ",str(bank))
+            mode = ModeModel.objects.filter(id= data.get("mode_id")).values()
+            print("mode ------- ",str(mode))
             d={
                 "merchant_id":data.get("merchant_id"),
+                "merchant_client_username":merchant[0].get("client_username"),
+                "merchant_client_name":merchant[0].get("client_name"),
                 "bank_partner_id":data.get("bank_partner_id"),
-                "mode_id":data.get("mode_id")
+                "bank_name":bank[0].get("bank_name"),
+                "bank_code":bank[0].get("bank_code"),
+                "mode_id":data.get("mode_id"),
+                "mode_name":mode[0].get("mode")
             }
             resp.append(d)
         return resp
