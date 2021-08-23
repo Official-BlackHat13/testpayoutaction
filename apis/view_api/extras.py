@@ -365,6 +365,55 @@ class AddTax(APIView):
         
         tax=TaxModel()
         tax.tax=query.get("tax")
-        tax.start_date=datetime.now()
+        resp = TaxModel.objects.filter(tax=tax.tax,status=True)
+        if(len(resp)!=0):
+            return Response({"message":"tax already active","response_code":"0"},status=status.HTTP_400_BAD_REQUEST)
+        startTranstime=query.get("start_date")
+        startYear = int(startTranstime[0:4])
+        startMonth = int(startTranstime[5:7])
+        startDay = int(startTranstime[8:10])
+        startHours = int(startTranstime[11:13])
+        startMinute = int(startTranstime[14:16])
+        dt = datetime.now()
+        start = dt.replace(year=startYear, day=startDay, month=startMonth, hour=startHours, minute=startMinute, second=0, microsecond=0)
+        tax.start_date=start
+        tax.created_by="admin ID :: "+str(adminId)
         tax.save()
         return Response({"message":"data saved","response_code":"1"},status=status.HTTP_201_CREATED)
+
+class UpdateTax(APIView):
+    def post(self,request):
+        request_obj = "path:: "+request.path+" :: headers::" + \
+            str(request.headers)+" :: meta_data:: " + \
+            str(request.META)+"data::"+str(request.data)
+        log = Log_model_services.Log_Model_Service(log_type="fetchCharges request at "+request.path+" slug",
+                                                   client_ip_address=request.META['REMOTE_ADDR'], server_ip_address=const.server_ip, full_request=request_obj)
+        logid = log.save()
+        header = request.headers.get("auth_token")
+        adminId = auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(header)
+        admin = BO_user_services.BO_User_Service.fetch_by_id(adminId)
+        if(admin==None):
+            Log_model_services.Log_Model_Service.update_response(
+                logid, {"Message": "admin code missing", "response_code": "0"})
+            return Response({"message":"admin id does not exist", "Response code":"0"},status=status.HTTP_404_NOT_FOUND)
+        query = request.data.get("query")
+        
+        
+        tax_query=query.get("tax")
+        resp = TaxModel.objects.filter(tax=tax_query,status=True)
+        if(len(resp)==0):
+            return Response({"message":"tax does not exist","response_code":"0"},status=status.HTTP_400_BAD_REQUEST)
+        end_date = query.get("end_date")
+        endYear = int(end_date[0:4])
+        endMonth = int(end_date[5:7])
+        endDay = int(end_date[8:10])
+        endHours = int(end_date[11:13])
+        endMinute = int(end_date[14:16])
+        dt = datetime.now()
+        end = dt.replace(year=endYear, day=endDay, month=endMonth, hour=endHours, minute=endMinute, second=0, microsecond=0)
+        resp[0].end_date=end
+        resp[0].status = False
+        resp[0].updated_on=datetime.now()
+        resp[0].updated_by = "admin ID :: "+str(adminId)
+        resp[0].save()
+        return Response({"message":"data updated","response_code":"1"},status=status.HTTP_200_OK)

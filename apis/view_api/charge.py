@@ -129,7 +129,10 @@ class fetchCharges(APIView):
                 merchant_id = auth.AESCipher(admin.auth_key,admin.auth_iv).decrypt(request.data.get("query")).split(":")[1]
             else:
                 merchant_id = str(request.data.get("query")).split(":")[1]
-            chargeResponse = charge_model_service.fetch_by_id(client_ip_address=request.META['REMOTE_ADDR'],created_by="admin :: "+adminId,page=page,length=length,merchant_id=merchant_id)
+            if(merchant_id=="all"):
+                chargeResponse = charge_model_service.allCharges(client_ip_address=request.META['REMOTE_ADDR'],created_by="admin :: "+adminId,page=page,length=length,merchant_id=merchant_id)
+            else:    
+                chargeResponse = charge_model_service.fetch_by_id(client_ip_address=request.META['REMOTE_ADDR'],created_by="admin :: "+adminId,page=page,length=length,merchant_id=merchant_id)
             if(len(chargeResponse)==0):
                 return Response({"message":"data not found","data":None,"response_code":"0"},status=status.HTTP_404_NOT_FOUND)
             if(admin.is_encrypt==True):

@@ -75,17 +75,19 @@ urlpatterns = [
     path("addIp/",views.IpWhitelisting.CreateIpWhiteList.as_view()),
     path("deleteIp/",views.IpWhitelisting.DeleteIp.as_view()),
     path("fetchIpsByMerchantId/",views.IpWhitelisting.fetchIpsByMerchantId.as_view()),
-    path("addMerchantMode/",views.merchantMode.addMerchantMode.as_view()),
+   #  path("addMerchantMode/",views.merchantMode.addMerchantMode.as_view()),
     path("fetchAllMerchantModes/",views.merchantMode.fetchMerchantModes.as_view()),
     path("deleteMerchantMode/",views.merchantMode.deleteMerchantMode.as_view()),
     path("addWebhook/",views.webhook.addWebhook.as_view()),
     path("deleteWebhook/",views.webhook.deleteWebhook.as_view()),
     path("fetchWebhookById/",views.webhook.fetchWebhookByMerchantId.as_view()),
     path("addTax/",views.extras.AddTax.as_view()),
+    path("updateTax/",views.extras.UpdateTax.as_view()),
     path("addRole/",views.Role.addRole.as_view()),
     path("fetchRoles/",views.Role.fetchRoles.as_view()),
     path("deleteRole/",views.Role.deleteRole.as_view()),
     path("saveBankPartner/",views.bankpartner.BankPartnerApiSave.as_view())
+   
    #  path("testicic/",)
    #  path("createTest",views.getTest.as_view()),
    #  path("updateTest/<int:id>",views.updateTest.as_view()),
