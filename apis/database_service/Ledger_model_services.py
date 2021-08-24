@@ -289,7 +289,7 @@ class Ledger_Model_Service:
         cursors.close()
         print(value[0][0])
         log_service.save()
-        return int(value[0][0])
+        return value[0][0]
     @staticmethod
     def getDebitedAmount(merchant_id,client_ip_address,created_by):
         log_service=Log_model_services.Log_Model_Service(log_type="get Debited Amount",table_name="apis_transaction_history",remarks="getting transaction_history from getAmount stored procedure",client_ip_address=client_ip_address,server_ip_address=const.server_ip,created_by=created_by)
