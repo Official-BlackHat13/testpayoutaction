@@ -63,7 +63,7 @@ class PayoutService:
              check_cus=Ledger_model_services.Ledger_Model_Service.fetch_by_customer_ref_no(self.merchant_id,payoutrequestmodel.orderId)
              if check_cus==None:
                  return ["Duplicate Order id",{},False]
-             if bal<int(payoutrequestmodel.amount):                 
+             if bal<float(payoutrequestmodel.amount):                 
                  return ["Not Sufficent Balance",{},False]
              if mode_rec=="UPI":
                 bene=Beneficiary_model_services.Beneficiary_Model_Services.fetch_by_upiId(self.merchant_id,payoutrequestmodel.upiId)
