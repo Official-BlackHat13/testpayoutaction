@@ -19,7 +19,7 @@ from drf_yasg.utils import swagger_auto_schema
 from apis.database_service import Beneficiary_model_services
 from ..API_docs import payout_docs,auth_docs,login_docs,payoutTransactionEnquiry_docs,addBalance_docs,addBeneficiary_docs,log_docs
 from datetime import datetime
-from ..serializersFolder.serializers import LogsSerializer
+from ..serializersFolder.serializers import DailyLedgerSerializer, LogsSerializer
 #from .serializers import *
 # from .models import *
 import ast
@@ -68,3 +68,18 @@ class DailyLedgerViewApi(APIView):
              import traceback
              print(traceback.format_exc())
              return Response({"message":"Some Error","response_code":0},status=status.HTTP_400_BAD_REQUEST)
+
+
+
+class MISViewApi(APIView):
+    def get(self,req,page,length):
+        try:
+            dailyledger=DailyLedger_Model_Service.fetch(page,length)
+            # if dailyledger==None:
+            #     return Response({"message":"data not found","response_code":0})
+            # dailyledgersel=DailyLedgerSerializer(dailyledger,many=True)
+            return Response({"message":"data found","data":dailyledger,"response_code":1})
+        except Exception as e:
+            import traceback
+            print(traceback.format_exc())
+            return Response({"message":"some technical error","response_code":2})

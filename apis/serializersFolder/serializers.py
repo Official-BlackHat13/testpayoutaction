@@ -1,3 +1,4 @@
+from apis.database_models.DailyLedgerModel import DailyLedgerModel
 from apis.database_models.BeneficiaryModel import BeneficiaryModel
 from django.db.models import fields
 from rest_framework import serializers
@@ -21,6 +22,12 @@ class CreateLedgerSerializer(serializers.ModelSerializer):
 class LogsSerializer(serializers.ModelSerializer):
     class Meta:
         model=LogModel
+        fields="__all__"
+
+
+class DailyLedgerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=DailyLedgerModel
         fields="__all__"
 
 
