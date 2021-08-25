@@ -520,6 +520,8 @@ class Ledger_Model_Service:
         ledgermodel.trans_status = "Success"#success
         ledgermodel.payout_trans_id = linkedId
         ledgermodel.is_tax_inclusive = decResp.get("is_tax_inclusive")
+        ledgermodel.trans_init_time=datetime.now()
+        ledgermodel.trans_completed_time = datetime.now()
         ledgermodel.total_amount= amount-float(charge.get("total_charge")+charge.get("total_tax"))
         ledgermodel.save() 
         # {"total_charge":charge,
@@ -698,8 +700,8 @@ class Ledger_Model_Service:
         if transacting_merchant==None:
             transacting_merchant=0
         resp = {
-            "credit_amount":credit_amount,
-            "debited_amount":debited_amount,
+            "credit_amount":credit_amount_1,
+            "debited_amount":debited_amount_1,
             "total_merchants":total_merchant,
             "total_balance":total_balance,
             "total_transactions":total_transactions,
@@ -754,3 +756,46 @@ class Ledger_Model_Service:
         log_service.table_id = ledgermodel.id
         log_service.save()
         return str(ledgermodel.id)
+        #debit crredit
+
+    def merchantCreditDebit(merchant_id):
+            cursors = connection.cursor()
+            cursors.execute("select sum(total_amount) from apis_transactionhistorymodel where trans_amount_type=\"cr\" and merchant_id =  "+merchant_id+";")
+            credit_amount = cursors.fetchone()[0]
+            if credit_amount==None:
+                credit_amount=0
+            cursors.execute("select sum(total_amount) from apis_transactionhistorymodel where trans_amount_type=\"dr\" and trans_date =  CURDATE();")
+            debited_amount = cursors.fetchone()[0]
+            if debited_amount==None:
+                debited_amount=0
+            cursors.execute('select sum(total_amount) from apis_transactionhistorymodel where trans_amount_type="cr" and  trans_status in ("Success") and merchant_id='+merchant_id+';')
+            credit_amount_1 = cursors.fetchone()[0]
+            if credit_amount_1==None:
+                credit_amount_1=0
+            cursors.execute('select sum(total_amount) from apis_transactionhistorymodel where trans_amount_type="dr" and  trans_status in ("Success","Pending","Requested","Proccesing")and merchant_id='+merchant_id+';')
+            debited_amount_1 = cursors.fetchone()[0]
+            if debited_amount_1==None:
+                debited_amount_1=0
+            total_balance = credit_amount_1-debited_amount_1
+            cursors.execute("select count(merchant_id) as c from apis_transactionhistorymodel where trans_date =  CURDATE();")
+        
+
+            total_transactions = cursors.fetchone()[0]
+            if total_transactions==None:
+                total_transactions=0
+            total_merchant=len(MerchantModel.objects.all())
+            # cursors.execute("select count(merchant_id) from apis_transactionhistorymodel where trans_date =  CURDATE() ")
+            
+            # total_merchants = cursors.fetchone()[0]
+            # if total_merchants==None:
+            #     total_merchants=0
+            cursors.execute("call todayTransactingMerchant();")
+            transacting_merchant=cursors.fetchone()[0]
+            if transacting_merchant==None:
+                transacting_merchant=0
+            resp = {
+                "credit_amount":credit_amount_1,
+                "debited_amount":debited_amount_1,
+                "total_balance":total_balance,
+            }
+            return resp
