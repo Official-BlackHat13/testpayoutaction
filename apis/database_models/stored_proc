@@ -193,3 +193,11 @@ drop view tempview;
 -- select endpage;
 end 
 && DELIMITER ;
+
+#fetchBankPartnerInfo
+DELIMITER &&
+create procedure fetchBankPartnerInfo(in page int,in length int)
+begin
+select payout_trans_id,bank_name,mode,trans_type,charge_amount,tax_amount ,charge_amount+tax_amount as total_charge from apis_transactionhistorymodel a, apis_bankpartnermodel b, apis_modemodel c, apis_chargebreakingmodel d where d.transaction_id=a.id and  a.bank_partner_id=b.id and a.payment_mode_id=c.id limit length offset page;
+end &&
+DELIMITER ;

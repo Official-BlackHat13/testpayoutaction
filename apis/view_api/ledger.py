@@ -294,7 +294,13 @@ class CreditDebitBalanceInfo(APIView):
                     Log_model_services.Log_Model_Service.update_response(
                     logid, {"Message": "admin code missing", "response_code": "0"})
                     return Response({"message":"admin id does not exist", "Response code":"0"},status=status.HTTP_404_NOT_FOUND)
-                response = Ledger_Model_Service.merchantCreditDebit()
+                query = request.data.get("query")
+                merchant_id= query.get("merchant_id")
+                if(merchant_id=="all"):
+                    response = Ledger_Model_Service.AllCreditDebit(merchant_id=merchant_id,created_by="admin ID :: "+str(adminId),client_ip_address=request.META['REMOTE_ADDR'])
+                else:
+                    response = Ledger_Model_Service.merchantCreditDebit(merchant_id=merchant_id,created_by="admin ID :: "+str(adminId),client_ip_address=request.META['REMOTE_ADDR'])
+                
                 return Response({"message":"data found","data":response,"response_code":"1"})
         except Exception as e:
                 import traceback

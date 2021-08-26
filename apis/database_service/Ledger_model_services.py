@@ -658,14 +658,16 @@ class Ledger_Model_Service:
 
     def fetchInfo():
         cursors = connection.cursor()
-        cursors.execute("select sum(total_amount) from apis_transactionhistorymodel where trans_amount_type=\"cr\" and trans_date =  CURDATE();")
+        #
+        cursors.execute('select sum(total_amount) from apis_transactionhistorymodel where trans_amount_type="cr" and  trans_status in ("Success") and trans_date =  CURDATE();')
         credit_amount = cursors.fetchone()[0]
         if credit_amount==None:
             credit_amount=0
-        cursors.execute("select sum(total_amount) from apis_transactionhistorymodel where trans_amount_type=\"dr\" and trans_date =  CURDATE();")
+        cursors.execute('select sum(total_amount) from apis_transactionhistorymodel where trans_amount_type="dr" and  trans_status in ("Success","Pending","Requested","Proccesing") and trans_date =  CURDATE();;')
         debited_amount = cursors.fetchone()[0]
         if debited_amount==None:
             debited_amount=0
+        #
         cursors.execute('select sum(total_amount) from apis_transactionhistorymodel where trans_amount_type="cr" and  trans_status in ("Success");')
         credit_amount_1 = cursors.fetchone()[0]
         if credit_amount_1==None:
@@ -674,11 +676,10 @@ class Ledger_Model_Service:
         debited_amount_1 = cursors.fetchone()[0]
         if debited_amount_1==None:
             debited_amount_1=0
-        total_balance = credit_amount_1-debited_amount_1
+        #getBalance(merchant_id,client_ip_address,created_by):
+        total_balance=credit_amount_1-debited_amount_1
         cursors.execute("select count(merchant_id) as c from apis_transactionhistorymodel where trans_date =  CURDATE();")
-       
-
-        total_transactions = cursors.fetchone()[0]
+        total_transactions = credit_amount_1-debited_amount_1
         if total_transactions==None:
             total_transactions=0
         total_merchant=len(MerchantModel.objects.all())
@@ -692,8 +693,8 @@ class Ledger_Model_Service:
         if transacting_merchant==None:
             transacting_merchant=0
         resp = {
-            "credit_amount":credit_amount_1,
-            "debited_amount":debited_amount_1,
+            "credit_amount":credit_amount,
+            "debited_amount":debited_amount,
             "total_merchants":total_merchant,
             "total_balance":total_balance,
             "total_transactions":total_transactions,
@@ -750,44 +751,39 @@ class Ledger_Model_Service:
         return str(ledgermodel.id)
         #debit crredit
 
-    def merchantCreditDebit(merchant_id):
+    def merchantCreditDebit(merchant_id,client_ip_address,created_by):
             cursors = connection.cursor()
-            cursors.execute("select sum(total_amount) from apis_transactionhistorymodel where trans_amount_type=\"cr\" and merchant_id =  "+merchant_id+";")
-            credit_amount = cursors.fetchone()[0]
-            if credit_amount==None:
-                credit_amount=0
-            cursors.execute("select sum(total_amount) from apis_transactionhistorymodel where trans_amount_type=\"dr\" and trans_date =  CURDATE();")
-            debited_amount = cursors.fetchone()[0]
-            if debited_amount==None:
-                debited_amount=0
-            cursors.execute('select sum(total_amount) from apis_transactionhistorymodel where trans_amount_type="cr" and  trans_status in ("Success") and merchant_id='+merchant_id+';')
+            cursors.execute('select sum(total_amount) from apis_transactionhistorymodel where trans_amount_type="cr" and  trans_status in ("Success") and merchant_id='+str(merchant_id)+';')
             credit_amount_1 = cursors.fetchone()[0]
             if credit_amount_1==None:
                 credit_amount_1=0
-            cursors.execute('select sum(total_amount) from apis_transactionhistorymodel where trans_amount_type="dr" and  trans_status in ("Success","Pending","Requested","Proccesing")and merchant_id='+merchant_id+';')
+            cursors.execute('select sum(total_amount) from apis_transactionhistorymodel where trans_amount_type="dr" and  trans_status in ("Success","Pending","Requested","Proccesing")and merchant_id='+str(merchant_id)+';')
             debited_amount_1 = cursors.fetchone()[0]
             if debited_amount_1==None:
                 debited_amount_1=0
-            total_balance = credit_amount_1-debited_amount_1
-            cursors.execute("select count(merchant_id) as c from apis_transactionhistorymodel where trans_date =  CURDATE();")
-        
-
-            total_transactions = cursors.fetchone()[0]
-            if total_transactions==None:
-                total_transactions=0
-            total_merchant=len(MerchantModel.objects.all())
-            # cursors.execute("select count(merchant_id) from apis_transactionhistorymodel where trans_date =  CURDATE() ")
-            
-            # total_merchants = cursors.fetchone()[0]
-            # if total_merchants==None:
-            #     total_merchants=0
-            cursors.execute("call todayTransactingMerchant();")
-            transacting_merchant=cursors.fetchone()[0]
-            if transacting_merchant==None:
-                transacting_merchant=0
+            total_balance=credit_amount_1-debited_amount_1
             resp = {
                 "credit_amount":credit_amount_1,
                 "debited_amount":debited_amount_1,
                 "total_balance":total_balance,
             }
             return resp
+
+    def AllCreditDebit(merchant_id,client_ip_address,created_by):
+            cursors = connection.cursor()
+            cursors.execute('select sum(total_amount) from apis_transactionhistorymodel where trans_amount_type="cr" and  trans_status in ("Success");')
+            credit_amount_1 = cursors.fetchone()[0]
+            if credit_amount_1==None:
+                credit_amount_1=0
+            cursors.execute('select sum(total_amount) from apis_transactionhistorymodel where trans_amount_type="dr" and  trans_status in ("Success","Pending","Requested","Proccesing");')
+            debited_amount_1 = cursors.fetchone()[0]
+            if debited_amount_1==None:
+                debited_amount_1=0
+            total_balance=credit_amount_1-debited_amount_1
+            resp = {
+                "credit_amount":credit_amount_1,
+                "debited_amount":debited_amount_1,
+                "total_balance":total_balance,
+            }
+            return resp    
+    
