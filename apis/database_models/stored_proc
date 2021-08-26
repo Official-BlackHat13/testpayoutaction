@@ -82,6 +82,7 @@ create PROCEDURE getDailyBalance()
 begin
 declare merchant_length int;
 declare looping int;
+declare charge_amount float;
 declare merchant int;
 declare temp_check int;
 declare temp_check2 int;
@@ -102,9 +103,10 @@ if temp_check2=0 then
 if temp_check=0 then
 insert into apis_dailyledgermodel (merchant_id,date,opening_balance,closing_balance,created_at,created_by) values (merchant,DATE_SUB(CURDATE(), INTERVAL 1 DAY),0,@balance,now(),"system");
 else
-update apis_dailyledgermodel set closing_balance=@balance,updated_at=now() where date = DATE_SUB(CURDATE(), INTERVAL 1 DAY) and merchant_id=merchant;
+select sum(charge_amount) into charge_amount from apis_chargebreakingmodel inner join apis_transactionhistorymodel on apis_chargebreakingmodel.transaction_id=apis_transactionhistorymodel.id where apis_transactionhistorymodel.trans_date=CURDATE() and merchant_id=merchant and apis_chargebreakingmodel.charge_type="bank charge";;
+update apis_dailyledgermodel set closing_balance=@balance,updated_at=now(),today_charges=charge_amount,closing_credit=@cred,closing_debit=@deb where date = DATE_SUB(CURDATE(), INTERVAL 1 DAY) and merchant_id=merchant;
 end if;
-insert into apis_dailyledgermodel (merchant_id,date,opening_balance,created_at,created_by) values (merchant,CURDATE(),@balance,now(),"system");
+insert into apis_dailyledgermodel (merchant_id,date,opening_balance,opening_credit,opening_debit,created_at,created_by) values (merchant,CURDATE(),@balance,@cred,@deb,now(),"system");
 end if;
 set @balance=0;
 
