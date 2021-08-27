@@ -9,7 +9,7 @@ class DailyLedger_Model_Service:
         return dailyledger
     @staticmethod
     def fetch(page,length):
-        dailyledger=DailyLedgerModel.objects.raw("select * from apis_dailyledgermodel limit "+str((page-1)*length)+","+str(length)+"")
+        dailyledger=DailyLedgerModel.objects.raw("select * from apis_dailyledgermodel where date=DATE_SUB(CURDATE(), INTERVAL 1 DAY) limit "+str((page-1)*length)+","+str(length)+"")
         def mapit(vals):
             temp_c=vals.today_charges
             temp_credit=vals.closing_credit
