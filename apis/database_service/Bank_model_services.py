@@ -65,13 +65,14 @@ class Bank_model_services:
 
             cursors.execute("select sum(bank_charge) as sum_bank_charges,sum(bank_tax) as sum_bank_tax, sum(bank_total_charge) as sum_bank_total_charge from chargeInfoBankMode where bank_name = "+temp_bank_name+" and mode = "+temp_payout_mode+" limit "+str((page-1)*length)+","+str(length)+"")
 
-            
-            total_charges = [
+            columns = [col[0] for col in cursors.description]
+            total_charges =  [
             dict(zip(columns, row))
             for row in cursors.fetchall()
             ]
 
             cursors.execute("select sum(sabpaisa_charge) as sum_sabpaisa_charge,sum(sabpaisa_charge) as sum_sabpaisa_charge, sum(sabpaisa_charge) as sum_sabpaisa_charge from chargeInfoBankMode where bank_name = "+temp_bank_name+" and mode = "+temp_payout_mode+" limit "+str((page-1)*length)+","+str(length)+"")        
+            columns = [col[0] for col in cursors.description]
             
             total_sabpaisa = [
             dict(zip(columns, row))
