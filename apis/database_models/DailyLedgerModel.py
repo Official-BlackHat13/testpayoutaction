@@ -16,7 +16,7 @@ class DailyLedgerModel(models.Model):
     today_charges=models.FloatField(null=True)
     created_at=models.DateTimeField()
     updated_at=models.DateTimeField(null=True)
-    deleted_at=models.DateTimeField(null=True)
+    deleted_at=models.DateTimeField(null=True) 
     created_by=models.CharField(max_length=3000)
     updated_by=models.CharField(max_length=3000,null=True)
     deleted_by=models.CharField(max_length=3000,null=True)

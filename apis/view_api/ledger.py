@@ -2,9 +2,10 @@
 # Create your views here.
 
 
+import threading
 from apis.other_service.ledger_service import Ledger_service
 from django.db.models import query
-
+from time import sleep
 
 from pyexcel_xls import get_data as xls_get
 from pyexcel_xlsx import get_data as xlsx_get
@@ -23,7 +24,7 @@ from drf_yasg.utils import swagger_auto_schema
 
 from apis.database_service import Beneficiary_model_services
 from ..API_docs import payout_docs,auth_docs,login_docs,payoutTransactionEnquiry_docs,addBalance_docs,addBeneficiary_docs,log_docs
-from datetime import datetime
+from datetime import datetime, time
 from ..serializersFolder.serializers import LogsSerializer
 #from .serializers import *
 # from .models import *
@@ -57,7 +58,7 @@ from ..database_service.BO_user_services import BO_User_Service
 
 from sabpaisa import auth
 
-
+import mimetypes
 class GetLedgerForMerchant(APIView):
     def get(self,req):
         try:
@@ -303,3 +304,61 @@ class CreditDebitBalanceInfo(APIView):
                 print(traceback.format_exc())
                 Log_model_services.Log_Model_Service.update_response(logid,{"message":"Some error occured","Error_Code":e.args,"response_code":"2"})
                 return Response({"Message":"some error","Error":e.args})
+
+from django.views.decorators.csrf import csrf_exempt
+class DownloadExcelView(APIView):
+    @csrf_exempt
+    def post(self,req,page,length):
+        try:
+            auth_token = req.headers["auth_token"]
+            start_date=req.data["start"]
+            end_date=req.data['end']
+            trans_amount_type=req.data['transfer_type']
+            trans_status=req.data['trans_status']
+            if start_date!="all" or end_date!='all':
+                start_date=datetime.strptime(start_date, "%Y-%m-%d %H:%M:%S")
+                end_date=datetime.strptime(end_date, "%Y-%m-%d %H:%M:%S")
+            id=auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(auth_token)
+            if Client_model_service.Client_Model_Service.fetch_by_id(id,req.META['REMOTE_ADDR'],"Merchant Id :: "+str(id))==None:
+                return Response({"message":"user not valid","response_code":"0"})
+            # data=Ledger_Model_Service.getLedgers(page,length,req.META['REMOTE_ADDR'],"Admin Id :: "+str(id))
+            data=Ledger_Model_Service.getTransactionHistory(page,length,start_date,end_date,id,trans_amount_type,trans_status)
+            
+
+            import csv
+            import os
+            filename=str(datetime.now()).replace(" ","").replace("-","").replace(".","").replace(":","")+".csv"
+            f=open(filename,"w")
+            op=csv.writer(f)
+            # {}.
+            
+            if len(data["data"])>0:
+                op.writerow(list(data["data"][0].keys()))
+            for i in data["data"]:
+            
+                op.writerow(list(i.values()))
+            
+            class DeleteThreading(threading.Thread):
+                def run(self):
+                    sleep(30)
+                    print("running thread")
+                    if os.path.exists(filename):
+                         os.remove(filename) 
+            DeleteThreading().start()
+            # if os.path.exists(filename):
+            #     os.remove(filename)
+            BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            filepath = BASE_DIR + filename
+            mime_type, _ = mimetypes.guess_type(filepath)
+            response=HttpResponse(
+               
+        content_type="application/force-download",
+        headers={'Content-Disposition': 'attachment; filename="'+filename+'"'},
+    )
+            return response
+            # return Response({"message":"date found","data":data,"response_code":"1"})
+        except Exception as e:
+         import traceback
+         print(traceback.format_exc())
+         #  Log_model_services.Log_Model_Service.update_response(logid,{"Message":e.args,"response_code":"2"})
+         return Response({"Message":"Some Technical error","response_code":"2"},status=status.HTTP_204_NO_CONTENT)

@@ -72,12 +72,18 @@ class DailyLedgerViewApi(APIView):
 
 
 class MISViewApi(APIView):
-    def get(self,req,page,length):
+    def get(self,req,page,length,start,end):
         try:
-            dailyledger=DailyLedger_Model_Service.fetch(page,length)
+            auth_token = req.headers["auth_token"]
+            merchant_id=auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(auth_token)
+            if start!="all" or end!='all':
+                start=datetime.strptime(start, "%Y-%m-%d")
+                end=datetime.strptime(end, "%Y-%m-%d")
+            dailyledger=DailyLedger_Model_Service.fetch(page,length,merchant_id,start,end)
             # if dailyledger==None:
             #     return Response({"message":"data not found","response_code":0})
             # dailyledgersel=DailyLedgerSerializer(dailyledger,many=True)
+            
             return Response({"message":"data found","data":dailyledger,"response_code":1})
         except Exception as e:
             import traceback
