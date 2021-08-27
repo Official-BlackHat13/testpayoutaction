@@ -195,3 +195,63 @@ drop view tempview;
 -- select endpage;
 end 
 && DELIMITER ;
+
+#fetchBankPartnerInfo
+DELIMITER &&
+create procedure fetchBankPartnerInfo(in page int,in length int)
+begin
+select payout_trans_id,bank_name,mode,trans_type,charge_amount,tax_amount ,charge_amount+tax_amount as total_charge from apis_transactionhistorymodel a, apis_bankpartnermodel b, apis_modemodel c, apis_chargebreakingmodel d where d.transaction_id=a.id and  a.bank_partner_id=b.id and a.payment_mode_id=c.id limit length offset page;
+end &&
+DELIMITER ;
+
+## bank info
+create view payinChargesBank as select payout_trans_id,charge_type,trans_type,charge_amount as bank_charge,tax_amount as bank_tax,charge_amount+tax_amount as bank_total_charge from apis_transactionhistorymodel a,apis_chargebreakingmodel b where b.payout_transaction_id=a.payout_trans_id and trans_type="payin" and charge_type="bank charge";
+
+create view payinChargesSP as select payout_trans_id,charge_type ,trans_type,charge_amount as sabpaisa_charge,tax_amount as sabpaisa_tax,charge_amount+tax_amount as sabpaisa_total_charge from apis_transactionhistorymodel a,apis_chargebreakingmodel b where b.payout_transaction_id=a.payout_trans_id and trans_type="payin" and charge_type="sp convinience charge";
+ 
+create view payoutChargesBank as select payout_trans_id,b.charge_type,trans_type,charge_amount as bank_charge,tax_amount as bank_tax,bank_name,mode,charge_amount+tax_amount as bank_total_charge from apis_transactionhistorymodel a,apis_chargebreakingmodel b,apis_chargemodel c,apis_bankpartnermodel d, apis_modemodel e where b.payout_transaction_id=a.payout_trans_id and trans_type="payout" and b.charge_type="charge"and b.charge_id=c.id and c.partner_id!=0 and c.partner_id=d.id and a.payment_mode_id=e.id;
+
+create view payoutChargesSp as select payout_trans_id,b.charge_type,trans_type,charge_amount as sabpaisa_charge,tax_amount as sabpaisa_tax,charge_amount+tax_amount as sabpaisa_total_charge from apis_transactionhistorymodel a,apis_chargebreakingmodel b,apis_chargemodel c where b.payout_transaction_id=a.payout_trans_id and trans_type="payout" and b.charge_type="charge"and b.charge_id=c.id and c.partner_id=0;
+
+select * from payoutChargesBank left join payoutChargesSp on payoutChargesBank.payout_trans_id=payoutChargesSp.payout_trans_id;
+
+select * from payinChargesBank left join payinChargesSP on payinChargesBank.payout_trans_id=payinChargesSP.payout_trans_id union ;
+
+
+select payinChargesBank.payout_trans_id,payinChargesBank.trans_type,payinChargesBank.bank_charge,payinChargesBank.bank_tax,payinChargesBank.bank_total_charge,payinChargesSP.sabpaisa_charge,payinChargesSP.sabpaisa_tax,payinChargesSP.sabpaisa_total_charge from payinChargesBank left join payinChargesSP on payinChargesBank.payout_trans_id=payinChargesSP.payout_trans_id;
+
+select payoutChargesBank.payout_trans_id,payoutChargesBank.trans_type,payoutChargesBank.bank_charge,payoutChargesBank.bank_tax,payoutChargesBank.bank_total_charge,payoutChargesSp.sabpaisa_charge,payoutChargesSp.sabpaisa_tax,payoutChargesSp.sabpaisa_total_charge from payoutChargesBank left join payoutChargesSp on payoutChargesBank.payout_trans_id=payoutChargesSp.payout_trans_id;
+
+select payinChargesBank.payout_trans_id,payinChargesBank.trans_type,payinChargesBank.bank_charge,payinChargesBank.bank_tax,payinChargesBank.bank_total_charge,payinChargesSP.sabpaisa_charge,payinChargesSP.sabpaisa_tax,payinChargesSP.sabpaisa_total_charge from payinChargesBank left join payinChargesSP on payinChargesBank.payout_trans_id=payinChargesSP.payout_trans_id union all select payoutChargesBank.payout_trans_id,payoutChargesBank.trans_type,payoutChargesBank.bank_charge,payoutChargesBank.bank_tax,payoutChargesBank.bank_total_charge,payoutChargesSp.sabpaisa_charge,payoutChargesSp.sabpaisa_tax,payoutChargesSp.sabpaisa_total_charge from payoutChargesBank left join payoutChargesSp on payoutChargesBank.payout_trans_id=payoutChargesSp.payout_trans_id;
+
+
+create view chargeBreakInfo as select payinChargesBank.payout_trans_id,payinChargesBank.trans_type,payinChargesBank.bank_charge,payinChargesBank.bank_tax,payinChargesBank.bank_total_charge,payinChargesSP.sabpaisa_charge,payinChargesSP.sabpaisa_tax,payinChargesSP.sabpaisa_total_charge from payinChargesBank left join payinChargesSP on payinChargesBank.payout_trans_id=payinChargesSP.payout_trans_id union all select payoutChargesBank.payout_trans_id,payoutChargesBank.trans_type,payoutChargesBank.bank_charge,payoutChargesBank.bank_tax,payoutChargesBank.bank_total_charge,payoutChargesSp.sabpaisa_charge,payoutChargesSp.sabpaisa_tax,payoutChargesSp.sabpaisa_total_charge from payoutChargesBank left join payoutChargesSp on payoutChargesBank.payout_trans_id=payoutChargesSp.payout_trans_id;
+
+select a.payout_trans_id,a.trans_type,bank_charge,bank_tax,bank_total_charge,sabpaisa_charge,sabpaisa_tax,sabpaisa_total_charge,bank_name,mode from chargeBreakInfo a, apis_bankpartnermodel b, apis_modemodel c , apis_transactionhistorymodel d where a.payout_trans_id=d.payout_trans_id and d.bank_partner_id=b.id and d.payment_mode_id=c.id;
+
+#Charge Break up info
+DELIMITER &&
+create PROCEDURE chargeBreakUpInfo()
+begin
+create view payinChargesBank as select payout_trans_id,charge_type,trans_type,charge_amount as bank_charge,tax_amount as bank_tax,charge_amount+tax_amount as bank_total_charge from apis_transactionhistorymodel a,apis_chargebreakingmodel b where b.payout_transaction_id=a.payout_trans_id and trans_type="payin" and charge_type="bank charge";
+create view payinChargesSP as select payout_trans_id,charge_type ,trans_type,charge_amount as sabpaisa_charge,tax_amount as sabpaisa_tax,charge_amount+tax_amount as sabpaisa_total_charge from apis_transactionhistorymodel a,apis_chargebreakingmodel b where b.payout_transaction_id=a.payout_trans_id and trans_type="payin" and charge_type="sp convinience charge";
+create view payoutChargesBank as select payout_trans_id,b.charge_type,trans_type,charge_amount as bank_charge,tax_amount as bank_tax,bank_name,mode,charge_amount+tax_amount as bank_total_charge from apis_transactionhistorymodel a,apis_chargebreakingmodel b,apis_chargemodel c,apis_bankpartnermodel d, apis_modemodel e where b.payout_transaction_id=a.payout_trans_id and trans_type="payout" and b.charge_type="charge"and b.charge_id=c.id and c.partner_id!=0 and c.partner_id=d.id and a.payment_mode_id=e.id;
+create view payoutChargesSp as select payout_trans_id,b.charge_type,trans_type,charge_amount as sabpaisa_charge,tax_amount as sabpaisa_tax,charge_amount+tax_amount as sabpaisa_total_charge from apis_transactionhistorymodel a,apis_chargebreakingmodel b,apis_chargemodel c where b.payout_transaction_id=a.payout_trans_id and trans_type="payout" and b.charge_type="charge"and b.charge_id=c.id and c.partner_id=0;
+create view chargeBreakInfo as select payinChargesBank.payout_trans_id,payinChargesBank.trans_type,payinChargesBank.bank_charge,payinChargesBank.bank_tax,payinChargesBank.bank_total_charge,payinChargesSP.sabpaisa_charge,payinChargesSP.sabpaisa_tax,payinChargesSP.sabpaisa_total_charge from payinChargesBank left join payinChargesSP on payinChargesBank.payout_trans_id=payinChargesSP.payout_trans_id union all select payoutChargesBank.payout_trans_id,payoutChargesBank.trans_type,payoutChargesBank.bank_charge,payoutChargesBank.bank_tax,payoutChargesBank.bank_total_charge,payoutChargesSp.sabpaisa_charge,payoutChargesSp.sabpaisa_tax,payoutChargesSp.sabpaisa_total_charge from payoutChargesBank left join payoutChargesSp on payoutChargesBank.payout_trans_id=payoutChargesSp.payout_trans_id;
+create view chargeInfoBankMode as select d.payout_trans_id,d.trans_type,bank_charge,bank_tax,bank_total_charge,sabpaisa_charge,sabpaisa_tax,sabpaisa_total_charge,bank_name, mode from chargeInfo a,apis_bankpartnermodel b, apis_modemodel c, apis_transactionhistorymodel d where a.payout_trans_id=d.payout_trans_id and d.payment_mode_id=c.id and d.bank_partner_id = b.id; 
+end &&
+DELIMITER;
+
+#delete all view 
+DELIMITER &&
+create PROCEDURE deleteChargeBreakUpInfo()
+begin
+drop view payinChargesBank;
+drop view payinChargesSP;
+drop view payoutChargesBank;
+drop view payoutChargesSp;
+drop view chargeBreakInfo;
+drop view chargeInfoBankMode;
+end &&
+DELIMITER;
+
