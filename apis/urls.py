@@ -90,7 +90,8 @@ urlpatterns = [
     path("fetchBeneficiaryfor/<int:merchantId>",views.beneficiary.FetchBeniAdminAPIView.as_view()),
     path("saveBeneficiaryfor/",views.beneficiary.addSingleBeneficiaryfor.as_view()),
     path("CreditDebitBalanceInfo/",views.ledger.CreditDebitBalanceInfo.as_view()),
-    path("creditamountmis/<int:page>/<int:length>/",views.dailyLedger.MISViewApi.as_view())
+    path("creditamountmis/<int:page>/<int:length>/",views.dailyLedger.MISViewApi.as_view()),
+    path("chargeBreakUpInfo/<slug:page>/<slug:length>/",views.bankpartner.ChargeBreakUpInfoApi.as_view())
    #  path("testicic/",)
    #  path("createTest",views.getTest.as_view()),
    #  path("updateTest/<int:id>",views.updateTest.as_view()),

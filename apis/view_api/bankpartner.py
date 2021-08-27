@@ -69,3 +69,11 @@ class BankPartnerApiSave(APIView):
             if bankModel!=None:
                 bankModel.delete()
             return Response({"message":"some error","responseCode":2})
+
+class ChargeBreakUpInfoApi(APIView):
+    def post(self,request,length,page):
+        query=request.data.get("query")
+        payoutMode = query.get("payment_mode")
+        bankMode = query.get("bank_name")
+        resp = Bank_model_services.ChargeBankInfo(payoutMode=payoutMode,bank_name=bankMode,page=page,length=length)
+        return Response({"message":"data","data":resp,"response_code":"1"},status=status.HTTP_200_OK)
