@@ -41,29 +41,36 @@ class Bank_model_services:
         log_service.save()
         return bankModel
     @staticmethod
-    def ChargeBankInfo(bank_name,payoutMode,page,length):
+    def ChargeBankInfo(bank_name,payoutMode,page,length,start,end):
         try:
+            cursors = connection.cursor()
+            cursors.execute("call chargeBreakUpInfo();")
             page = int(page)
             length=int(length)
-            cursors = connection.cursor()
             temp_bank_name="'"+bank_name+"'"
             temp_payout_mode="'"+payoutMode+"'"
-            
+            start_date = "'"+str(start)+"'"
+            end_date = "'"+str(end)+"'"
             if(bank_name=="all"):
                 temp_bank_name = "bank_name"
             if(payoutMode =="all"):
                 temp_payout_mode = "mode"
-            cursors.execute("call chargeBreakUpInfo();")
-            print("yo select * from chargeInfoBankMode where bank_name = "+temp_bank_name+" and mode = "+temp_payout_mode+" limit "+str((page-1)*length)+","+str(length)+"")
-            cursors.execute("select * from chargeInfoBankMode where bank_name = "+temp_bank_name+" and mode = "+temp_payout_mode+" limit "+str((page-1)*length)+","+str(length)+"")
+            if(start=="all"):
+                start_date="transaction_date"
+            if(end=="all"):
+                end_date="transaction_date"
+            
+            print("select * from chargeInfoBankMode where bank_name = "+temp_bank_name+" and mode = "+temp_payout_mode+" and transaction_date>= "+start_date+" and transaction_date <= "+end_date+" limit "+str((page-1)*length)+","+str(length)+"")
+            cursors.execute("select * from chargeInfoBankMode where bank_name = "+temp_bank_name+" and mode = "+temp_payout_mode+" and transaction_date>= "+start_date+" and transaction_date <= "+end_date+" limit "+str((page-1)*length)+","+str(length)+"")
             columns = [col[0] for col in cursors.description]
             
             resp = [
             dict(zip(columns, row))
             for row in cursors.fetchall()
             ]
-
-            cursors.execute("select sum(bank_charge) as sum_bank_charges,sum(bank_tax) as sum_bank_tax, sum(bank_total_charge) as sum_bank_total_charge from chargeInfoBankMode where bank_name = "+temp_bank_name+" and mode = "+temp_payout_mode+" limit "+str((page-1)*length)+","+str(length)+"")
+            if(len(resp)==0):
+                return -1
+            cursors.execute("select sum(bank_charge) as sum_bank_charges,sum(bank_tax) as sum_bank_tax, sum(bank_total_charge) as sum_bank_total_charge from chargeInfoBankMode where bank_name = "+temp_bank_name+" and mode = "+temp_payout_mode+" and transaction_date>= "+start_date+" and transaction_date <= "+end_date+" limit "+str((page-1)*length)+","+str(length)+"")
 
             columns = [col[0] for col in cursors.description]
             total_charges =  [
@@ -71,7 +78,7 @@ class Bank_model_services:
             for row in cursors.fetchall()
             ]
 
-            cursors.execute("select sum(sabpaisa_charge) as sum_sabpaisa_charge,sum(sabpaisa_charge) as sum_sabpaisa_charge, sum(sabpaisa_charge) as sum_sabpaisa_charge from chargeInfoBankMode where bank_name = "+temp_bank_name+" and mode = "+temp_payout_mode+" limit "+str((page-1)*length)+","+str(length)+"")        
+            cursors.execute("select sum(sabpaisa_charge) as sum_sabpaisa_charge,sum(sabpaisa_tax) as sum_sabpaisa_tax, sum(sabpaisa_total_charge) as sum_ssabpaisa_total_charge from chargeInfoBankMode where bank_name = "+temp_bank_name+" and mode = "+temp_payout_mode+" and transaction_date>= "+start_date+" and transaction_date <= "+end_date+" limit "+str((page-1)*length)+","+str(length)+"")        
             columns = [col[0] for col in cursors.description]
             
             total_sabpaisa = [
@@ -80,9 +87,9 @@ class Bank_model_services:
             ]
 
             return {
-                "Grid list":resp,
-                "total_charges":total_charges,
-                "total_sabpaisa":total_sabpaisa
+                "Grid_data":resp,
+                "total_charges_by_bank":total_charges,
+                "total_charges_by_sabpaisa":total_sabpaisa
             }
         finally:
             cursors.execute("call deleteChargeBreakUpInfo();")

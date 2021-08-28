@@ -72,8 +72,37 @@ class BankPartnerApiSave(APIView):
 
 class ChargeBreakUpInfoApi(APIView):
     def post(self,request,length,page):
-        query=request.data.get("query")
-        payoutMode = query.get("payment_mode")
-        bankMode = query.get("bank_name")
-        resp = Bank_model_services.ChargeBankInfo(payoutMode=payoutMode,bank_name=bankMode,page=page,length=length)
-        return Response({"message":"data","data":resp,"response_code":"1"},status=status.HTTP_200_OK)
+        request_obj = "path:: "+request.path+" :: headers::" + \
+            str(request.headers)+" :: meta_data:: " + \
+            str(request.META)+"data::"+str(request.data)
+
+        log = Log_model_services.Log_Model_Service(log_type="fetch ChargeBreakUpInfoApi request at "+request.path+" slug",
+                                                   client_ip_address=request.META['REMOTE_ADDR'], server_ip_address=const.server_ip, full_request=request_obj)
+        logid = log.save()
+        try:
+            header = request.headers.get("auth_token")
+            adminId = auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(header)
+            admin = BO_user_services.BO_User_Service.fetch_by_id(adminId)
+            if(admin==None):
+                Log_model_services.Log_Model_Service.update_response(
+                logid, {"Message": "admin id does not exist", "response_code": "0"})
+                return Response({"message":"admin id does not exist", "Response code":"0"},status=status.HTTP_404_NOT_FOUND)
+            query=request.data.get("query")
+            payoutMode = query.get("payment_mode")
+            bankMode = query.get("bank_name")
+            start_date = query.get("start_date")
+            end_date = query.get("end_date")
+            if start_date !="all":
+                start_date=datetime.strptime(start_date, "%Y-%m-%d")
+                    
+            if end_date!='all':
+                end_date=datetime.strptime(end_date, "%Y-%m-%d")
+            resp = Bank_model_services.ChargeBankInfo(payoutMode=payoutMode,bank_name=bankMode,page=page,length=length,start=start_date,end=end_date)
+            if(resp == -1):
+                return Response({"message":"data","data":None,"response_code":"0"},status=status.HTTP_404_NOT_FOUND)
+            return Response({"message":"data","data":resp,"response_code":"1"},status=status.HTTP_200_OK)
+        except Exception as e:
+            import traceback
+            print(traceback.format_exc())
+            Log_model_services.Log_Model_Service.update_response(logid,{"message":"Some error occured","Error_Code":e.args,"response_code":"2"})
+            return Response({"Message":"some error","Error":e.args})
