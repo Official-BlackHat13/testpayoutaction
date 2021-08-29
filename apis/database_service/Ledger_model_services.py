@@ -389,9 +389,14 @@ class Ledger_Model_Service:
                 cursors.execute("select count(*) from apis_transactionhistorymodel where  merchant_id="+str(merchant_id)+" and created_at between '"+str(start)+"' and '"+str(end)+"' ")
                 total_trans=cursors.fetchall()[0][0]
             # print("record :: ",record)
+            from . import Mode_model_services
+            modes=Mode_model_services.Mode_Model_Service.fetch_all()
+            mode_maps={}
+            for i in modes:
+                mode_maps[i.id]=i.mode
             def rec(rec):
 
-                json = {"customer_ref_no":rec.customer_ref_no,"trans_completed_time":rec.trans_completed_time,"trans_init_time":rec.trans_init_time,"charge":rec.charge,"payment_mode":rec.payment_mode_id,"bene_account_name":rec.bene_account_name,"bene_account_number":rec.bene_account_number,"bene_ifsc":rec.bene_ifsc,"payout_trans_id":rec.payout_trans_id,"tax_amount":rec.tax,"total_amount":rec.total_amount,"created_at":rec.created_at,"updated_at":rec.updated_at,"deleted_at":rec.deleted_at,"trans_amount_type":rec.trans_amount_type,"merchant_id":rec.merchant_id,"client_username":rec.client_username,"client_name":rec.client_name,"id":rec.id,"amount":rec.amount,"type_status":rec.type_status,"trans_type":rec.trans_type,"trans_status":rec.trans_status,"upi_id":rec.upi_id}
+                json = {"customer_ref_no":rec.customer_ref_no,"trans_completed_time":rec.trans_completed_time,"trans_init_time":rec.trans_init_time,"charge":rec.charge,"payment_mode":mode_maps[rec.payment_mode_id],"bene_account_name":rec.bene_account_name,"bene_account_number":rec.bene_account_number,"bene_ifsc":rec.bene_ifsc,"payout_trans_id":rec.payout_trans_id,"tax_amount":rec.tax,"total_amount":rec.total_amount,"created_at":rec.created_at,"updated_at":rec.updated_at,"deleted_at":rec.deleted_at,"trans_amount_type":rec.trans_amount_type,"merchant_id":rec.merchant_id,"client_username":rec.client_username,"client_name":rec.client_name,"id":rec.id,"amount":rec.amount,"type_status":rec.type_status,"trans_type":rec.trans_type,"trans_status":rec.trans_status,"upi_id":rec.upi_id}
                 return json
             data=list(map(rec,list(record.iterator())))
             return {"data":data,"balance":balance,"payout_rec":temp_total,"total_transactions":total_trans}

@@ -312,15 +312,18 @@ class CreditDebitBalanceInfo(APIView):
                 return Response({"Message":"some error","Error":e.args})
 
 from django.views.decorators.csrf import csrf_exempt
+
+
 class DownloadExcelView(APIView):
     @csrf_exempt
-    def post(self,req,page,length):
+    def get(self,req,page,length):
         try:
-            auth_token = req.headers["auth_token"]
-            start_date=req.data["start"]
-            end_date=req.data['end']
-            trans_amount_type=req.data['transfer_type']
-            trans_status=req.data['trans_status']
+            print(req.GET)
+            auth_token = req.GET.get("auth_token")
+            start_date=req.GET.get("start")
+            end_date=req.GET.get('end')
+            trans_amount_type=req.GET.get('transfer_type')
+            trans_status=req.GET.get('trans_status')
             if start_date!="all" or end_date!='all':
                 start_date=datetime.strptime(start_date, "%Y-%m-%d %H:%M:%S")
                 end_date=datetime.strptime(end_date, "%Y-%m-%d %H:%M:%S")
@@ -334,7 +337,7 @@ class DownloadExcelView(APIView):
             import csv
             import os
             filename=str(datetime.now()).replace(" ","").replace("-","").replace(".","").replace(":","")+".csv"
-            f=open(filename,"w")
+            f=open(filename,"w",newline="")
             op=csv.writer(f)
             # {}.
             
@@ -353,14 +356,18 @@ class DownloadExcelView(APIView):
             DeleteThreading().start()
             # if os.path.exists(filename):
             #     os.remove(filename)
-            BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-            filepath = BASE_DIR + filename
-            mime_type, _ = mimetypes.guess_type(filepath)
-            response=HttpResponse(
-               
-        content_type="application/force-download",
-        headers={'Content-Disposition': 'attachment; filename="'+filename+'"'},
-    )
+            
+            # BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            # filepath = BASE_DIR + filename
+            read=open(filename,"rb")
+            # mime_type, _ = mimetypes.guess_type(filepath)
+           
+            response=FileResponse(read,as_attachment=True)
+    #         response=HttpResponse(
+    #            read,
+    #     content_type="application/force-download",
+    #     headers={'Content-Disposition': 'attachment; filename="'+filename+'"'},
+    # )
             return response
             # return Response({"message":"date found","data":data,"response_code":"1"})
         except Exception as e:

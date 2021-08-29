@@ -8,6 +8,10 @@ class Mode_Model_Service:
         modemodel.mode=self.mode
         modemodel.save()
     @staticmethod
+    def fetch_all():
+        modemodel = ModeModel.objects.all()
+        return modemodel
+    @staticmethod
     def fetch_by_id(id):
         modemodel = ModeModel.objects.get(id=id)
         return modemodel
