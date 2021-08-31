@@ -341,53 +341,72 @@ class Ledger_Model_Service:
             if trans_status=="all":
                 trans_status_temp="trans_status"
             cursors = connection.cursor()
-                
-            if start=="all" and end=="all":
-                print("if")
-                print("select apis_transactionhistorymodel.*,apis_merchantmodel.client_username,apis_merchantmodel.client_name from apis_transactionhistorymodel inner join apis_merchantmodel on apis_transactionhistorymodel.merchant_id=apis_merchantmodel.id where  merchant_id="+str(merchant_id)+" and trans_type="+transfer_type_temp+" and trans_status="+trans_status_temp+" order by apis_transactionhistorymodel.id desc limit "+str((page-1)*length)+","+str(length)+"")
-                record=LedgerModel.objects.raw("select apis_transactionhistorymodel.*,apis_merchantmodel.client_username,apis_merchantmodel.client_name from apis_transactionhistorymodel inner join apis_merchantmodel on apis_transactionhistorymodel.merchant_id=apis_merchantmodel.id where  merchant_id="+str(merchant_id)+" and trans_type="+transfer_type_temp+" and trans_status="+trans_status_temp+" order by apis_transactionhistorymodel.id desc limit "+str((page-1)*length)+","+str(length)+"")
-                # print(list(record.iterator()))
-                print(record.columns)
-                
-                
-                cursors.execute("select sum(total_amount) as credit from apis_transactionhistorymodel where  merchant_id="+str(merchant_id)+" and trans_amount_type='cr' and trans_status in ('Success')")
-                credit_temp= cursors.fetchall()[0][0]
-                # credit_amount=LedgerModel.objects.raw("select sum(total_amount) as credit from apis_transactionhistorymodel where  merchant_id="+str(merchant_id)+" and trans_amount_type='cr' and trans_status in ('Success')")
-                # debit_amount=LedgerModel.objects.raw("select sum(total_amount) as debit from apis_transactionhistorymodel where  merchant_id="+str(merchant_id)+" and trans_amount_type='dr' and trans_status in ('Success','Requested','Pending','Initiated')")
-                # print(list(credit_amount.iterator()))
-                cursors.execute("select sum(total_amount) as debit from apis_transactionhistorymodel where  merchant_id="+str(merchant_id)+" and trans_amount_type='dr' and trans_status in ('Success','Requested','Pending','Initiated')")
-                debit_temp=cursors.fetchall()[0][0]
-                if credit_temp==None:
-                    credit_temp=0
-                if debit_temp==None:
-                    debit_temp=0
+            
+            
 
-                balance=credit_temp-debit_temp
-                total_s=cursors.execute("select count(*) as total_rec from apis_transactionhistorymodel where  merchant_id="+str(merchant_id)+" and trans_type='payout' and trans_status="+trans_status_temp)
-                temp_total=cursors.fetchall()[0][0]
-                cursors.execute("select count(*) from apis_transactionhistorymodel where  merchant_id="+str(merchant_id)+" ")
-                total_trans=cursors.fetchall()[0][0]
+            if start=="all":
+                start="created_at"
+                tempstart="apis_transactionhistorymodel.created_at"
+            else:
+                start="'"+str(start)+"'"
+                tempstart=start
+            if end=="all":
+                end="created_at"
+                tempend="apis_transactionhistorymodel.created_at"
+            else:
+                end="'"+str(end)+"'"
+                tempend=end
+            
+                
+            
+               
+
+            # if start=="all" and end=="all":
+                # print("if")
+                # print("select apis_transactionhistorymodel.*,apis_merchantmodel.client_username,apis_merchantmodel.client_name from apis_transactionhistorymodel inner join apis_merchantmodel on apis_transactionhistorymodel.merchant_id=apis_merchantmodel.id where  merchant_id="+str(merchant_id)+" and trans_type="+transfer_type_temp+" and trans_status="+trans_status_temp+" order by apis_transactionhistorymodel.id desc limit "+str((page-1)*length)+","+str(length)+"")
+                # record=LedgerModel.objects.raw("select apis_transactionhistorymodel.*,apis_merchantmodel.client_username,apis_merchantmodel.client_name from apis_transactionhistorymodel inner join apis_merchantmodel on apis_transactionhistorymodel.merchant_id=apis_merchantmodel.id where  merchant_id="+str(merchant_id)+" and trans_type="+transfer_type_temp+" and trans_status="+trans_status_temp+" order by apis_transactionhistorymodel.id desc limit "+str((page-1)*length)+","+str(length)+"")
+                # # print(list(record.iterator()))
+                # print(record.columns)
+                
+                
+                # cursors.execute("select sum(total_amount) as credit from apis_transactionhistorymodel where  merchant_id="+str(merchant_id)+" and trans_amount_type='cr' and trans_status in ('Success')")
+                # credit_temp= cursors.fetchall()[0][0]
+                # # credit_amount=LedgerModel.objects.raw("select sum(total_amount) as credit from apis_transactionhistorymodel where  merchant_id="+str(merchant_id)+" and trans_amount_type='cr' and trans_status in ('Success')")
+                # # debit_amount=LedgerModel.objects.raw("select sum(total_amount) as debit from apis_transactionhistorymodel where  merchant_id="+str(merchant_id)+" and trans_amount_type='dr' and trans_status in ('Success','Requested','Pending','Initiated')")
+                # # print(list(credit_amount.iterator()))
+                # cursors.execute("select sum(total_amount) as debit from apis_transactionhistorymodel where  merchant_id="+str(merchant_id)+" and trans_amount_type='dr' and trans_status in ('Success','Requested','Pending','Initiated')")
+                # debit_temp=cursors.fetchall()[0][0]
+                # if credit_temp==None:
+                #     credit_temp=0
+                # if debit_temp==None:
+                #     debit_temp=0
+
+                # balance=credit_temp-debit_temp
+                # total_s=cursors.execute("select count(*) as total_rec from apis_transactionhistorymodel where  merchant_id="+str(merchant_id)+" and trans_type='payout' and trans_status="+trans_status_temp)
+                # temp_total=cursors.fetchall()[0][0]
+                # cursors.execute("select count(*) from apis_transactionhistorymodel where  merchant_id="+str(merchant_id)+" ")
+                # total_trans=cursors.fetchall()[0][0]
                 # record=LedgerModel.objects.filter(merchant=merchant_id)
                 # print("record :: ",record)
                 
-            else:
-                print("select apis_transactionhistorymodel.*,apis_merchantmodel.client_username from apis_transactionhistorymodel inner join apis_merchantmodel on apis_transactionhistorymodel.merchant_id=apis_merchantmodel.id where  merchant_id="+str(merchant_id)+" and  apis_transactionhistorymodel.created_at between '"+str(start)+"' and '"+str(end)+"' order by apis_transactionhistorymodel.id desc limit "+str(length)+" offset "+str((page-1)*length)+"")
-                record=LedgerModel.objects.raw("select apis_transactionhistorymodel.*,apis_merchantmodel.client_username,apis_merchantmodel.client_name from apis_transactionhistorymodel inner join apis_merchantmodel on apis_transactionhistorymodel.merchant_id=apis_merchantmodel.id where  merchant_id="+str(merchant_id)+" and trans_type="+transfer_type_temp+" and trans_status="+trans_status_temp+" and  apis_transactionhistorymodel.created_at between '"+str(start)+"' and '"+str(end)+"' order by apis_transactionhistorymodel.id desc limit "+str(length)+" offset "+str((page-1)*length)+"")
-                cursors.execute("select sum(total_amount) as credit from apis_transactionhistorymodel where  merchant_id="+str(merchant_id)+" and trans_amount_type='cr' and trans_status in ('Success') created_at between '"+str(start)+"' and '"+str(end)+"'")
+            # else:
+            print("select apis_transactionhistorymodel.*,apis_merchantmodel.client_username from apis_transactionhistorymodel inner join apis_merchantmodel on apis_transactionhistorymodel.merchant_id=apis_merchantmodel.id where  merchant_id="+str(merchant_id)+" and  apis_transactionhistorymodel.created_at between "+str(tempstart)+" and "+str(tempend)+" order by apis_transactionhistorymodel.id desc limit "+str(length)+" offset "+str((page-1)*length)+"")
+            record=LedgerModel.objects.raw("select apis_transactionhistorymodel.*,apis_merchantmodel.client_username,apis_merchantmodel.client_name from apis_transactionhistorymodel inner join apis_merchantmodel on apis_transactionhistorymodel.merchant_id=apis_merchantmodel.id where  merchant_id="+str(merchant_id)+" and trans_type="+transfer_type_temp+" and trans_status="+trans_status_temp+" and  apis_transactionhistorymodel.created_at between "+str(tempstart)+" and "+str(tempend)+" order by apis_transactionhistorymodel.id desc limit "+str(length)+" offset "+str((page-1)*length)+"")
+            cursors.execute("select sum(total_amount) as credit from apis_transactionhistorymodel where  merchant_id="+str(merchant_id)+" and trans_amount_type='cr' and trans_status in ('Success') and created_at between "+str(start)+" and "+str(end)+"")
                 
-                credit_temp=cursors.fetchall()[0][0]
-                cursors.execute("select sum(total_amount) as debit from apis_transactionhistorymodel where  merchant_id="+str(merchant_id)+" and trans_amount_type='dr' and trans_status in ('Success','Requested','Pending','Initiated') created_at between '"+str(start)+"' and '"+str(end)+"'")
-                debit_temp=cursors.fetchall()[0][0]
-                if credit_temp==None:
-                    credit_temp=0
-                if debit_temp==None:
-                    debit_temp=0
+            credit_temp=cursors.fetchall()[0][0]
+            cursors.execute("select sum(total_amount) as debit from apis_transactionhistorymodel where  merchant_id="+str(merchant_id)+" and trans_amount_type='dr' and trans_status in ('Success','Requested','Pending','Initiated') and created_at between "+str(start)+" and "+str(end)+"")
+            debit_temp=cursors.fetchall()[0][0]
+            if credit_temp==None:
+                credit_temp=0
+            if debit_temp==None:
+                debit_temp=0
 
-                balance=credit_temp-debit_temp
-                cursors.execute("select count(*) as total_rec from apis_transactionhistorymodel where  merchant_id="+str(merchant_id)+" and trans_type='payout' and trans_status="+trans_status_temp+"created_at between '"+str(start)+"' and '"+str(end)+"'")
-                temp_total=cursors.fetchall()[0][0]
-                cursors.execute("select count(*) from apis_transactionhistorymodel where  merchant_id="+str(merchant_id)+" and created_at between '"+str(start)+"' and '"+str(end)+"' ")
-                total_trans=cursors.fetchall()[0][0]
+            balance=credit_temp-debit_temp
+            cursors.execute("select count(*) as total_rec from apis_transactionhistorymodel where  merchant_id="+str(merchant_id)+" and trans_type='payout' and trans_status="+trans_status_temp+" and created_at between "+str(start)+" and "+str(end)+"")
+            temp_total=cursors.fetchall()[0][0]
+            cursors.execute("select count(*) from apis_transactionhistorymodel where  merchant_id="+str(merchant_id)+" and created_at between "+str(start)+" and "+str(end)+" ")
+            total_trans=cursors.fetchall()[0][0]
             # print("record :: ",record)
             from . import Mode_model_services
             modes=Mode_model_services.Mode_Model_Service.fetch_all()

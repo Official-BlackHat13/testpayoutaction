@@ -98,8 +98,9 @@ class GetTransactionHistory(APIView):
             end_date=req.data['end']
             trans_amount_type=req.data['transfer_type']
             trans_status=req.data['trans_status']
-            if start_date!="all" or end_date!='all':
+            if start_date!="all":
                 start_date=datetime.strptime(start_date, "%Y-%m-%d %H:%M:%S")
+            if end_date!='all':
                 end_date=datetime.strptime(end_date, "%Y-%m-%d %H:%M:%S")
             id=auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(auth_token)
             if Client_model_service.Client_Model_Service.fetch_by_id(id,req.META['REMOTE_ADDR'],"Merchant Id :: "+str(id))==None:
