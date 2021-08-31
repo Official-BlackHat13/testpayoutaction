@@ -75,10 +75,16 @@ class MISViewApi(APIView):
     def get(self,req,page,length,start,end):
         try:
             auth_token = req.headers["auth_token"]
-            merchant_id=auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(auth_token)
-            if start!="all" or end!='all':
-                start=datetime.strptime(start, "%Y-%m-%d")
-                end=datetime.strptime(end, "%Y-%m-%d")
+            
+            if auth_token=="all":
+                merchant_id="merchant_id"
+            else:
+                merchant_id=auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(auth_token)
+            
+            # if start!="all" or end!='all':
+                
+            #     start=date.strftime(start, "%Y-%m-%d")
+            #     end=date.strftime(end, "%Y-%m-%d")
             dailyledger=DailyLedger_Model_Service.fetch(page,length,merchant_id,start,end)
             # if dailyledger==None:
             #     return Response({"message":"data not found","response_code":0})
@@ -88,4 +94,4 @@ class MISViewApi(APIView):
         except Exception as e:
             import traceback
             print(traceback.format_exc())
-            return Response({"message":"some technical error","response_code":2})
+            return Response({"message":"some technical error","response_code":2},status=status.HTTP_400_BAD_REQUEST)

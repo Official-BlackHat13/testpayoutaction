@@ -92,7 +92,7 @@ urlpatterns = [
     path("saveBeneficiaryfor/",views.beneficiary.addSingleBeneficiaryfor.as_view()),
     path("CreditDebitBalanceInfo/",views.ledger.CreditDebitBalanceInfo.as_view()),
 
-    path("creditamountmis/<int:page>/<int:length>/<slug:start>/<slug:end>",views.dailyLedger.MISViewApi.as_view()),
+    path("creditamountmis/<int:page>/<int:length>/<slug:start>/<slug:end>/",views.dailyLedger.MISViewApi.as_view()),
     path("downloadExcelLedger/<int:page>/<int:length>/",views.ledger.DownloadExcelView.as_view()),
    #  path("downloadtranshistory/",views.)
 

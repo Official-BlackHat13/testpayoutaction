@@ -350,7 +350,7 @@ class DownloadExcelView(APIView):
             
             class DeleteThreading(threading.Thread):
                 def run(self):
-                    sleep(30)
+                    sleep(10)
                     print("running thread")
                     if os.path.exists(filename):
                          os.remove(filename) 
@@ -361,9 +361,12 @@ class DownloadExcelView(APIView):
             # BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
             # filepath = BASE_DIR + filename
             read=open(filename,"rb")
+            
             # mime_type, _ = mimetypes.guess_type(filepath)
            
             response=FileResponse(read,as_attachment=True)
+            # read.close()
+            f.close()
     #         response=HttpResponse(
     #            read,
     #     content_type="application/force-download",
