@@ -93,8 +93,7 @@ class ChargeBreakUpInfoApi(APIView):
             start_date = query.get("start_date")
             end_date = query.get("end_date")
             if start_date !="all":
-                start_date=datetime.strptime(start_date, "%Y-%m-%d")
-                    
+                start_date=datetime.strptime(start_date, "%Y-%m-%d")                    
             if end_date!='all':
                 end_date=datetime.strptime(end_date, "%Y-%m-%d")
             resp = Bank_model_services.ChargeBankInfo(payoutMode=payoutMode,bank_name=bankMode,page=page,length=length,start=start_date,end=end_date)

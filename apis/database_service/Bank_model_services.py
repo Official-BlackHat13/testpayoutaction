@@ -60,7 +60,6 @@ class Bank_model_services:
             if(end=="all"):
                 end_date="transaction_date"
             
-            print("select * from chargeInfoBankMode where bank_name = "+temp_bank_name+" and mode = "+temp_payout_mode+" and transaction_date>= "+start_date+" and transaction_date <= "+end_date+" limit "+str((page-1)*length)+","+str(length)+"")
             cursors.execute("select * from chargeInfoBankMode where bank_name = "+temp_bank_name+" and mode = "+temp_payout_mode+" and transaction_date>= "+start_date+" and transaction_date <= "+end_date+" limit "+str((page-1)*length)+","+str(length)+"")
             columns = [col[0] for col in cursors.description]
             
