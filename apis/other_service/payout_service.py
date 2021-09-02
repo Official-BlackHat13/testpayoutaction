@@ -296,9 +296,9 @@ class PayoutService:
                 
                 
              else:
-                 charge = Ledger_model_services.Ledger_Model_Service.fetch_by_linked_id(ledgerModelService.payout_trans_id)
-                 for i in charge:
-                                    ledgerModelService.update_status(i.id,"Failed",client_ip_address_temp,"Merchant :: "+str(merchant_id_temp))
+                #  charge = Ledger_model_services.Ledger_Model_Service.fetch_by_linked_id(ledgerModelService.payout_trans_id)
+                #  for i in charge:
+                #                     ledgerModelService.update_status(i.id,"Failed",client_ip_address_temp,"Merchant :: "+str(merchant_id_temp))
                              
                  ledgerModelService.update_status(id,"Failed",self.client_ip_address,"Merchant :: "+str(self.merchant_id))
              thread2 = ServiceThread2().start()           
