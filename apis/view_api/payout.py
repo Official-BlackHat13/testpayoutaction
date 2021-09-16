@@ -65,6 +65,7 @@ class bankApiPaymentView(APIView):
     @swagger_auto_schema(request_body=payout_docs.request,responses=payout_docs.response_schema_dict)
     def post(self,req):
         try:
+           
             request_obj = "path::"+req.path+"headers::"+str(req.headers)+"meta_data::"+str(req.META)+"data::"+str(req.data)
             # payment_service=IFDC_service.payment.Payment()
             api_key = req.headers['auth_token']

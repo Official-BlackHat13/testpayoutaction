@@ -30,6 +30,7 @@ class PayoutService:
         self.client_ip_address = client_ip_address
         self.encrypted_code=encrypted_code
     def excutePAYTM(self,mode_rec):
+        
         log = Log_Model_Service(log_type="excuting PAYTM service",client_ip_address=self.client_ip_address,server_ip_address=const.server_ip,created_by=self.merchant_id)
         log.save()
         try:
