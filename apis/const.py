@@ -6,9 +6,9 @@ from bank_api import paytm
 ipwhitelisting=False
 
 server_ip = socket.gethostbyname(socket.gethostname())
-bene_account_name = "SRS"
-bene_account_number="98765"
-bene_ifsc = "12345"
+bene_account_name = "SRS Live Technologies pvt Ltd"
+bene_account_number="347505000468"
+bene_ifsc = "ICIC0003475"
 encrypted_password=False
 
 # paytm_subwalletGuid = "4957c207-dafa-11eb-bbc6-fa163e429e83"
