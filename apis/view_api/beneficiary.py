@@ -213,15 +213,21 @@ class saveBeneficiary(APIView):
         logid = log.save()
         api_key = str(request.headers['auth_token'])
         merchantId =auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(api_key)
+        clientModel = Client_model_service.Client_Model_Service.fetch_by_id(
+                id=merchantId, created_by="merchantid :: "+merchantId, client_ip_address=request.META['REMOTE_ADDR'])
+        if(clientModel == None):
+            return Response({"message":"merchant id not found","Response_code":"0"},status=status.HTTP_400_BAD_REQUEST)
+        authKey = clientModel.auth_key
+        authIV = clientModel.auth_iv
         try:
             excel_file = request.FILES["files"]
         except MultiValueDictKeyError:
             return Response({"msg":"check format of the file uploaded","response_code":'0'},status=status.HTTP_400_BAD_REQUEST)
         try:
             if (str(excel_file).split(".")[-1] == "xls"):
-                data = xls_get(excel_file, column_limit=4)
+                data = xls_get(excel_file, column_limit=10)
             elif (str(excel_file).split(".")[-1] == "xlsx"):
-                data = xlsx_get(excel_file, column_limit=4)
+                data = xlsx_get(excel_file, column_limit=10)
             datas = data["Sheet1"]
             full_name = str()
             account_number=str()
