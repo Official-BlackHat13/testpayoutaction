@@ -751,7 +751,7 @@ class Ledger_Model_Service:
         #getBalance(merchant_id,client_ip_address,created_by):
         total_balance=credit_amount_1-debited_amount_1
         cursors.execute("select count(merchant_id) as c from apis_transactionhistorymodel where trans_date =  CURDATE();")
-        total_transactions = credit_amount_1-debited_amount_1
+        total_transactions = cursors.fetchone()[0]
         if total_transactions==None:
             total_transactions=0
         total_merchant=len(MerchantModel.objects.all())
