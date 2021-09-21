@@ -36,7 +36,7 @@ class DailyLedger_Model_Service:
             total_balance=0
         if total_credit==None:
             total_credit=0
-
+        
         total_credit-=total_charge    
         # print(total_credit)  
         def mapit(vals):
@@ -55,7 +55,7 @@ class DailyLedger_Model_Service:
                 temp_balance=0
             
             return {"date":vals.date,"merchant_id":vals.merchant_id,"client_username":vals.client_username,"credit_amount":vals.closing_credit,"bank_charges":temp_c,"total_credit":temp_credit-temp_c,"balance":temp_balance}
-        return {"datarec":list(map(mapit,dailyledger)),"total_credit":-total_credit,"total_balance":total_balance}
+        return {"datarec":list(map(mapit,dailyledger)),"total_credit":total_credit,"total_balance":total_balance}
         # if len(dailyledger)==0:
         #     return None
         # return dailyledger
