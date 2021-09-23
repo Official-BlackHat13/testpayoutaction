@@ -79,7 +79,7 @@ class GetLedger(APIView):
     def post(self,req,page,length):
         try:
             auth_token = req.headers["auth_token"]
-            id=auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(auth_token)
+            id=auth.AESCipher(const.admin_AuthKey,const.admin_AuthIV).decrypt(auth_token)
             if BO_User_Service.fetch_by_id(id)==None:
                 return Response({"message":"user not valid","response_code":"0"})
             data=Ledger_Model_Service.getLedgers(page,length,req.META['REMOTE_ADDR'],"Admin Id :: "+str(id))
@@ -265,7 +265,7 @@ class fetchInfo(APIView):
         logid = log.save()
         try:
             header = request.headers.get("auth_token")
-            adminId = auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(header)
+            adminId = auth.AESCipher(const.admin_AuthKey,const.admin_AuthIV).decrypt(header)
             admin = BO_user_services.BO_User_Service.fetch_by_id(adminId)
             if(admin==None):
                 Log_model_services.Log_Model_Service.update_response(
@@ -292,7 +292,7 @@ class CreditDebitBalanceInfo(APIView):
         logid = log.save()
         try:
                 header = request.headers.get("auth_token")
-                adminId = auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(header)
+                adminId = auth.AESCipher(const.admin_AuthKey,const.admin_AuthIV).decrypt(header)
                 admin = BO_user_services.BO_User_Service.fetch_by_id(adminId)
                 if(admin==None):
                     Log_model_services.Log_Model_Service.update_response(

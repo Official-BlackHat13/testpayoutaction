@@ -76,9 +76,9 @@ class AuthAdmin(APIView):
         print("log::"+str(logid))
         try:
             val=signup_service.Signup_Service(user=user,client_ip_address=req.META['REMOTE_ADDR']).AdminSignup()
-            api_key=auth.AESCipher(const.AuthKey,const.AuthIV).encrypt(str(val['merchant_id']))
+            api_key=auth.AESCipher(const.admin_AuthKey,const.admin_AuthIV).encrypt(str(val['merchant_id']))
             Log_model_services.Log_Model_Service.update_response(logid,{"Message":"user created","user_id":val['merchant_id'],"response_code":"1","CLIENT_AUTH_KEY":val['client'].auth_key,"CLIENT_AUTH_IV":val['client'].auth_iv,"token":val['token'].json()})
-            return Response({"Message":"user created","response_code":"1","user_id":val['merchant_id'],"CLIENT_AUTH_KEY":val['client'].auth_key,"CLIENT_AUTH_IV":val['client'].auth_iv,"token":val['token'].json()},status=status.HTTP_200_OK)
+            return Response({"Message":"user created","response_code":"1","user_id":val['merchant_id'],"AUTH_TOKEN":str(api_key)[2:].replace("'",""),"CLIENT_AUTH_KEY":val['client'].auth_key,"CLIENT_AUTH_IV":val['client'].auth_iv,"token":val['token'].json()},status=status.HTTP_200_OK)
         except Exception as e:
             import traceback
             print(traceback.format_exc())

@@ -56,7 +56,7 @@ class adminFetchBeneficiary(APIView):
         logid = log.save()
         try:
             header = request.headers.get("auth_token")
-            adminId = auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(header)
+            adminId = auth.AESCipher(const.admin_AuthKey,const.admin_AuthIV).decrypt(header)
             admin = BO_user_services.BO_User_Service.fetch_by_id(adminId)
             if(admin==None):
                 Log_model_services.Log_Model_Service.update_response(

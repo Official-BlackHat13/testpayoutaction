@@ -29,8 +29,8 @@ merchant_check=False
 multitabs=False
 AuthKey = "pMoG4Nsp54LGYV7a"
 AuthIV = "4OqmI5rR7KOm6RmY"
-# admin_AuthKey="zDoSTQHGKAcQfYCY"
-# admin_AuthIV="BMifRscmnSWlnhmx"
+admin_AuthKey="zDoSTQHGKAcQfYCY"
+admin_AuthIV="BMifRscmnSWlnhmx"
 
 paytm_link_transaction=paytm.staging_paytmPaymentAPI()
 paytm_link_enquiry=paytm.staging_paytmEnquiryAPI()

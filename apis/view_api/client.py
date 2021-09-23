@@ -46,7 +46,7 @@ from sabpaisa import auth
 class allMerchants(APIView):
     def get(self,request,page,length):
         authToken = request.headers.get("auth-token")
-        adminId = auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(authToken)
+        adminId = auth.AESCipher(const.admin_AuthKey,const.admin_AuthIV).decrypt(authToken)
         try:
             if page=="all" and length != "all":
                 return JsonResponse({"Message":"page and length format does not match"},status=status.HTTP_406_NOT_ACCEPTABLE)

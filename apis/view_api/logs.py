@@ -59,8 +59,8 @@ class GetLogs(APIView):
     @swagger_auto_schema(responses=log_docs.response_dict,request_body=log_docs.request)
     def post(self,req,page,length):
         req.session["kan"]="cs"
-        authKey = const.AuthKey
-        authIV = const.AuthIV
+        authKey = const.admin_AuthKey
+        authIV = const.admin_AuthIV
         resp = req.headers["auth_token"]
         start_date=req.data['start']
         end_date=req.data['end']

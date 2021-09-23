@@ -221,7 +221,7 @@ class bankFilter(APIView):
         logid = log.save()
         try:
             header = request.headers.get("auth_token")
-            adminId = auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(header)
+            adminId = auth.AESCipher(const.admin_AuthKey,const.admin_AuthIV).decrypt(header)
             admin = BO_user_services.BO_User_Service.fetch_by_id(adminId)
             if(admin==None):
                 Log_model_services.Log_Model_Service.update_response(
@@ -260,7 +260,7 @@ class AllMode(APIView):
         logid = log.save()
         try:
             header = request.headers.get("auth_token")
-            adminId = auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(header)
+            adminId = auth.AESCipher(const.admin_AuthKey,const.admin_AuthIV).decrypt(header)
             admin = BO_user_services.BO_User_Service.fetch_by_id(adminId)
             if(admin==None):
                 Log_model_services.Log_Model_Service.update_response(
@@ -292,7 +292,7 @@ class MerchantModes(APIView):
         try:
             query = request.data.get("query")
             header = request.headers.get("auth_token")
-            adminId = auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(header)
+            adminId = auth.AESCipher(const.admin_AuthKey,const.admin_AuthIV).decrypt(header)
             admin = BO_user_services.BO_User_Service.fetch_by_id(adminId)
             if(admin==None):
                 Log_model_services.Log_Model_Service.update_response(
@@ -330,7 +330,7 @@ class tax(APIView):
                                                    client_ip_address=request.META['REMOTE_ADDR'], server_ip_address=const.server_ip, full_request=request_obj)
         logid = log.save()
         header = request.headers.get("auth_token")
-        adminId = auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(header)
+        adminId = auth.AESCipher(const.admin_AuthKey,const.admin_AuthIV).decrypt(header)
         admin = BO_user_services.BO_User_Service.fetch_by_id(adminId)
         if(admin==None):
             Log_model_services.Log_Model_Service.update_response(
@@ -355,7 +355,7 @@ class AddTax(APIView):
                                                    client_ip_address=request.META['REMOTE_ADDR'], server_ip_address=const.server_ip, full_request=request_obj)
         logid = log.save()
         header = request.headers.get("auth_token")
-        adminId = auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(header)
+        adminId = auth.AESCipher(const.admin_AuthKey,const.admin_AuthIV).decrypt(header)
         admin = BO_user_services.BO_User_Service.fetch_by_id(adminId)
         if(admin==None):
             Log_model_services.Log_Model_Service.update_response(
@@ -390,7 +390,7 @@ class UpdateTax(APIView):
                                                    client_ip_address=request.META['REMOTE_ADDR'], server_ip_address=const.server_ip, full_request=request_obj)
         logid = log.save()
         header = request.headers.get("auth_token")
-        adminId = auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(header)
+        adminId = auth.AESCipher(const.admin_AuthKey,const.admin_AuthIV).decrypt(header)
         admin = BO_user_services.BO_User_Service.fetch_by_id(adminId)
         if(admin==None):
             Log_model_services.Log_Model_Service.update_response(

@@ -80,7 +80,7 @@ class LoginRequestAdminAPI(APIView):
                 return Response({"message":"User Not Found","response_code":"0"},status=status.HTTP_400_BAD_REQUEST)
             else:
                 if req.data["username"]=="admin":
-                    api_key=auth.AESCipher(const.AuthKey,const.AuthIV).encrypt(str(res["user_id"]))
+                    api_key=auth.AESCipher(const.admin_AuthKey,const.admin_AuthIV).encrypt(str(res["user_id"]))
                     return Response({"auth_token":str(api_key)[2:].replace("'",""),"merchant_id":res["user_id"],"jwt_token":res["jwt_token"],"username":res["username"],"user_token":res['user_token'],"response_code":"1"},status=status.HTTP_200_OK)
                 Log_model_services.Log_Model_Service.update_response(logid,{"message":"OTP sent","verification_token":res,"response_code":"1"})
                 return Response({"message":"OTP has been sent to Registered Email and Mobile Number","verification_token":res,"response_code":"1"},status=status.HTTP_200_OK)
@@ -131,7 +131,11 @@ class LoginVerificationAPI(APIView):
                 return Response({"message":"OTP is not valid","response_code":"0"},status=status.HTTP_400_BAD_REQUEST)
             else:
                 # print(str(login[0]))
-                api_key=auth.AESCipher(const.AuthKey,const.AuthIV).encrypt(str(login["user_id"]))
+                
+                if req.data['type']=="back_office":
+                    api_key=auth.AESCipher(const.admin_AuthKey,const.admin_AuthIV).encrypt(str(login["user_id"]))
+                else:
+                    api_key=auth.AESCipher(const.AuthKey,const.AuthIV).encrypt(str(login["user_id"]))
                 Log_model_services.Log_Model_Service.update_response(logid,{"auth_token":str(api_key)[2:].replace("'",""),"response_code":"1"})
                 return Response({"auth_token":str(api_key)[2:].replace("'",""),"merchant_id":login["user_id"],"jwt_token":login["jwt_token"],"username":login["username"],"user_token":login['user_token'],"response_code":"1"},status=status.HTTP_200_OK)
         except Exception as e:
