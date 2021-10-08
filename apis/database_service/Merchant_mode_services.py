@@ -1,6 +1,7 @@
 from django.db import connection
 from ..database_models.MerchantModeModel import MercahantModeModel
 from apis.database_models.MerchantModeModel import MercahantModeModel
+from datetime import datetime
 class Merchant_Mode_Service:
     def __init__(self,merchant_id,bank_partner_id,mode_id):
         self.merchant_id=merchant_id
@@ -40,4 +41,16 @@ class Merchant_Mode_Service:
         for row in cursors.fetchall()
         ]
         return resp
+    @staticmethod
+    def deleteMerchantMode(merchant_id,admin_id,mode_id,bank_partner_id,status=None):
+        merchantModeModel = MercahantModeModel()
+        merchantModeModel = MercahantModeModel.objects.filter(merchant_id=merchant_id,mode_id=mode_id,bank_partner_id=bank_partner_id)
+        if(len(merchantModeModel)==0):
+            return -1
+        try:
+            merchantModeModel = MercahantModeModel.objects.filter(merchant_id=merchant_id,mode_id=mode_id,bank_partner_id=bank_partner_id).update(status=status,updated_by="admin ID :: "+str(admin_id),updated_at=datetime.now())
+            print(merchantModeModel)
+        except MercahantModeModel.DoesNotExist:
+            return 0
+        return 1
         
