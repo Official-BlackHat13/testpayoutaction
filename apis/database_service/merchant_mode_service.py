@@ -77,17 +77,30 @@ class Merchant_mode_service:
             }
             resp.append(d)
         return resp
+    # @staticmethod
+    # def deleteMerchantMode(merchant_id,admin_id,mode_id,bank_partner_id):
+    #     merchantModeModel = MercahantModeModel()
+    #     try:
+    #         merchantModeModel = MercahantModeModel.objects.filter(merchant_id=merchant_id,status=True,mode_id=mode_id,bank_partner_id=bank_partner_id)
+    #     except MercahantModeModel.DoesNotExist:
+    #         return 0
+    #     print("merchant model "+str(len(merchantModeModel))+"    "+str(merchantModeModel))
+    #     merchantModeModel[0].status = False
+    #     merchantModeModel[0].deleted_by = "admin ID :: "+str(admin_id)
+    #     merchantModeModel[0].deleted_at = datetime.now()
+    #     merchantModeModel[0].save()
+    #     return 1
     @staticmethod
-    def deleteMerchantMode(merchant_id,admin_id,mode_id,bank_partner_id):
+    def deleteMerchantMode(merchant_id,admin_id,mode_id,bank_partner_id,status=None):
         merchantModeModel = MercahantModeModel()
+        merchantModeModel = MercahantModeModel.objects.filter(merchant_id=merchant_id,mode_id=mode_id,bank_partner_id=bank_partner_id)
+        if(len(merchantModeModel)==0):
+            return -1
         try:
-            merchantModeModel = MercahantModeModel.objects.filter(merchant_id=merchant_id,status=True,mode_id=mode_id,bank_partner_id=bank_partner_id)
+            merchantModeModel = MercahantModeModel.objects.filter(merchant_id=merchant_id,mode_id=mode_id,bank_partner_id=bank_partner_id).update(status=status,updated_by="admin ID :: "+str(admin_id),updated_at=datetime.now())
+            print(merchantModeModel)
         except MercahantModeModel.DoesNotExist:
             return 0
-        print("merchant model "+str(len(merchantModeModel))+"    "+str(merchantModeModel))
-        merchantModeModel[0].status = False
-        merchantModeModel[0].deleted_by = "admin ID :: "+str(admin_id)
-        merchantModeModel[0].deleted_at = datetime.now()
-        merchantModeModel[0].save()
         return 1
+        
         

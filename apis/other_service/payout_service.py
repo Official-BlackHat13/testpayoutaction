@@ -269,7 +269,7 @@ class PayoutService:
                          log.update_response(logid,response.text)
                          print(response.json())
                          if response.json()['status']=="SUCCESS":
-                             ledgerModelService.update_status(id,"Success",client_ip_address_temp,"Merchant :: "+str(merchant_id_temp))
+                             ledgerModelService.update_status(id,"Success",client_ip_address_temp,"Merchant :: "+str(merchant_id_temp),response.json()['rrn'])
                              ledgerModelService.update_trans_time(id,datetime.now(),client_ip_address_temp,"Merchant :: "+str(merchant_id_temp))
                             #  charge = Ledger_model_services.Ledger_Model_Service.fetch_by_linked_id(ledgerModelService.payout_trans_id)
                             #  if clientModel.is_charge:
@@ -301,7 +301,7 @@ class PayoutService:
                 #  for i in charge:
                 #                     ledgerModelService.update_status(i.id,"Failed",client_ip_address_temp,"Merchant :: "+str(merchant_id_temp))
                              
-                 ledgerModelService.update_status(id,"Failed",self.client_ip_address,"Merchant :: "+str(self.merchant_id))
+                 ledgerModelService.update_status(id,"Failed",self.client_ip_address,"Merchant :: "+str(self.merchant_id),response.json()['rrn'])
              thread2 = ServiceThread2().start()           
                  
              return ["Payout Done",{"orderId":ledgerModelService.customer_ref_no,"amount":ledgerModelService.amount,"status": "PROCESSING","requestedDatetime": str(datetime.now()).split(".")[0]},True]

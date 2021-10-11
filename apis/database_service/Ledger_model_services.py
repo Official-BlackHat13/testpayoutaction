@@ -221,11 +221,12 @@ class Ledger_Model_Service:
         log_service.save()
         return ledgerModels
 
-    def update_status(self,id,status,client_ip_address,created_by):
+    def update_status(self,id,status,client_ip_address,created_by,utr="null"):
         log_service=Log_model_services.Log_Model_Service(log_type="update",table_name="apis_ledgermodel",remarks="updating status from ledger table for the record fetched by id ",client_ip_address=client_ip_address,server_ip_address=const.server_ip,created_by=created_by)
 
         ledgerModel=LedgerModel.objects.get(id=id)
         ledgerModel.trans_status=status
+        ledgerModel.bank_ref_no=utr
         ledgerModel.status_code=statuscodes.statuscodes[status]
         ledgerModel.updated_at=datetime.now()
         ledgerModel.save()
