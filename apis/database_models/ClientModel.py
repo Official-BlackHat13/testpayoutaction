@@ -29,6 +29,7 @@ class MerchantModel(models.Model):
     encrypted_password=models.CharField(default="",max_length=300)
     is_tax_inclusive=models.BooleanField(default=False,null=True)
     client_name=models.CharField(max_length=3000,null=True)
+    is_transactable = models.BooleanField(null=True,default=True)
     # status=models.BooleanField(default=True)
     def __str__(self):
         return str(self.id)

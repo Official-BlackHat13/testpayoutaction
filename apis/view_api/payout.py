@@ -70,6 +70,7 @@ class bankApiPaymentView(APIView):
             # payment_service=IFDC_service.payment.Payment()
             api_key = req.headers['auth_token']
             merchant_id=auth.AESCipher(const.AuthKey,const.AuthIV).decrypt(api_key)
+            
             encrypted_code=req.data["query"]
             mode = req.data['mode']
             variable=VariableModel.objects.filter(variable_name="getBalance")
@@ -82,6 +83,8 @@ class bankApiPaymentView(APIView):
             logid=log.save()
             client = Client_model_service.Client_Model_Service.fetch_by_id(merchant_id,req.META['REMOTE_ADDR'],"merchant id :: "+merchant_id)
             print("client bank::"+str(client.bank_id))
+            if not client.is_transactable:
+                return Response({"message":"Your are not permitted to perform transactions please contact sabpaisa","responseCode":0},status=status.HTTP_401_UNAUTHORIZED)
             mode_rec = Mode_model_services.Mode_Model_Service.fetch_by_mode(mode)
             if mode_rec==None:
                 return Response({"message":"mode not valid","responseCode":"0"},status=status.HTTP_400_BAD_REQUEST)
