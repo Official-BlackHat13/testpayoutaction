@@ -238,7 +238,7 @@ class PayoutService:
                             
                             transhistoryJson=Ledger_model_services.Ledger_Model_Service.fetch_by_id_tojson(id=ledger_id,client_ip_address=client_ip_address_temp,created_by="system")
                             response=requests.post(webhooks.webhook,json=transhistoryJson)
-                            print("First Response from webhook :: "+str(response.json()))
+                            print("First Response from webhook :: "+response.text)
                             if response.status_code!=200:
                                 for i in range(webhooks.max_request):
                                     interval=webhooks.time_interval
@@ -269,7 +269,7 @@ class PayoutService:
                          log.update_response(logid,response.text)
                          print(response.json())
                          if response.json()['status']=="SUCCESS":
-                             ledgerModelService.update_status(id,"Success",client_ip_address_temp,"Merchant :: "+str(merchant_id_temp),response.json()['rrn'])
+                             ledgerModelService.update_status(id,"Success",client_ip_address_temp,"Merchant :: "+str(merchant_id_temp),response.json()['result']['rrn'])
                              ledgerModelService.update_trans_time(id,datetime.now(),client_ip_address_temp,"Merchant :: "+str(merchant_id_temp))
                             #  charge = Ledger_model_services.Ledger_Model_Service.fetch_by_linked_id(ledgerModelService.payout_trans_id)
                             #  if clientModel.is_charge:
