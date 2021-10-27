@@ -28,7 +28,7 @@ class Merchant_Mode_Service:
         return record
     @staticmethod
     def fetch_by_merchant_id_and_mode(merchant_id,mode_id):
-        record=MercahantModeModel.objects.filter(merchant_id=merchant_id,mode_id=mode_id)
+        record=MercahantModeModel.objects.filter(merchant_id=merchant_id,mode_id=mode_id,status=True)
         return record
     @staticmethod
     def fetchModesByMerchantId(merchant_id):
