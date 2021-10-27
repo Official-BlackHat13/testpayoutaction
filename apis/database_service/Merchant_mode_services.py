@@ -33,7 +33,7 @@ class Merchant_Mode_Service:
     @staticmethod
     def fetchModesByMerchantId(merchant_id):
         cursors = connection.cursor()
-        cursors.execute("select apis_modemodel.mode, apis_modemodel.id from apis_modemodel inner join apis_mercahantmodemodel on apis_modemodel.id = apis_mercahantmodemodel.mode_id where apis_mercahantmodemodel.merchant_id="+merchant_id+";")
+        cursors.execute("select apis_mercahantmodemodel.status,apis_modemodel.mode, apis_modemodel.id from apis_modemodel inner join apis_mercahantmodemodel on apis_modemodel.id = apis_mercahantmodemodel.mode_id where apis_mercahantmodemodel.merchant_id="+merchant_id+";")
         # print("data ",(cursors.fetchall()))
         columns = [col[0] for col in cursors.description]
         print(columns)

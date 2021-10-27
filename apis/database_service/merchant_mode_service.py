@@ -15,7 +15,7 @@ class Merchant_mode_service:
         self.mode_id=mode_id
 
     def save(self,admin_id):
-        resp = MercahantModeModel.objects.filter(merchant_id=self.merchant_id,mode_id=self.mode_id,bank_partner_id=self.bank_partner_id,status=True)
+        resp = MercahantModeModel.objects.filter(merchant_id=self.merchant_id,mode_id=self.mode_id,bank_partner_id=self.bank_partner_id)
         if(len(resp)!=0):
             return 0
         merchantModeModel = MercahantModeModel()
@@ -48,7 +48,8 @@ class Merchant_mode_service:
                 "bank_name":bank[0].get("bank_name"),
                 "bank_code":bank[0].get("bank_code"),
                 "mode_id":data.get("mode_id"),
-                "mode_name":mode[0].get("mode")
+                "mode_name":mode[0].get("mode"),
+                "status":data.get("status")
             }
             resp.append(d)
         return resp
@@ -73,7 +74,8 @@ class Merchant_mode_service:
                 "bank_name":bank[0].get("bank_name"),
                 "bank_code":bank[0].get("bank_code"),
                 "mode_id":data.get("mode_id"),
-                "mode_name":mode[0].get("mode")
+                "mode_name":mode[0].get("mode"),
+                "status":data.get("status")
             }
             resp.append(d)
         return resp
