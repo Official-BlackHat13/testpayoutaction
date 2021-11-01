@@ -146,3 +146,67 @@ class fetchCharges(APIView):
             print(traceback.format_exc())
             Log_model_services.Log_Model_Service.update_response(logid,{"message":"Some error occured","Error_Code":e.args,"response_code":"2"})
             return Response({"Message":"some error","Error":e.args})
+
+
+
+
+class deleteCharges(APIView):
+    def post(self,request):
+        request_obj = "path:: "+request.path+" :: headers::" + \
+            str(request.headers)+" :: meta_data:: " + \
+            str(request.META)+"data::"+str(request.data)
+        log = Log_model_services.Log_Model_Service(log_type="fetchCharges request at "+request.path+" slug",
+                                                   client_ip_address=request.META['REMOTE_ADDR'], server_ip_address=const.server_ip, full_request=request_obj)
+        logid = log.save()
+        try:
+            header = request.headers.get("auth_token")
+            adminId = auth.AESCipher(const.admin_AuthKey,const.admin_AuthIV).decrypt(header)
+            admin = BO_user_services.BO_User_Service.fetch_by_id(adminId)
+            if(admin==None):
+                Log_model_services.Log_Model_Service.update_response(
+                logid, {"Message": "admin code missing", "response_code": "0"})
+                return Response({"message":"admin id does not exist", "Response code":"0"},status=status.HTTP_404_NOT_FOUND)
+
+            query = request.data.get("query")
+            id = query.get("id")
+            resp= charge_model_service.deleteCharge(id=id)
+            if(resp==-1):
+                return Response({"Message":"id not found","data":None},status=status.HTTP_404_NOT_FOUND)
+            return Response({"message":"data deleted successfully","data":resp},status=status.HTTP_200_OK)
+        except Exception as e:
+            
+            import traceback
+            print(traceback.format_exc())
+            Log_model_services.Log_Model_Service.update_response(logid,{"message":"Some error occured","Error_Code":e.args,"response_code":"2"})
+            return Response({"Message":"some error","Error":e.args})
+
+
+class updateCharges(APIView):
+    def post(self,request):
+        request_obj = "path:: "+request.path+" :: headers::" + \
+            str(request.headers)+" :: meta_data:: " + \
+            str(request.META)+"data::"+str(request.data)
+        log = Log_model_services.Log_Model_Service(log_type="fetchCharges request at "+request.path+" slug",
+                                                   client_ip_address=request.META['REMOTE_ADDR'], server_ip_address=const.server_ip, full_request=request_obj)
+        logid = log.save()
+        try:
+            header = request.headers.get("auth_token")
+            adminId = auth.AESCipher(const.admin_AuthKey,const.admin_AuthIV).decrypt(header)
+            admin = BO_user_services.BO_User_Service.fetch_by_id(adminId)
+            if(admin==None):
+                Log_model_services.Log_Model_Service.update_response(
+                logid, {"Message": "admin code missing", "response_code": "0"})
+                return Response({"message":"admin id does not exist", "Response code":"0"},status=status.HTTP_404_NOT_FOUND)
+
+            query = request.data.get("query")
+            id = query.get("id")
+            max_amount = query.get("max_amount")
+            min_amount = query.get("min_amount")
+            resp= charge_model_service.updateCharge(id=id,max_amount=max_amount,min_amount=min_amount)
+            return Response({"message":"data updated","data":None},status=status.HTTP_200_OK)
+        except Exception as e:
+            
+            import traceback
+            print(traceback.format_exc())
+            Log_model_services.Log_Model_Service.update_response(logid,{"message":"Some error occured","Error_Code":e.args,"response_code":"2"})
+            return Response({"Message":"some error","Error":e.args})

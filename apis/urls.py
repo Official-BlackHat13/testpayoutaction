@@ -62,6 +62,7 @@ urlpatterns = [
     path("addCharge/",views.charge.addCharge.as_view()),
     path("addSlab/",views.slab.SlabView.as_view()),
     path("fetchCharges/<slug:page>/<slug:length>",views.charge.fetchCharges.as_view()),
+    path("updateCharge/",views.charge.updateCharges.as_view()),
     path("getLedgers/<slug:page>/<slug:length>/",views.ledger.GetLedger.as_view()),
     path("getLedgersMerchant/",views.ledger.GetLedgerForMerchant.as_view()),
     path("getTransactionHistory/<slug:page>/<slug:length>",views.ledger.GetTransactionHistory.as_view()),
@@ -75,7 +76,7 @@ urlpatterns = [
     path("addIp/",views.IpWhitelisting.CreateIpWhiteList.as_view()),
     path("deleteIp/",views.IpWhitelisting.DeleteIp.as_view()),
     path("fetchIpsByMerchantId/",views.IpWhitelisting.fetchIpsByMerchantId.as_view()),
-    
+    path("deleteCharge/",views.charge.deleteCharges.as_view()),
     path("addMerchantMode/",views.merchantMode.addMerchantMode.as_view()),
    path("UpdateMerchantModeStatus/",views.merchantMode.deleteMerchantMode.as_view()),
     path("fetchAllMerchantModes/",views.merchantMode.fetchMerchantModes.as_view()),
