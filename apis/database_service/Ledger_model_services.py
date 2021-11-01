@@ -454,7 +454,7 @@ class Ledger_Model_Service:
         mode = ModeModel.objects.filter(mode=mode)
         print(mode)
         print(mode[0].id)
-        charge=ChargeModel.objects.filter(mode_id=mode[0].id,min_amount__lt=amount,max_amount__gt=amount,merchant_id=merchant_id)
+        charge=ChargeModel.objects.filter(mode_id=mode[0].id,min_amount__lt=amount,max_amount__gt=amount,merchant_id=merchant_id,status=True)
         # print(charge[0].charge_percentage_or_fix)
         charge_amount=0
         charge_list=[]

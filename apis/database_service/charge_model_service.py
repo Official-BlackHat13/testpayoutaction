@@ -47,10 +47,13 @@ class charge_model_service:
         print("select * from apis_chargemodel where merchant_id = "+merchant_id+" order by id desc limit "+str(offSet) +" "+str(length)+";")
         chargeModel=ChargeModel.objects.raw("select * from apis_chargemodel where merchant_id = "+merchant_id+" order by id desc limit "+str(offSet) +","+str(length)+";")
         resp=list()
+
         for data in list(chargeModel.iterator()):
+            mode=ModeModel.objects.get(id=data.mode_id)
             d={
                 "id": data.id,
                 "mode_id": data.mode_id,
+                "mode_name":mode.mode,
                 "min_amount": data.min_amount,
                 "max_amount": data.max_amount,
                 "charge_percentage_or_fix": data.charge_percentage_or_fix,

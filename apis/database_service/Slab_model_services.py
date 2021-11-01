@@ -25,5 +25,18 @@ class Slab_Model_Service:
         if len(slabmodel)==0:
             return False
         return True
-
+    def fetch_by_merchant_id(merchant_id):
+        slabmodel=SlabModel.objects.filter(merchant_id=merchant_id,status=True)
+        return slabmodel
+    def delete_slab(id):
+        slabmodel=SlabModel.objects.get(id=id)
+        slabmodel.status=False
+        slabmodel.save()
+        return slabmodel
+    def update_slab(slabmodelup):
+        slabmodel=SlabModel.objects.get(id=slabmodelup.id)
+        slabmodel.status=False
+        slabmodel.save()
+        slabmodelup.save()
+        return slabmodel
 

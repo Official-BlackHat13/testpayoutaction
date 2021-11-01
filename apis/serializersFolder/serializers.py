@@ -2,6 +2,8 @@ from apis.database_models.DailyLedgerModel import DailyLedgerModel
 from apis.database_models.BeneficiaryModel import BeneficiaryModel
 from django.db.models import fields
 from rest_framework import serializers
+
+from apis.database_models.SlabModel import SlabModel
 from ..models import LogModel
 from ..database_models import LedgerModel
 class LedgerSerializer(serializers.ModelSerializer):
@@ -35,3 +37,7 @@ class BeneSerializer(serializers.ModelSerializer):
     class Meta:
         model=BeneficiaryModel
         fields=("id","full_name","account_number","ifsc_code","upi_id","merchant_id")
+class SlabSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=SlabModel
+        fields="__all__"
