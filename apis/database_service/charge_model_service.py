@@ -1,4 +1,6 @@
-from datetime import datetime
+from datetime import date, datetime
+
+from rest_framework import status
 from ..models import ChargeModel,ModeModel
 from . import Log_model_services
 from .. import const
@@ -23,9 +25,8 @@ class charge_model_service:
         chargeModel.max_amount = self.max_amount
         chargeModel.charge_percentage_or_fix = self.charge_percentage_or_fix
         chargeModel.charge = self.charge
-        chargeModel.created_at = self.created_at
-        chargeModel.deleted_at = self.deleted_at
-        chargeModel.updated_at = self.updated_at
+        chargeModel.created_at = datetime.now()
+       
         chargeModel.merchant_id= self.merchant_id
         modeid = ModeModel.objects.filter(mode=self.mode)
         chargeModel.mode_id=modeid[0].id
@@ -45,7 +46,7 @@ class charge_model_service:
         log_service=Log_model_services.Log_Model_Service(log_type="fetch",table_name="apis_chargemodel",remarks="fetching records from apis_chargemodel by primary key in the record",client_ip_address=client_ip_address,server_ip_address=const.server_ip,created_by=created_by)
         offSet = (int(page)-1)*int(length)
         print("select * from apis_chargemodel where merchant_id = "+merchant_id+" order by id desc limit "+str(offSet) +" "+str(length)+";")
-        chargeModel=ChargeModel.objects.raw("select * from apis_chargemodel where merchant_id = "+merchant_id+" order by id desc limit "+str(offSet) +","+str(length)+";")
+        chargeModel=ChargeModel.objects.raw("select * from apis_chargemodel where merchant_id = "+merchant_id+" and status = true order by id desc limit "+str(offSet) +","+str(length)+";")
         resp=list()
 
         for data in list(chargeModel.iterator()):
@@ -67,7 +68,7 @@ class charge_model_service:
     def allCharges(client_ip_address,created_by,page,length,merchant_id=None):
         log_service=Log_model_services.Log_Model_Service(log_type="fetch",table_name="apis_chargemodel",remarks="fetching records from apis_chargemodel by primary key in the record",client_ip_address=client_ip_address,server_ip_address=const.server_ip,created_by=created_by)
         offSet = (int(page)-1)*int(length)
-        chargeModel=ChargeModel.objects.raw("select * from apis_chargemodel order by id desc limit "+str(offSet) +","+str(length)+";")
+        chargeModel=ChargeModel.objects.raw("select * from apis_chargemodel where status=true order by id desc limit "+str(offSet) +","+str(length)+";")
         resp=list()
         for data in list(chargeModel.iterator()):
             d={
@@ -82,3 +83,31 @@ class charge_model_service:
             resp.append(d)
         log_service.save()
         return resp
+
+    def deleteCharge(id):
+        resp = ChargeModel.objects.filter(id=id)
+        if(resp==None):
+            return -1
+        resp = ChargeModel.objects.filter(id=id).update(status=False,deleted_at=datetime.now())
+        return 1
+    
+    def updateCharge(id,min_amount,max_amount):
+        obj = ChargeModel.objects.get(id=id,status=True)
+        oldCharge=ChargeModel()
+
+        oldCharge.min_amount = obj.min_amount
+        oldCharge.max_amount = obj.max_amount
+        oldCharge.charge_percentage_or_fix = obj.charge_percentage_or_fix
+        oldCharge.charge = obj.charge
+        oldCharge.created_at = datetime.now()
+        oldCharge.merchant_id= obj.merchant_id
+        print("yo======== ",oldCharge.mode_id)
+        modeid = ModeModel.objects.filter(mode=obj.mode)
+        oldCharge.mode_id=modeid[0].id
+        oldCharge.created_at = datetime.now()
+        oldCharge.partner_id=obj.partner_id
+        oldCharge.charge_type = obj.charge_type
+        oldCharge.status=False
+        oldCharge.save()
+        resp=ChargeModel.objects.filter(id=id).update(min_amount=min_amount,max_amount=max_amount,updated_at=datetime.now())
+        return 1
