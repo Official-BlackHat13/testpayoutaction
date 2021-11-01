@@ -1,6 +1,6 @@
 # from ..database_models.OtpModel import OtpModel
 from ..database_models.SlabModel import SlabModel
-from datetime import datetime,timedelta,timezone
+from datetime import date, datetime,timedelta,timezone
 
 class Slab_Model_Service:
     def __init__(self,merchant_id=None,min_amount=None,max_amount=None):
@@ -30,13 +30,18 @@ class Slab_Model_Service:
         return slabmodel
     def delete_slab(id):
         slabmodel=SlabModel.objects.get(id=id)
+        slabmodel.deleted_at=datetime.now()
         slabmodel.status=False
         slabmodel.save()
         return slabmodel
     def update_slab(slabmodelup):
         slabmodel=SlabModel.objects.get(id=slabmodelup.id)
         slabmodel.status=False
+        slabmodel.deleted_at=datetime.now()
+        
         slabmodel.save()
+        slabmodelup.created_at=datetime.now()
+        slabmodelup.updated_at=datetime.now()
         slabmodelup.save()
         return slabmodel
 

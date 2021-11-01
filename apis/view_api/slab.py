@@ -1,3 +1,4 @@
+from apis.database_models.SlabModel import SlabModel
 from apis.database_service.Slab_model_services import Slab_Model_Service
 from rest_framework.views import APIView
 from rest_framework.response import *
@@ -67,11 +68,19 @@ class UpdateSlab(APIView):
     def post(self,req):
         try:
             admin_id = req.headers['auth_token']
+
             admin_id=sabpaisa.auth.AESCipher(const.admin_AuthKey,const.admin_AuthIV).decrypt(admin_id)
             if len(BOUserModel.BOUserModel.objects.filter(id=admin_id))<=0:
                     return Response({"message":"UNAUTHORISED"})
-            Slab_Model_Service.delete_slab(req.data["id"])
-            return Response({"message":"Slab Deleted","response_code":200},status=status.HTTP_200_OK)
+            model=req.data["slab"]
+            slab=SlabModel()
+            slab.min_amount=model['min_amount']
+            slab.max_amount=model['max_amount']
+            slab.merchant_id=model['merchant_id']
+            
+            Slab_Model_Service.update_slab(slab)
+
+            return Response({"message":"Slab updated","response_code":200},status=status.HTTP_200_OK)
         except Exception as e:
                 import traceback
                 print(traceback.format_exc())

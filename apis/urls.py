@@ -62,11 +62,12 @@ urlpatterns = [
     path("addCharge/",views.charge.addCharge.as_view()),
     path("addSlab/",views.slab.SlabView.as_view()),
     path("fetchCharges/<slug:page>/<slug:length>",views.charge.fetchCharges.as_view()),
-<<<<<<< HEAD
+
     path("fetchSlab/",views.slab.FetchSlab.as_view()),
-=======
+    path("updateSlab/",views.slab.UpdateSlab.as_view()),
+    path("deleteSlab/",views.slab.DeleteSlab.as_view()),
     path("updateCharge/",views.charge.updateCharges.as_view()),
->>>>>>> b90d99d15a4b94cc50a7f081708ad774114c672e
+
     path("getLedgers/<slug:page>/<slug:length>/",views.ledger.GetLedger.as_view()),
     path("getLedgersMerchant/",views.ledger.GetLedgerForMerchant.as_view()),
     path("getTransactionHistory/<slug:page>/<slug:length>",views.ledger.GetTransactionHistory.as_view()),
