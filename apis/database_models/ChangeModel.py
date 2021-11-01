@@ -15,6 +15,7 @@ class ChargeModel(models.Model):
     merchant_id=models.IntegerField()
     charge_type=models.CharField(max_length=300,null=True)
     partner_id=models.IntegerField(null=True)
+    status = models.BooleanField(default=True)
     def __str__(self):
         return str(self.id)
     
