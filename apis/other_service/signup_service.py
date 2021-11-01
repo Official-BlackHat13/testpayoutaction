@@ -45,7 +45,7 @@ class Signup_Service:
             bank=Bank_model_services.Bank_model_services.fetch_by_bankcode(self.user["bank_code"],client_ip_address=self.client_ip_address,created_by="client added")
             user_client =User.objects.create_user(self.user["username"], self.user["email"],self.user["password"])
             flag=True
-            client = Client_model_service.Client_Model_Service(phone_number=self.user["phone_number"],email=self.user["email"],role_id=self.user['role_id'],user=user_client.id,client_id=self.user['client_id'],client_code=self.user["client_code"],auth_key=randomstring.randomString(),auth_iv=randomstring.randomString(),bank_id=bank.id,client_username=self.user["username"],client_password=self.user["password"])
+            client = Client_model_service.Client_Model_Service(phone_number=self.user["phone_number"],email=self.user["email"],role_id=self.user['role_id'],user=user_client.id,client_id=self.user['client_id'],client_code=self.user["client_code"],auth_key=randomstring.randomString(),auth_iv=randomstring.randomString(),bank_id=bank.id,client_username=self.user["username"],client_password=self.user["password"],client_name=self.user['client_name'])
             merchant_id=client.save(client_ip_address=self.client_ip_address,created_by="client added")
             print("requesting api "+const.domain+"api/token/")
             res = requests.post(const.domain+"api/token/",json={"username":self.user["username"],"password":self.user["password"]})

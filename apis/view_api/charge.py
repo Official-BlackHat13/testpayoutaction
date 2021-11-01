@@ -128,7 +128,7 @@ class fetchCharges(APIView):
             if(admin.is_encrypt==True):
                 merchant_id = auth.AESCipher(admin.auth_key,admin.auth_iv).decrypt(request.data.get("query")).split(":")[1]
             else:
-                merchant_id = str(request.data.get("query")).split(":")[1]
+                merchant_id = str(request.data.get("query")).split(":")[1].replace("}","")
             if(merchant_id=="all"):
                 chargeResponse = charge_model_service.allCharges(client_ip_address=request.META['REMOTE_ADDR'],created_by="admin :: "+adminId,page=page,length=length,merchant_id=merchant_id)
             else:    
@@ -141,6 +141,7 @@ class fetchCharges(APIView):
             else:
                 return Response({"message":"data found","data":chargeResponse,"response_code":"1"},status=status.HTTP_200_OK)         
         except Exception as e:
+            
             import traceback
             print(traceback.format_exc())
             Log_model_services.Log_Model_Service.update_response(logid,{"message":"Some error occured","Error_Code":e.args,"response_code":"2"})

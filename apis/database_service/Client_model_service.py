@@ -6,7 +6,7 @@ from django.db import connection
 from sabpaisa import auth
 from ..const import *
 class Client_Model_Service:
-    def __init__(self,email=None,client_id=None,is_charge=None,phone_number=None,client_code=None,role_id=None,auth_key=None,user=None,auth_iv=None,bank_id=None,client_username=None,client_password=None):
+    def __init__(self,email=None,client_id=None,client_name=None,is_charge=None,phone_number=None,client_code=None,role_id=None,auth_key=None,user=None,auth_iv=None,bank_id=None,client_username=None,client_password=None):
         self.client_id=client_id
         self.client_code=client_code
         self.auth_key=auth_key
@@ -15,6 +15,7 @@ class Client_Model_Service:
         self.bank_id=bank_id
         self.client_username=client_username
         self.role_id=role_id
+        self.client_name=client_name
         self.phone_number=phone_number
         # self.is_charge=is_charge
         self.client_password=client_password
@@ -23,6 +24,7 @@ class Client_Model_Service:
         log_service=Log_model_services.Log_Model_Service(log_type="create",table_name="apis_clientmodel",remarks="saving records in apis_clientmodel table",client_ip_address=client_ip_address,server_ip_address=const.server_ip,created_by=created_by)
         
         clientmodel=ClientModel()
+        clientmodel.client_name=self.client_name
         clientmodel.client_id=self.client_id
         clientmodel.client_code=self.client_code
         clientmodel.auth_key=self.auth_key
