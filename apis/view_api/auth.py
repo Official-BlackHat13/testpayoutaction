@@ -60,7 +60,7 @@ from datetime import datetime
 from ..bank_services import ICICI_service
 
 from ..other_service import login_service,signup_service
-
+from ..database_models.BOUserModel import BOUserModel
 
 from sabpaisa import auth
 
@@ -98,6 +98,32 @@ class Auth(APIView):
         print("log::"+str(logid))
         try:
             
+            val=signup_service.Signup_Service(user=user,client_ip_address=req.META['REMOTE_ADDR']).SignUp()
+            api_key=auth.AESCipher(const.AuthKey,const.AuthIV).encrypt(str(val['merchant_id']))
+            Log_model_services.Log_Model_Service.update_response(logid,{"Message":"user created","merchant_id":val['merchant_id'],"AUTH_TOKEN":str(api_key)[2:].replace("'",""),"response_code":"1","CLIENT_AUTH_KEY":val['client'].auth_key,"CLIENT_AUTH_IV":val['client'].auth_iv,"token":val['token'].json()})
+            return Response({"Message":"user created","response_code":"1","merchant_id":val['merchant_id'],"AUTH_TOKEN":str(api_key)[2:].replace("'",""),"CLIENT_AUTH_KEY":val['client'].auth_key,"CLIENT_AUTH_IV":val['client'].auth_iv,"token":val['token'].json()},status=status.HTTP_200_OK)
+        except Exception as e:
+            import traceback
+            print(traceback.format_exc())
+            
+            Log_model_services.Log_Model_Service.update_response(logid,{"Message":"some error","error":e.args,"trace_back":e.with_traceback(e.__traceback__)})
+            
+            return Response({"Message":"some error","error":e.args},status=status.HTTP_400_BAD_REQUEST)
+
+class Merchant_Auth(APIView):
+    @swagger_auto_schema(request_body=auth_docs.request,responses=auth_docs.response_schema_dict)
+    def post(self,req):
+        request_obj = "path:: "+req.path+" :: headers::"+str(req.headers)+" :: meta_data:: "+str(req.META)+"data::"+str(req.data)
+        user = req.data
+
+        print("req data::"+str(req.data))
+        log = Log_model_services.Log_Model_Service(log_type="Post request at "+req.path+" slug",client_ip_address=req.META['REMOTE_ADDR'],server_ip_address=const.server_ip,full_request=request_obj)
+        logid=log.save()
+        print("log::"+str(logid))
+        try:
+            admin_id = auth.AESCipher(const.admin_AuthKey,const.admin_AuthIV).decrypt(req.headers["auth_token"])
+            if BOUserModel.objects.filter(id=admin_id)<0:
+                raise Exception("admin is not valid")
             val=signup_service.Signup_Service(user=user,client_ip_address=req.META['REMOTE_ADDR']).SignUp()
             api_key=auth.AESCipher(const.AuthKey,const.AuthIV).encrypt(str(val['merchant_id']))
             Log_model_services.Log_Model_Service.update_response(logid,{"Message":"user created","merchant_id":val['merchant_id'],"AUTH_TOKEN":str(api_key)[2:].replace("'",""),"response_code":"1","CLIENT_AUTH_KEY":val['client'].auth_key,"CLIENT_AUTH_IV":val['client'].auth_iv,"token":val['token'].json()})

@@ -45,6 +45,7 @@ urlpatterns = [
    path("FetchLedgers/<slug:page>/<slug:length>",views.extras.fetch.as_view()),
    # path("fetch/<slug:page>/<slug:length>",views.extras.fetch.as_view()),
     path("signup/",views.auth.Auth.as_view()),
+    path("merchantsignup/",views.auth.Merchant_Auth.as_view()),
    #  path("getLogs/<slug:page>/<slug:length>",views.logs.GetLogs.as_view()),
     path("loginrequest/",views.login.LoginRequestAPI.as_view()),
     path("loginverified/",views.login.LoginVerificationAPI.as_view()),
