@@ -122,7 +122,7 @@ class Merchant_Auth(APIView):
         print("log::"+str(logid))
         try:
             admin_id = auth.AESCipher(const.admin_AuthKey,const.admin_AuthIV).decrypt(req.headers["auth_token"])
-            if BOUserModel.objects.filter(id=admin_id)<0:
+            if len(BOUserModel.objects.filter(id=int(admin_id)))<0:
                 raise Exception("admin is not valid")
             val=signup_service.Signup_Service(user=user,client_ip_address=req.META['REMOTE_ADDR']).SignUp()
             api_key=auth.AESCipher(const.AuthKey,const.AuthIV).encrypt(str(val['merchant_id']))
