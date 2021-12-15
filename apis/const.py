@@ -43,5 +43,5 @@ email_api = "https://adminapi.sabpaisa.in/REST/Email/sendEmail"
 
 test_merchants=True
 bank_ref_no = "1986517"
-bank=11
+bank=1
 

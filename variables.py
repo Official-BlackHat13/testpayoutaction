@@ -1,4 +1,4 @@
-domain = "http://localhost:80/"
+domain = "https://staging-payout.sabpaisa.in/"
 
 # pip install micropython-fcntl
 # pip install cffi
