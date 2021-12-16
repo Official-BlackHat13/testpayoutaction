@@ -105,8 +105,7 @@ urlpatterns = [
    #  path("downloadtranshistory/",views.)
 
    #  path("creditamountmis/<int:page>/<int:length>/",views.dailyLedger.MISViewApi.as_view()),
-    path("chargeBreakUpInfo/<slug:page>/<slug:length>/",views.bankpartner.ChargeBreakUpInfoApi.as_view()),
-    path("apitesting/", views.ApiTesting.as_view())
+    path("chargeBreakUpInfo/<slug:page>/<slug:length>/",views.bankpartner.ChargeBreakUpInfoApi.as_view())
 
    #  path("testicic/",)
    #  path("createTest",views.getTest.as_view()),
