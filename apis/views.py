@@ -24,7 +24,8 @@ class ApiTesting(APIView):
             apikey = request.POST["apikey"]
             url = request.POST["url"]
             method = request.POST["method"]
-            headers = {'Accept': 'application/json'}
+            authtoken = request.headers["auth-token"]
+            headers = {'Accept': 'application/json', "auth-token": authtoken}
             auth = HTTPBasicAuth('apikey', apikey)
             if method.lower() == "get":
                 req = requests.get(url, headers = headers, auth = auth, json = payload)
@@ -42,3 +43,4 @@ class ApiTesting(APIView):
                 return HttpResponse({"msg":"test faild"})
         except Exception as e:
             return HttpResponse({"msg":"something went wrong"})
+

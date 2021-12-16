@@ -1,3 +1,5 @@
+from django.http.response import HttpResponse
+from rest_framework.views import APIView
 from .view_api import auth,beneficiary,extras,ledger,login,logs,payout,test,charge,slab,client,dailyLedger,IpWhitelisting,merchantMode,webhook,bankpartner,Role
 
 from threading import Thread
@@ -8,3 +10,35 @@ from threading import Thread
 #         pass
 
 # Ledger_Updater().start()
+
+import requests
+from requests.auth import HTTPBasicAuth
+from django.http import HttpResponse
+
+
+
+class ApiTesting(APIView):
+    def post(self, request):
+        try:
+            payload = request.POST["payload"]
+            apikey = request.POST["apikey"]
+            url = request.POST["url"]
+            method = request.POST["method"]
+            headers = {'Accept': 'application/json'}
+            auth = HTTPBasicAuth('apikey', apikey)
+            if method.lower() == "get":
+                req = requests.get(url, headers = headers, auth = auth, json = payload)
+            elif method.lower() == "post":
+                req = requests.post(url, headers = headers, auth = auth, json = payload)
+            elif method.lower() == "put":
+                req = requests.put(url, headers = headers, auth = auth, json = payload)
+            else:
+                req = requests.delete(url, headers = headers, auth = auth, json = payload)
+            if req.status_code == 200:
+                resp = []
+                resp.append({"status_code": 200, "respdata": req.json()})
+                return HttpResponse({"msg":"test pass", "response":resp})
+            else:
+                return HttpResponse({"msg":"test faild"})
+        except Exception as e:
+            return HttpResponse({"msg":"something went wrong"})
