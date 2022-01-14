@@ -1,5 +1,6 @@
 from apis.database_models.DailyLedgerModel import DailyLedgerModel
 from apis.database_models.BeneficiaryModel import BeneficiaryModel
+from apis.database_models.CIBRegistrationModel import CIBRegistration
 from django.db.models import fields
 from rest_framework import serializers
 
@@ -41,3 +42,33 @@ class SlabSerializer(serializers.ModelSerializer):
     class Meta:
         model=SlabModel
         fields="__all__"
+
+class CibRegistrationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=CIBRegistration
+        fields='__all__'
+
+    # function create
+    def create(self, validated_data):
+        return CIBRegistration.objects.create(**validated_data)
+
+    # function update
+    def update(self, instance, validated_data):
+        instance.bank = validated_data.get('bank', instance.bank)
+        instance.aggrName = validated_data.get('aggrName', instance.aggrName)
+        instance.aggrId = validated_data.get('aggrId', instance.aggrId)
+        instance.corpId = validated_data.get('corpId', instance.corpId)
+        instance.userId = validated_data.get('userId', instance.userId)
+        instance.aliasId = validated_data.get('aliasId', instance.aliasId)
+        instance.urn = validated_data.get('urn', instance.urn)
+        instance.errormessage = validated_data.get('errormessage', instance.errormessage)
+        instance.response = validated_data.get('response', instance.response)
+        instance.success = validated_data.get('success', instance.success)
+        instance.status = validated_data.get('status', instance.status)
+        instance.message = validated_data.get('message', instance.message)
+        instance.errorCode = validated_data.get('errorCode', instance.errorCode)
+        instance.created_at = validated_data.get('created_at', instance.created_at)
+        instance.deleted_at = validated_data.get('deleted_at', instance.deleted_at)
+        instance.updated_at = validated_data.get('updated_at', instance.updated_at)
+        instance.save()
+        return instance

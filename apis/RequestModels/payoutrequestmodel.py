@@ -1,13 +1,13 @@
 class PayoutRequestModel:
-    def __init__(self,orderId=None,beneficiaryName=None,upiId=None,mode=None,beneficiaryAccount=None,beneficiaryIFSC=None,amount=None,purpose=None):
-        self.orderId=orderId
-        self.beneficiaryName=beneficiaryName
-        self.beneficiaryAccount=beneficiaryAccount
-        self.beneficiaryIFSC=beneficiaryIFSC
-        self.amount=amount
-        self.purpose=purpose
-        self.upiId=upiId
-        self.mode=mode
+    def __init__(self, orderId=None, beneficiaryName=None, upiId=None, mode=None, beneficiaryAccount=None, beneficiaryIFSC=None, amount=None, purpose=None):
+        self.orderId = orderId
+        self.beneficiaryName = beneficiaryName
+        self.beneficiaryAccount = beneficiaryAccount
+        self.beneficiaryIFSC = beneficiaryIFSC
+        self.amount = amount
+        self.purpose = purpose
+        self.upiId = upiId
+        self.mode = mode
         # self.userName=userName
         # self.password=password
         # self.payeeFirstName=payeeFirstName
@@ -34,37 +34,38 @@ class PayoutRequestModel:
         # self.van=van
         # self.clientPaymode=clientPaymode
         # self.environment=environment
+
     @staticmethod
-    def from_json(json)->list:
+    def from_json(json) -> list:
         # "orderId=SOME_UNIQUE_ORDER_ID_FROM_MERCHANT&beneficiaryName=NAME_OF_BENEFICIARY&beneficiaryAccount=ACCOUNT_NUMBER&beneficiaryIFSC=BENEFICIARY_IFSC_HERE&amount=AMOUNT_TO_TRANSFER&purpose=MERCHANT_DEFINED_PURPOSE_CODE_HERE"
-        requestModel=PayoutRequestModel()
+        requestModel = PayoutRequestModel()
         try:
-            if json['orderId']=="":
-             return [None,False,"orderId is missing"]
+            if json['orderId'] == "":
+                return [None, False, "orderId is missing"]
             else:
-             requestModel.orderId=json["orderId"]
-            if "beneficiaryName" in json :
-             requestModel.beneficiaryName=json["beneficiaryName"]
+                requestModel.orderId = json["orderId"]
+            if "beneficiaryName" in json:
+                requestModel.beneficiaryName = json["beneficiaryName"]
             if "beneficiaryAccount" in json:
-                
-             requestModel.beneficiaryAccount=json["beneficiaryAccount"]
+
+                requestModel.beneficiaryAccount = json["beneficiaryAccount"]
             if 'beneficiaryIFSC' in json:
-                
-             requestModel.beneficiaryIFSC=json["beneficiaryIFSC"]
-            if json["amount"]=="":
-                return [None,False,"amount is missing"]
+
+                requestModel.beneficiaryIFSC = json["beneficiaryIFSC"]
+            if json["amount"] == "":
+                return [None, False, "amount is missing"]
             else:
-              requestModel.amount=json["amount"]
-            if json['purpose']=="":
-             return [None,False,"purpose is missing"]
+                requestModel.amount = json["amount"]
+            if json['purpose'] == "":
+                return [None, False, "purpose is missing"]
             else:
-                requestModel.purpose=json["purpose"]
+                requestModel.purpose = json["purpose"]
             if "mode" not in json:
-                return [None,False,"mode is missing"]
+                return [None, False, "mode is missing"]
             else:
-                requestModel.mode=json["mode"]
+                requestModel.mode = json["mode"]
             if "upiId" in json:
-                requestModel.upiId=json["upiId"]
+                requestModel.upiId = json["upiId"]
             # if json['txnAmount']=="":
             #     return [None,False,"Transaction amount is missing"]
             # else:
@@ -139,7 +140,7 @@ class PayoutRequestModel:
             # else:
             #     requestModel.van=""
             # if "clientPaymode" in json:
-                 
+
             #  requestModel.clientPaymode=json['clientPaymode']
             # else:
             #     requestModel.clientPaymode=""
@@ -147,20 +148,21 @@ class PayoutRequestModel:
             #  requestModel.environment=json["environment"]
             # else:
             #     requestModel.clientPaymode=""
-            return [requestModel,True,"Fine"]
+            return [requestModel, True, "Fine"]
         except Exception as e:
             print(e.args)
-            return [e,False,"Exception Raised"]
+            return [e, False, "Exception Raised"]
+
     @staticmethod
     def to_json(payoutrequestmodel):
-        json={}
-        json['orderId']=payoutrequestmodel.orderId
-        json['beneficiaryName']=payoutrequestmodel.beneficiaryName
-        json['beneficiaryAccount']=payoutrequestmodel.beneficiaryAccount
-        json['beneficiaryIFSC']=payoutrequestmodel.beneficiaryIFSC
-        json['amount']=payoutrequestmodel.amount
-        json['purpose']=payoutrequestmodel.purpose
-        json["upiId"]=payoutrequestmodel.upiId
+        json = {}
+        json['orderId'] = payoutrequestmodel.orderId
+        json['beneficiaryName'] = payoutrequestmodel.beneficiaryName
+        json['beneficiaryAccount'] = payoutrequestmodel.beneficiaryAccount
+        json['beneficiaryIFSC'] = payoutrequestmodel.beneficiaryIFSC
+        json['amount'] = payoutrequestmodel.amount
+        json['purpose'] = payoutrequestmodel.purpose
+        json["upiId"] = payoutrequestmodel.upiId
         # json['txnAmount']=payoutrequestmodel.txnAmount
         # json['returnUrl']=payoutrequestmodel.returnUrl
         # json['creditAccountNumber']=payoutrequestmodel.creditAccountNumber
@@ -181,33 +183,5 @@ class PayoutRequestModel:
         # json['van']=payoutrequestmodel.van
         # json['clientPaymode']=payoutrequestmodel.clientPaymode
         # json['environment']=payoutrequestmodel.environment
-        
+
         return json
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-
-
-
-
-
-
-
-
-
-

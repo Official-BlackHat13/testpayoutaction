@@ -13,7 +13,7 @@ constantly==15.1.0
 coreapi==2.3.3
 coreschema==0.0.4
 crypto==1.4.1
-
+cryptography==3.4.7
 daphne==3.0.2
 Django==3.2
 django-cors-headers==3.7.0
@@ -38,22 +38,22 @@ keyring==23.0.1
 lml==0.1.0
 MarkupSafe==1.1.1
 MouseInfo==0.1.3
- 
+# mysqlclient @ file:///E:/demo%20projcts/algotarianbackend/mysqlclient-1.4.6-cp37-cp37m-win32.whl
 Naked==0.1.31
 openapi-codec==1.3.2
 openpyxl==3.0.7
 packaging==20.9
-
+Pillow==8.2.0
 pkginfo==1.7.0
 pyasn1==0.4.8
 pyasn1-modules==0.2.8
-
+# PyAudio @ file:///E:/PyAudio-0.2.11-cp37-cp37m-win32.whl
 pyauto==0.0.2
 PyAutoGUI==0.9.52
 pycparser==2.20
 pycryptodome==3.10.1
 pycryptodomex==3.10.1
-
+# pycryptosat @ file:///E:/python%20sabpaisa/pycryptosat-0.6.1.1-cp37-cp37m-win32.whl
 pyexcel-io==0.6.4
 pyexcel-xls==0.6.2
 pyexcel-xlsx==0.6.0
@@ -86,7 +86,7 @@ sqlparse==0.4.1
 tqdm==4.60.0
 twine==3.4.1
 Twisted==21.2.0
-
+# twisted-iocpsupport==1.0.1
 txaio==21.2.1
 typing-extensions==3.7.4.3
 uritemplate==3.0.1

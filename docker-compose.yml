@@ -1,17 +1,8 @@
-# version of docker-compose syntax
-version: '3.7'
+version : "3"
+services: 
+    web: 
+        build: .
+        command: python manage.py runserver 0.0.0.0:80
+        ports:
+            - 80:80
 
-services:
-  app:
-    build:
-      context: .
-    ports:
-      - "80:80"
-    volumes:
-      - production_static_data:/vol/web
-    restart: always
-
-
-volumes:
-  production_static_data:
-                                      

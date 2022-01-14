@@ -1,6 +1,6 @@
-domain = "https://staging-payout.sabpaisa.in/"
+domain = "http://localhost:8000/"
 
 # pip install micropython-fcntl
 # pip install cffi
 
-# pip install django-crontab    
+# pip install django-crontab
