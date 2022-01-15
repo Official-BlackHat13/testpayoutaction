@@ -1,5 +1,4 @@
-!/bin/sh
-
+#!/usr/bin/env bash
 nohup /usr/local/openjdk-8/bin/java -jar icici-0.0.1.jar & 
 set -e
 
