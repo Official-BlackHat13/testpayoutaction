@@ -27,7 +27,7 @@ RUN chmod +x ./script.sh
 RUN pip install -r requirements.txt
 RUN pip install gunicorn
 RUN apt -y update && apt install  -y vim
-RUN pip install pymysql gevent requests
+RUN pip install pymysql gevent requests tabulate
 EXPOSE 8000 8081
 CMD ["./script.sh"]
 
