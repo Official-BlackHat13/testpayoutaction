@@ -29,7 +29,7 @@ RUN pip install gunicorn
 RUN apt -y update && apt install  -y vim
 RUN pip install pymysql gevent requests
 EXPOSE 8000 8081
-# CMD ["./script.sh"]
+CMD ["./script.sh"]
 
 
 
